@@ -1,0 +1,674 @@
+#!/bin/sh
+# \
+exec /usr/photon/`cat /var/photon/.arch`/bin/wish8.0 "$0" ${1+"$@"}
+
+#
+# $Log: cgdisplay,v $
+# Revision 1.10  1999/02/13 01:36:55  banz
+# *** empty log message ***
+#
+# Revision 1.9  1999/01/31 17:11:22  banz
+# BETA RELEASE
+#
+# Revision 1.8  1998/12/15 05:19:13  banz
+# spiffy-ized new screens
+#
+# Revision 1.7  1998/12/13 04:15:44  banz
+# "displayviews" broken out
+#
+# Revision 1.6  1998/11/29 22:20:38  banz
+# big "ALERT" thing
+#
+# Revision 1.5  1998/11/15 23:51:56  banz
+# Flashing team & player high scores
+# Play by play continues to be active during postgame
+#
+# Revision 1.4  1998/11/15 21:43:10  banz
+# finisned team score support
+#
+# Revision 1.3  1998/11/15 21:14:23  banz
+# single image idle screen
+# countdown for pregame screen
+# colors in hit-by-hit window
+#
+# Revision 1.2  1998/11/08 22:13:16  banz
+# fixed RCS identifier
+#
+# Revision 1.1  1998/11/08 22:02:39  banz
+# Initial revision
+#
+#
+
+set rcsid { $Id: cgdisplay,v 1.10 1999/02/13 01:36:55 banz Exp $ }
+
+package require Img
+
+namespace eval Conf {
+    source /var/photon/game.conf
+}
+
+set viewable_top $Conf::v_top
+set viewable_height $Conf::v_height
+set viewable_left $Conf::v_left
+set viewable_width $Conf::v_width
+
+# load the X app defaults file
+if [ file exists $Conf::displaydefaults ] {
+    if [ catch { option readfile $Conf::displaydefaults startup } err ] {
+	puts stderr "error in $Conf::displaydefaults: $err"
+    }
+}
+
+load $Conf::libpath/libpgtcl.so
+
+source $Conf::gamepath/displayviews
+
+source $Conf::gamepath/flasher
+
+namespace eval Display {
+    source $::Conf::gamepath/display
+}
+
+namespace eval Ginfo { }
+namespace eval Game { }
+
+trace variable ::Display::Server::GT_time w GT_time_formatter
+
+# preload images
+
+if { "$argv" == "nopg" } {
+    set noidle 1
+} elseif { "$argv" != "" } {
+    set screenpath $argv
+    set noidle 0
+} else {
+    set screenpath $Conf::gamepath/cg_idle
+    set noidle 0
+}
+
+puts "preloading images..."
+
+for { set x 0 } { $x < 31 } { incr x } {
+    puts "alert/$x.tif"
+    image create photo ::alert_count_$x -file $Conf::gamepath/images/alert/$x.tif
+}
+
+foreach x { alert-blank alert-on background earthlings } {
+    puts "alert/$x.tif"
+    image create photo ::alert_$x -file $Conf::gamepath/images/alert/$x.tif
+}
+
+proc GT_time_formatter { name name2 what } {
+    
+    upvar 0 $name GT_time
+    
+    set ::GT_time_formatted [ format "%d:%02d" [ expr { $GT_time / 60 } ] [ expr { $GT_time % 60 } ] ]
+    
+}
+
+proc setGameMode { mode } {
+    
+    set conn [ pg_connect $Conf::dbname -host $Conf::dbhost ]
+    
+    pg_select $conn "select name, descr, code, params from g_modes where storeid = 0 and name = '$mode'" array {
+	set ::Game::code $array(code)
+	set ::Game::mode $array(name)
+	set ::Game::mode_descr $array(descr)
+	set ::Game::setparams $array(params)
+    }
+    
+    pg_select $conn "select name, descr, code, params from g_modes where storeid = $Conf::storeid and name = '$mode'" array {
+	set ::Game::code $array(code)
+	set ::Game::mode $array(name)
+	set ::Game::mode_descr $array(descr)
+	set ::Game::setparams $array(params)
+    }
+    
+    namespace eval ::Game "source $Conf::modes/$::Game::code"
+    namespace eval ::Game "Init $::Game::code"
+    set ::Ginfo::mode $::Game::mode
+    set ::Ginfo::length $::Game::Params::length
+    
+    pg_disconnect $conn
+    
+}
+
+wm geometry . ${viewable_width}x${viewable_height}+${viewable_left}+${viewable_top}
+
+. configure -width $viewable_width
+. configure -height $viewable_height
+. configure -borderwidth 0
+. configure -background black 
+
+proc ClientRead { sock } {
+    
+    if { [ eof $sock ] } {
+	# socket got closed
+	variable s
+	close $s
+	# begin the open loop again..
+	OpenSocket
+	return -code ok
+    }
+    
+#    puts [ ::Display::ClientRead $sock ]
+     ::Display::ClientRead $sock 
+}
+
+proc DisplayMode { mode } {
+    
+    variable current_mode
+    variable current_parent
+
+    if { ! [ info exists current_parent ] } {
+	set current_parent "."
+    }
+
+    if { $current_mode == $mode } {
+	return -code ok
+    }
+
+    # if the returned parent == current_parent, don't do the
+    # destroy and re-grid, it could be bad...
+   
+    set new_parent [ dm_$mode {} ]
+    
+    if { $new_parent != $current_parent } {
+	if { $current_mode != "" } {
+	    destroy $current_parent
+	}
+	
+	variable viewable_height
+	variable viewable_width
+	
+#	grid rowconfigure . 0 -minsize $viewable_height
+#	grid columnconfigure . 0 -minsize $viewable_width
+#	grid .dm$mode -row 0 -column 0 -sticky n 
+	place .dm$mode -in . -x 0 -y 0 -width $viewable_width -height $viewable_height -anchor nw
+
+	set current_parent $new_parent
+
+	set current_mode $mode
+    }
+	
+}
+
+proc dm_IDLE { root } {
+    
+    variable viewable_width 
+    variable viewable_height
+    variable advert_image
+    variable noidle
+    variable last_idle
+
+    trace vdelete ::Display::Server::play_by_play w dm_Game_Play_by_Play
+
+    if { [ winfo exists $root.dmGAME ] && ( $noidle == 1 ) } {
+	set p $root.dmGAME
+	return $p
+    }
+
+
+    set p "$root.dmIDLE"
+
+    dm_next_IDLE $p
+
+    return $p
+
+}
+
+
+proc dm_next_IDLE { p } {
+
+    variable last_idle
+    variable viewable_width
+    variable viewable_height
+    variable frame_count
+    variable screenpath
+
+    if { ! [ winfo exists frame_count ] } {
+	set frame_count 0
+    } else {
+	set previous_frame $frame_count
+	incr frame_count
+	set frame_count [ expr $frame_count % 255 ]
+    }
+
+    if { ! [ winfo exists $p ] } {
+	frame $p -width $viewable_width -height $viewable_height
+    }
+   
+    set r [ frame $p.frame$frame_count -width $viewable_width -height $viewable_height ]
+
+    # load in "list" of screens from $Conf::gamepath/cg_idle/*.tcl,
+    # if last_idle exists, pick the "next one" after it, if not
+    # pick the first.  Source it in in the namespace Idlescreen::,
+    # then run Idlescreen::run <root>
+    # before going to next mode, run Idlescreen::end
+
+    set screens [ glob $screenpath/*.tcl ]
+
+    if { [ info exists last_idle ] } {
+
+	set count [ llength $screens ]
+	
+	for { set x 0 } { $x <= $count } { incr x } {
+	    
+	    if { [ lindex $screens $x ] == $last_idle } {
+		incr x
+		break
+	    }
+	}
+
+	set x [ expr { $x % [ llength $screens ] } ]
+
+	set script [ lindex $screens $x ]
+
+#	puts $script
+
+    } else {    
+
+	set script [ lindex $screens 0 ]    
+
+    }
+
+
+    set last_idle $script
+
+    namespace eval Idlescreen [ list source $script ]
+
+    Idlescreen::run $r
+
+#    if { $ex } {
+#	place $p -relx 0.0 -rely 0.0
+#    }
+
+#    place $r -relx 0.0 -rely 0.0
+    if { [ winfo exists previous_frame ] && [ winfo exists $p.frame$previous_frame ] } {
+	place $r -relx 0.0 -rely 0.0
+	tkwait visibility $r
+	place forget $p.frame$previous_frame
+	destroy $p.frame$previous_frame
+    } else {
+	place $r -relx 0.0 -rely 0.0
+    }
+}
+
+
+proc dm_IDLE_Set_Advert_Image { } {
+    
+    variable advert_width
+    variable advert_height
+
+    image create photo tmpimage -file $Conf::gamepath/images/xptest.tif
+    
+    if { ! [ info exists ::advert_image ] } {
+	image create photo ::advert_image
+    }
+
+    set ih [ image height tmpimage ]
+    set iw [ image width tmpimage ]
+    
+    if { $ih > $advert_height } {
+	set ih $advert_height
+    }
+
+    if { $iw > $advert_width } {
+	set iw $advert_width
+    }
+
+    ::advert_image copy tmpimage -from 0 0 $iw $ih
+
+}
+
+proc dm_PREGAME { root } {
+    
+    variable viewable_width
+    variable viewable_height
+
+    catch Idlescreen::end
+
+    set p $root.dmPREGAME
+    
+    canvas $p -width $viewable_width -height $viewable_height
+    $p create image 0 0 -image ::alert_background -anchor nw
+
+    image create photo ::alert_image -height [ image height ::alert_alert-on ] -width [ image width ::alert_alert-on ]
+    ::alert_image copy ::alert_alert-on
+    
+    $p create image 43 39 -image ::alert_image -anchor nw
+
+
+    image create photo ::alert_count -height [ image height ::alert_count_30 ] -width [ image width ::alert_count_30 ]
+    ::alert_count copy ::alert_count_30
+
+    $p create image 171 204 -image ::alert_count -anchor nw
+
+    $p create image 117 352 -image ::alert_earthlings -anchor nw
+
+    trace variable ::Display::Server::GT_time w dm_PREGAME_time_update 
+
+    dm_PREGAME_alert_flash
+
+    return $p
+
+}
+
+proc dm_PREGAME_alert_flash { } {
+    
+    if { $::Display::Server::STATE == "PREGAME" } {
+	
+
+	variable alert_global
+	
+	if { ! [ info exists alert_global ] } {
+	    set alert_global 1
+	}
+	
+	if { $alert_global == 1 } {
+	    ::alert_image copy ::alert_alert-on
+	    set alert_global 0
+	} else {
+	    ::alert_image copy ::alert_alert-blank
+	    set alert_global 1
+	}
+	after 500 dm_PREGAME_alert_flash
+	
+    }
+
+}
+
+
+proc dm_PREGAME_time_update { name name2 op } {
+
+    if { ( $::Display::Server::STATE == "PREGAME" ) && 
+	    $::Display::Server::GT_time >= 0 } {
+	::alert_count copy ::alert_count_$::Display::Server::GT_time
+    } else {
+	trace vdelete ::Display::Server::GT_time w dm_PREGAME_time_update 
+    }
+
+}
+
+proc dm_GAME { root } {
+    
+    set p $root.dmGAME
+    variable count_red
+    variable count_green
+    variable sort_red
+    variable sort_green
+    variable viewable_width
+    variable viewable_height
+    set i 0
+
+    variable score_root
+    
+    set conn [ pg_connect $Conf::dbname -host $Conf::dbhost ]
+    
+    vwait ::Display::Server::gameid
+    set gameid $::Display::Server::gameid
+    
+    set res [ pg_exec $conn "select * from g_data where id = $gameid and storeid = $Conf::storeid" ]
+    
+    if { [ pg_result $res -numTuples ] != 1 } {
+	puts "error loading game"
+	return -code ok
+    }
+    
+    pg_result $res -tupleArray 0 gdata
+    
+    setGameMode $gdata(mode)
+    
+    set Ginfo::length $gdata(length)
+    set Ginfo::team_red $gdata(red_teamname)
+    set Ginfo::team_green $gdata(green_teamname)
+    
+    namespace eval ::Ginfo "$gdata(params)"
+    
+    for { set x 0 } { $x < 40 } { incr x } {
+	set ::Ginfo::used($x) 0
+    }
+    
+    # load player information
+    
+    pg_select $conn "select team, slot, name, idnum from g_players where id = $gameid and storeid = $Conf::storeid and used " array {
+	set adder [ expr { $array(team) * 20 } ]
+	set j [ expr { $array(slot) + $adder } ]
+	
+	set ::Ginfo::used($j) 1
+	set ::Ginfo::name($j) $array(name)
+	set ::Ginfo::id($j) $array(idnum)
+	
+    }    
+    
+    pg_disconnect $conn
+
+    set c [ canvas $p -width $viewable_width -height $viewable_height -relief flat -borderwidth 0 -highlightthickness 0 ]
+
+    upvar 0 viewable_height vh
+    upvar 0 viewable_width vw
+
+    image create photo xpbug -file $Conf::gamepath/images/xp-bug.gif
+    $c create image 10 0 -image xpbug -anchor nw
+    $c create arc 0 13 20 33 -start 90 -extent 90 -style arc -outline yellow -width 3
+    $c create arc [ expr $vw - 23 ] [ expr $vh - 23 ] [ expr $vw - 3 ] [ expr $vh - 3 ] -extent 90 -start 270 -width 3 -outline yellow -style arc
+    $c create arc 0 [ expr $vh - 23 ] 20 [ expr $vh - 3 ] -extent 90 -start 180 -width 3 -outline yellow -style arc
+    $c create arc [ expr $vw - 23 ] 13 [ expr $vw - 3 ] 33  -extent 90 -start 0 -width 3 -outline yellow -style arc
+
+    # plop game_display in it...
+    
+    frame $p.score -width [ expr $vw - 8 ] -height [ expr $vh - 30 ]
+    game_display_setup $p
+    
+    set score_root $p
+
+    dm_GAME_update
+
+    $c create window 4 27 -anchor nw -window $p.score
+
+
+    # status thingy stuff
+
+    frame $p.status -background black -borderwidth 0 -relief flat
+    label $p.status.time -textvariable ::GT_time_formatted -width 5 -borderwidth 0 -relief flat
+    label $p.status.timelabel -text "Time Remaining:" -borderwidth 0 -relief flat
+    place $p.status.timelabel -x 0 -y 0 -width [ winfo reqwidth $p.status.timelabel ] -relheight 1.0
+    place $p.status.time -relx 1.0 -rely 0.0 -width [ winfo reqwidth $p.status.time ] -relheight 1.0 -anchor ne
+#    pack $p.status.time $p.status.timelabel -side right -expand y
+
+    $p.status configure -width [ expr [ winfo reqwidth $p.status.time ] + [ winfo reqwidth $p.status.timelabel ] ]
+    $p.status configure -height [ winfo reqheight $p.status.timelabel  ]
+
+    set stheight [ expr [ winfo reqheight $p.status ] + 2 ]
+
+    $c create line 0 [ expr $vh - $stheight - 5 ]  $vw [ expr $vh - $stheight - 5 ]  -fill yellow -width 3
+
+    $c create window [ expr $vw - 10 ] [ expr $vh - 4 ] -anchor se -window $p.status
+
+    
+    # play by play stuff
+    
+    frame $p.hbh -height [ expr $vh - ( 27 + [ winfo reqheight $p.score ] + 20 + 6  ) - $stheight ] -width [ expr $vw - 8 ] -borderwidth 0 -relief flat
+
+    variable play_by_play    
+    set play_by_play [ text $p.hbh.stuff -background "#111133" -borderwidth 0 -relief flat -highlightthickness 0 ]
+    trace variable ::Display::Server::play_by_play w dm_Game_Play_by_Play
+    $play_by_play tag configure red -foreground "#ff8888"
+    $play_by_play tag configure green -foreground "#88ff88"
+#    pack $p.hbh.stuff -expand n
+    place $p.hbh.stuff -x 0 -y 0 -height [ winfo reqheight $p.hbh ] -width [ winfo reqwidth $p.hbh ] 
+
+    $c create arc 0 [ expr 27 + [ winfo reqheight $p.score ] + 10 ] 20 [ expr 27 + [ winfo reqheight $p.score ] + 10 + 20 ] -width 3 -style pieslice -fill "#111133" -outline "#111133" -start 90 -extent 90
+    $c create arc [ expr $vw - 23 ] [ expr 27 + [ winfo reqheight $p.score ] + 10 ] [ expr $vw - 3 ] [ expr 27 + [ winfo reqheight $p.score ] + 10 + 20 ] -width 0 -style pieslice -fill "#111133" -outline "#111133" -start 0 -extent 90
+ 
+   $c create arc 0 [ expr 27 + [ winfo reqheight $p.score ] + 10 ] 20 [ expr 27 + [ winfo reqheight $p.score ] + 10 + 20 ] -width 3 -style arc -fill "#111133" -outline yellow -start 90 -extent 92
+    $c create arc [ expr $vw - 23 ] [ expr 27 + [ winfo reqheight $p.score ] + 10 ] [ expr $vw - 3 ] [ expr 27 + [ winfo reqheight $p.score ] + 10 + 20 ] -width 3 -style arc -fill "#111133" -outline yellow  -start 0 -extent 92
+    $c create rectangle 10 [ expr 27 + [ winfo reqheight $p.score ] + 10 ] [ expr $vw - 13 ] [ expr 27 + [ winfo reqheight $p.score ] + 10 + 10 ] -fill "#111133" -outline "#111133"
+    $c create line 10 [ expr 27 + [ winfo reqheight $p.score ] + 10 ] [ expr $vw - 13 ] [ expr 27 + [ winfo reqheight $p.score ] + 10 ] -width 3 -fill yellow
+
+    set pbp_window [ $c create window 3 [ expr 27 + [ winfo reqheight $p.score ] + 10 + 10 ] -window $p.hbh -anchor nw ]
+
+# draw outside border
+
+    $c create line 0 18 0 [ expr $vh - 8 ] -width 3 -fill yellow
+    $c create line [ expr $vw - 3 ] 18 [ expr $vw - 3 ] [ expr $vh - 8 ] -width 3 -fill yellow
+    # bug is 38 wide (arc is 10)
+    $c create line 48 13 [ expr $vw - 13 ] 13 -width 3 -fill yellow
+    $c create line 10 [ expr $vh - 3 ] [ expr $vw - 13 ] [ expr $vh - 3 ] -width 3 -fill yellow
+
+    image create photo score_strip -file $Conf::gamepath/images/score-strip.gif
+    $c create image [ expr $vw - 20 ] 0 -image score_strip -anchor ne
+
+    image create photo pbp_strip -file $Conf::gamepath/images/pbp-strip.gif
+    $c create image [ expr $vw - 20 ] [ expr 27 + [ winfo reqheight $p.score ] + 10 - 13 ] -image pbp_strip -anchor ne
+        
+    
+#    frame $p.status
+#    label $p.status.time -textvariable ::GT_time_formatted
+#    label $p.status.timelabel -text "Time Remaining:" 
+#    pack $p.status.time $p.status.timelabel -side right
+#    $p.status configure -height [ winfo reqheight $p.status.timelabel ]
+
+#    place $p.scorezone -relx 0.0 -rely 0.0 -height [ winfo reqheight $p.scorezone ] -relwidth 1.0
+#    place $p.status -relx 1.0 -rely 1.0 -height [ winfo reqheight $p.status ] -relwidth 1.0 -anchor se
+
+#    frame $p.hbh -height [ expr { $viewable_height - ( [ winfo reqheight $p.scorezone.score ] + [ winfo reqheight $p.status ] ) } ]
+#    label $p.hbh.stuff -text "...play by play goes here..."
+#    variable play_by_play
+
+#    trace variable ::Display::Server::play_by_play w dm_Game_Play_by_Play
+
+#    set play_by_play [ text $p.hbh.stuff ]
+#    $play_by_play tag configure red -foreground red
+#    $play_by_play tag configure green -foreground green
+
+#    pack $p.hbh.stuff
+
+#    place $p.hbh -relx 0.0 -rely 1.0 -in $p.score -bordermode outside -height [winfo reqheight $p.hbh ] -relwidth 1.0 -anchor nw
+
+    return $p
+
+}
+
+
+proc dm_Game_Play_by_Play { name name2 op } {
+
+
+    if { $::Display::Server::STATE == "GAME" } {
+
+	variable play_by_play
+	
+	foreach x $::Display::Server::play_by_play {
+	    
+	    # tokenize, and for each element in the list, do the
+	    # appropriate replacement
+	    set l [ split $x " " ]
+	    foreach y $l {
+		if { [ regexp -nocase {^%([0-9]+)%$} $y match what ] } {
+		    if { $what < 20 } {
+			set color red
+		    } else {
+			set color green
+		    }
+		    $play_by_play insert end "$::Ginfo::name($what) " $color
+		} else {
+		    $play_by_play insert end "$y "
+		}
+	    }
+	    $play_by_play insert end "\n"
+	    
+	}
+
+	set ::Display::Server::play_by_play ""
+	
+	$play_by_play see end
+
+    }
+}
+
+
+
+
+
+proc dm_POSTGAME { root } {
+
+    # when we're in postgame, we still listen to score updates (just
+    # like in game)...  HOWEVER!!!  the status line should just
+    # say "game completed" or something...
+
+    # we make a new frame, and stick dm_GAME in it...
+    
+    set p $root.dmGAME
+
+    foreach x [ winfo children $p.status ] {
+	destroy $x
+    }
+
+    label $p.status.terminated
+    pack $p.status.terminated
+    
+    return $p
+
+}
+
+proc ChangeState { name name2 op } {
+
+    DisplayMode $::Display::Server::STATE
+  
+}
+
+proc OpenSocket { } {
+
+    global s
+    global go
+
+
+    trace vdelete ::Display::Server::STATE w ChangeState
+    
+
+    set bob [ catch "socket $::Conf::server_name $::Conf::disp_listenport" s ]
+    
+    if { $bob != 0 } {
+	puts "Failed to open game computer connection...sleeping"
+	after 1000 OpenSocket
+	return -code ok
+    }
+
+
+    fconfigure $s -buffering line
+    fconfigure $s -blocking 1
+    
+    fileevent $s readable [ list ClientRead $s ]
+
+    # suck up current data, so we have some place to start
+    puts $s "UPDATE"
+    puts $s "STATUS"
+    
+    vwait ::Display::Server::STATE
+    
+    puts $s "MODE STREAM"
+    puts $s "SUB STATUS"
+    puts $s "SUB GAME"
+    
+    # initial setups
+    DisplayMode $::Display::Server::STATE
+    
+    trace variable ::Display::Server::STATE w ChangeState
+    
+    set go 1
+
+}
+
+set go 0
+set current_mode ""
+
+OpenSocket
+
+
+
+
+
+
+
+
+

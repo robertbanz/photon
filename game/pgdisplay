@@ -1,0 +1,382 @@
+#!/bin/sh
+# \
+exec /usr/photon/`cat /var/photon/.arch`/bin/wish8.0 "$0" ${1+"$@"}
+
+set rcsid { $Id: pgdisplay,v 1.1 1999/01/31 17:12:49 banz Exp game $ }
+
+
+package require Img
+
+namespace eval Conf {
+    source /var/photon/game.conf
+}
+
+set viewable_top $Conf::v_top
+set viewable_height $Conf::v_height
+set viewable_left $Conf::v_left
+set viewable_width $Conf::v_width
+
+# load the X app defaults file
+if [ file exists $Conf::displaydefaults ] {
+    if [ catch { option readfile $Conf::displaydefaults startup } err ] {
+	puts stderr "error in $Conf::displaydefaults: $err"
+    }
+}
+
+load $Conf::libpath/libpgtcl.so
+
+source $Conf::gamepath/displayviews
+
+source $Conf::gamepath/flasher
+
+namespace eval Display {
+    source $::Conf::gamepath/display
+}
+
+namespace eval Ginfo { }
+namespace eval Game { }
+
+trace variable ::Display::Server::GT_time w GT_time_formatter
+
+puts "preloading images..."
+
+foreach x { downloadinprogress } {
+    puts "postgame/$x.tif"
+    image create photo ::postgame_$x -file $Conf::gamepath/images/postgame/$x.tif
+}
+
+proc GT_time_formatter { name name2 what } {
+    
+    upvar 0 $name GT_time
+    
+    set ::GT_time_formatted [ format "%d:%02d" [ expr { $GT_time / 60 } ] [ expr { $GT_time % 60 } ] ]
+    
+}
+
+proc setGameMode { mode } {
+    
+    set conn [ pg_connect $Conf::dbname -host $Conf::dbhost ]
+    
+    pg_select $conn "select name, descr, code, params from g_modes where storeid = 0 and name = '$mode'" array {
+	set ::Game::code $array(code)
+	set ::Game::mode $array(name)
+	set ::Game::mode_descr $array(descr)
+	set ::Game::setparams $array(params)
+    }
+    
+    pg_select $conn "select name, descr, code, params from g_modes where storeid = $Conf::storeid and name = '$mode'" array {
+	set ::Game::code $array(code)
+	set ::Game::mode $array(name)
+	set ::Game::mode_descr $array(descr)
+	set ::Game::setparams $array(params)
+    }
+    
+    namespace eval ::Game "source $Conf::modes/$::Game::code"
+    namespace eval ::Game "Init $::Game::code"
+    set ::Ginfo::mode $::Game::mode
+    set ::Ginfo::length $::Game::Params::length
+    
+    pg_disconnect $conn
+    
+}
+
+wm geometry . ${viewable_width}x${viewable_height}+${viewable_left}+${viewable_top}
+
+. configure -width $viewable_width
+. configure -height $viewable_height
+. configure -borderwidth 0
+. configure -background black 
+
+proc ClientRead { sock } {
+    
+    if { [ eof $sock ] } {
+	# socket got closed
+	variable s
+	close $s
+	# begin the open loop again..
+	OpenSocket
+	return -code ok
+    }
+    
+#    puts [ ::Display::ClientRead $sock ]
+     ::Display::ClientRead $sock 
+}
+
+proc DisplayMode { mode } {
+    
+    variable current_mode
+    variable current_parent
+
+    if { ! [ info exists current_parent ] } {
+	set current_parent "."
+    }
+
+    if { $current_mode == $mode } {
+	return -code ok
+    }
+
+    # if the returned parent == current_parent, don't do the
+    # destroy and re-grid, it could be bad...
+
+    set new_parent [ pg_$mode {} ]
+
+    if { $new_parent != $current_parent } {
+	if { $current_mode != "" } {
+	    destroy $current_parent
+	}
+	
+	variable viewable_height
+	variable viewable_width
+	
+	place .pg$mode -in . -x 0 -y 0 -width $viewable_width -height $viewable_height -anchor nw
+
+	set current_parent $new_parent
+
+	set current_mode $mode
+    }
+	
+}
+
+proc pg_IDLE { root } {
+
+    set p $root.pgIDLE
+    variable count_red
+    variable count_green
+    variable sort_red
+    variable sort_green
+    variable viewable_width
+    variable viewable_height
+    variable last_gameid
+    set i 0
+
+    variable score_root
+    
+    set conn [ pg_connect $Conf::dbname -host $Conf::dbhost ]
+    
+    if { ! [ info exists last_gameid ] } {
+	set res [ pg_exec $conn "select max(id) from g_data where storeid = $Conf::storeid and state = 'COMPLETE'" ]
+	pg_result $res -tupleArray 0 gdata
+	set gameid $gdata(max)
+    } else {
+	set gameid $last_gameid
+    }
+    
+    set res [ pg_exec $conn "select * from g_data where id = $gameid and storeid = $Conf::storeid" ]
+    
+    if { [ pg_result $res -numTuples ] != 1 } {
+	puts "error loading game"
+	return -code ok
+    }
+    
+    pg_result $res -tupleArray 0 gdata
+    
+    setGameMode $gdata(mode)
+
+    namespace eval ::Ginfo "$gdata(params)"
+    set Ginfo::length $gdata(length)
+    set Ginfo::team_red $gdata(red_teamname)
+    set Ginfo::team_green $gdata(green_teamname)
+    set Display::Server::teamscore(red) $gdata(red_teamscore)
+    set Display::Server::teamscore(green) $gdata(green_teamscore)
+    set Ginfo::rantime "$gdata(rantime)"
+
+    
+    for { set x 0 } { $x < 40 } { incr x } {
+	set ::Ginfo::used($x) 0
+    }
+    
+    # load player information
+    
+    pg_select $conn "select * from g_players where id = $gameid and storeid = $Conf::storeid and used " array {
+	set adder [ expr { $array(team) * 20 } ]
+	set j [ expr { $array(slot) + $adder } ]
+	
+	set ::Ginfo::used($j) 1
+	set ::Ginfo::name($j) $array(name)
+	set ::Ginfo::id($j) $array(idnum)
+	set ::Ginfo::score($j) $array(score)
+
+	set ::Display::Server::score($j) $array(score)
+	namespace eval ::Display::Server "$array(modeparams)"
+    }    
+    
+    pg_disconnect $conn
+
+    set c [ canvas $p -width $viewable_width -height $viewable_height -relief flat -borderwidth 0 -highlightthickness 0 ]
+
+    upvar 0 viewable_height vh
+    upvar 0 viewable_width vw
+
+    image create photo xpbug -file $Conf::gamepath/images/xp-bug.gif
+    $c create image 10 0 -image xpbug -anchor nw
+    $c create arc 0 13 20 33 -start 90 -extent 90 -style arc -outline yellow -width 3
+    $c create arc [ expr $vw - 23 ] [ expr $vh - 23 ] [ expr $vw - 3 ] [ expr $vh - 3 ] -extent 90 -start 270 -width 3 -outline yellow -style arc
+    $c create arc 0 [ expr $vh - 23 ] 20 [ expr $vh - 3 ] -extent 90 -start 180 -width 3 -outline yellow -style arc
+    $c create arc [ expr $vw - 23 ] 13 [ expr $vw - 3 ] 33  -extent 90 -start 0 -width 3 -outline yellow -style arc
+
+    # plop game_display in it...
+    
+    frame $p.score -width [ expr $vw - 8 ] -height [ expr $vh - 30 ]
+    game_display_setup $p
+    
+    set score_root $p
+
+    dm_GAME_update no
+
+    $c create window 4 27 -anchor nw -window $p.score
+
+    # status thingy stuff
+
+    frame $p.status -background black -borderwidth 0 -relief flat
+
+    set dispgameid [ expr $gameid % 1000 ]
+    set dispgamelength [ expr $Ginfo::length / 60 ]
+
+    set datelist [ split "$Ginfo::rantime" " " ]
+    set timelist [ split [ lindex $datelist 3 ] ":" ]
+
+    set hour [ lindex $timelist 0 ]
+    set min [ lindex $timelist 1 ]
+    set month [ lindex $datelist 1 ]
+    set day [ lindex $datelist 2 ]
+
+
+
+
+
+    set what2string [ format "completed at %s:%s on %03s %s" $hour $min $month $day ]
+
+    label $p.status.which -text "Game #$dispgameid"
+    label $p.status.what1 -text "game type: $Ginfo::mode, length: $dispgamelength mins"
+    label $p.status.what2 -text "$what2string"
+    pack $p.status.which $p.status.what1 $p.status.what2 -side top
+    
+    $p.status configure -height [ expr [ winfo reqheight $p.status.which ] + [ winfo reqheight $p.status.what1 ] + [ winfo reqheight $p.status.what2 ] ]
+
+    set stheight [ expr [ winfo reqheight $p.status ] + 2 ]
+
+    $c create line 0 [ expr $vh - $stheight - 5 ]  $vw [ expr $vh - $stheight - 5 ]  -fill yellow -width 3
+
+    $c create window [ expr $vw / 2 ] [ expr $vh - 4 ] -anchor s -window $p.status
+
+    
+
+# draw outside border
+
+    $c create line 0 18 0 [ expr $vh - 8 ] -width 3 -fill yellow
+    $c create line [ expr $vw - 3 ] 18 [ expr $vw - 3 ] [ expr $vh - 8 ] -width 3 -fill yellow
+    # bug is 38 wide (arc is 10)
+    $c create line 48 13 [ expr $vw - 13 ] 13 -width 3 -fill yellow
+    $c create line 10 [ expr $vh - 3 ] [ expr $vw - 13 ] [ expr $vh - 3 ] -width 3 -fill yellow
+
+    image create photo score_strip -file $Conf::gamepath/images/prevgame.tif
+    $c create image [ expr $vw - 20 ] 0 -image score_strip -anchor ne
+
+    return $p
+
+}
+
+proc pg_POSTGAME { root } {
+    
+    set p $root.pgPOSTGAME
+
+    
+    variable last_gameid
+    variable viewable_width
+    variable viewable_height
+
+    canvas $p -width $viewable_width -height $viewable_height
+    $p create image 0 0 -image ::postgame_downloadinprogress -anchor nw
+    
+    set last_gameid $::Display::Server::gameid
+
+    return $p
+
+}
+
+proc pg_GAME { root } {
+    
+    set p $root.pgIDLE
+
+    if { ! [ winfo exists $p ] } {
+	
+	return [ pg_IDLE $root ]
+    
+    }
+
+    return $p
+
+}
+
+proc pg_PREGAME { root } {
+    
+    set p $root.pgIDLE
+
+    if { ! [ winfo exists $p ] } {
+	
+	return [ pg_IDLE $root ]
+    
+    }
+
+    return $p
+
+}
+
+
+proc ChangeState { name name2 op } {
+
+    DisplayMode $::Display::Server::STATE
+  
+}
+
+proc OpenSocket { } {
+
+    global s
+    global go
+
+
+    trace vdelete ::Display::Server::STATE w ChangeState
+    
+
+    set bob [ catch "socket $::Conf::server_name $::Conf::disp_listenport" s ]
+    
+    if { $bob != 0 } {
+	puts "Failed to open game computer connection...sleeping"
+	after 1000 OpenSocket
+	return -code ok
+    }
+
+
+    fconfigure $s -buffering line
+    fconfigure $s -blocking 1
+    
+    fileevent $s readable [ list ClientRead $s ]
+
+    # suck up current data, so we have some place to start
+    puts $s "STATUS"
+    
+    vwait ::Display::Server::STATE
+    
+    puts $s "MODE STREAM"
+    puts $s "SUB STATUS"
+    
+    # initial setups
+    DisplayMode IDLE
+    DisplayMode $::Display::Server::STATE
+    
+    trace variable ::Display::Server::STATE w ChangeState
+    
+    set go 1
+
+}
+
+set go 0
+set current_mode ""
+
+OpenSocket
+
+
+
+
+
+

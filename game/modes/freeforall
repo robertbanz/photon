@@ -1,0 +1,178 @@
+
+#
+# $Log: freeforall,v $
+# Revision 1.6  1998/12/13 03:27:36  banz
+# added counters for hitarray
+#
+# Revision 1.5  1998/12/03 19:53:12  banz
+# Change ::Action calls to global action, instead of one in Display namespace
+#
+# Revision 1.4  1998/11/29 21:50:55  banz
+# paramslist stuff
+#
+# Revision 1.4  1998/11/15 23:30:56  banz
+# "Usedlist" wasn't getting cleared out
+#
+# Revision 1.3  1998/11/15 21:43:33  banz
+# Add TEAM SCORE support
+#
+# Revision 1.2  1998/11/08 22:15:14  banz
+# fixed RCS identifiers
+#
+# Revision 1.1  1998/11/08 22:09:25  banz
+# Initial revision
+#
+#
+
+set rcsid  { $Id: freeforall,v 1.6 1998/12/13 03:27:36 banz Exp $ }
+
+proc HitHandler { gs data } {
+    
+    set tgtgs [ ::Photon::ir_to_gs $data ]
+
+    variable score
+    variable h1gethitcount    
+
+    if { $gs != $tgtgs } {
+	::Photon::putdown $data
+	debuglog 2 "slot $gs hit slot $tgtgs"
+	
+	set score($gs) [ expr { $score($gs) + 10 } ]
+	
+	if { $Params::handicap == 0 } {
+	    # standard, just down'em
+	    set score($tgtgs) [ expr { $score($tgtgs) - 10 } ]	    
+	} elseif { $Params::handicap == 1 } { 
+	    # standard photon handicapping
+	    if { $score($tgtgs) >= $Params::beginscore } {
+		set score($tgtgs) [ expr { $score($tgtgs) - 10 } ]
+		set h1gethitcount($tgtgs) 0
+	    } else {
+		set diff [ expr { int(( $Params::beginscore - $score($tgtgs) ) / 100 ) } ]
+		incr h1gethitcount($tgtgs)
+		
+		if { $h1gethitcount($tgtgs) > $diff } {
+		    set score($tgtgs) [ expr { $score($tgtgs) - 10 } ]
+		    set h1gethitcount($tgtgs) 0
+		}
+	    }
+	}
+
+	incr ::Ginfo::hitarray($gs,$tgtgs)
+
+	::Action "%$gs% hit %$tgtgs%"
+	
+	UpdateTeamScores
+
+	return -code ok
+    }
+
+    debuglog 1 "hit attempt by $gs on slot $tgtgs (on same team!)"
+
+}
+
+proc NullHandler { gs } {    
+
+}
+
+proc TargetHandler { gs data } {
+
+}
+
+
+
+proc Init { type } {
+
+    variable modename
+    variable array_display_watchlist
+    variable scalar_display_watchlist
+    variable setparams
+    variable paramslist
+
+    set modename $type
+
+    set paramslist { beginscore handicap etmode teams maxperteam length }
+    
+    namespace eval Params {
+	
+	
+	
+	set beginscore    1000
+	set handicap      1
+	set etmode        3
+	set teams         2
+	set maxperteam   20
+	set length 	600
+
+	eval "$::Game::setparams"
+    }
+
+    set array_display_watchlist { score basecount targetcount towercount teamscore }
+    set scalar_display_watchlist { }
+
+    
+}
+
+proc UpdateTeamScores { } {
+
+    variable teamscore
+    variable usedlist
+    variable score
+
+    foreach x { red green } {
+	set i 0
+	foreach y $usedlist($x) {
+	    set i [ expr { $i + $score($y) } ]
+	}
+	if { $teamscore($x) != $i } {
+	    set teamscore($x) $i
+	}
+    }
+
+}
+
+proc Begin { red_used grn_used } {
+    
+    variable score
+    variable basecount
+    variable targetcount
+    variable towercount
+    variable h1gethitcount
+    variable teamscore
+    variable usedlist
+
+    # init all counts to 0
+
+    set redteamname "RED TEAM"
+    set greenteamname "GREEN TEAM"
+
+    set teamscore(red) 0
+    set teamscore(green) 0
+
+    set usedlist(red) { }
+    set usedlist(green) { }
+
+    foreach x $red_used {
+	set b $x
+	lappend usedlist(red) $b
+	set score($b) $Params::beginscore
+	set basecount($b) 0
+	set targetcount($b) 0
+	set towercount($b) 0
+	set h1gethitcount($b) 0
+    }
+
+    foreach x $grn_used {
+	set b [ expr { $x + 20 } ]
+	lappend usedlist(green) $b
+	set score($b) $Params::beginscore
+	set basecount($b) 0
+	set targetcount($b) 0
+	set towercount($b) 0
+	set h1gethitcount($b) 0
+    }
+
+    UpdateTeamScores
+
+}
+

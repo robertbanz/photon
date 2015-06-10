@@ -1,0 +1,7 @@
+CREATE TABLE g_id(id int4, storeid int4);
+CREATE TABLE g_data (modtime datetime, rantime datetime, state char16, mode char16, length int4, valid bool, moderev float8, autostage bool, params text, red_teamname char16, green_teamname char16, comments text) INHERITS (g_id);
+CREATE TABLE g_players (used bool, team int4, slot int4, name char16, idnum chat16, hittotal int4, gethittotal int4, pod int4, hitplayer _int4, gethitplayer _int4) INHERITS (g_id);
+CREATE TABLE g_pods (pod int4, syncmissed int4, wsyncrcvd int4, serror int4, ealarm int4, missed int4, invalid int4, valid int4, hitsent int4, hitsackn int4, polls int4) INHERITS (g_id);
+CREATE TABLE g_events (timestamp int4, event text) INHERITS (g_id);
+CREATE SEQUENCE gameid;
+CREATE TABLE g_modes ( storeid int4, id int4, name text descr text, code char16, params text );

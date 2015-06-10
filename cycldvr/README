@@ -1,0 +1,31 @@
+Add to your config file
+
+options         TIMER_HACK
+options         HZ=61
+
+device          cycl0   at isa? port "IO_COM1"
+
+In files.i386
+
+i386/isa/cycl.c                 optional        cycl    device-driver
+
+In majors.i386
+
+20      cycl            reserved for local use
+
+
+in clock.c, do:
+
+#ifdef TIMER_HACK
+static int slotno = 0;
+static int bob;
+extern (*cyclintrptr) __P((void));
+#endif
+
+and in clkintr, after timer_func, do
+
+#ifdef TIMER_HACK
+        if (cyclintrptr)
+                cyclintrptr();
+#endif  
+

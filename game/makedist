@@ -1,0 +1,41 @@
+#!/bin/sh
+INSTROOT=/usr/photondist
+
+/bin/rm -fr $INSTROOT/usr/photon
+
+if [ ! -d $INSTROOT/usr/photon/lib ]; then
+	mkdir -p $INSTROOT/usr/photon/lib
+	mkdir -p $INSTROOT/usr/photon/bin
+fi	
+	cp photon_* $INSTROOT/usr/photon/lib
+	cp Main $INSTROOT/usr/photon/lib
+	cp Display $INSTROOT/usr/photon/lib
+	cp main $INSTROOT/usr/photon/bin
+	cp et $INSTROOT/usr/photon/bin
+	cp cgdisplay $INSTROOT/usr/photon/bin
+	cp display $INSTROOT/usr/photon/lib
+	cp flasher $INSTROOT/usr/photon/lib
+	cp displayviews $INSTROOT/usr/photon/lib
+	cp pgdisplay $INSTROOT/usr/photon/bin
+	cp photon_phasers $INSTROOT/usr/photon/lib
+	cp mixer.tcl $INSTROOT/usr/photon/lib
+	cp tkcon.tcl $INSTROOT/usr/photon/lib
+
+	tar -cf - cg_idle | ( cd $INSTROOT/usr/photon/lib; tar -xvf - )
+	tar -cf - images | ( cd $INSTROOT/usr/photon/lib; tar -xvf - )
+	(cd /usr/photon; tar -cf - www freebsd_i386) | ( cd $INSTROOT/usr/photon; tar -xvf - )
+if [ ! -d $INSTROOT/usr/photon/lib/modes ]; then
+	mkdir -p $INSTROOT/usr/photon/lib/modes
+fi
+	(cd modes; tar -cf - *[a-z0-9]) | (cd $INSTROOT/usr/photon/lib/modes; tar -xvf - )
+if [ ! -d $INSTROOT/usr/photon/lib/sound ]; then
+	mkdir -p $INSTROOT/usr/photon/lib/sound
+fi
+	(cd sound; tar -cf - *[a-z0-9]) | (cd $INSTROOT/usr/photon/lib/sound; tar -xvf - )
+
+	(cd /var/photon; tar -cvf - . ) | gzip > $INSTROOT/var.tar.gz
+
+	(cd /usr/photon/www; tar -cvf - . ) | ( cd $INSTROOT/usr/photon/www; tar -xvf - ) 
+
+	pg_dump -a -t g_modes photon > $INSTROOT/g_modes_0
+	pg_dump -a -t g_tracks photon > $INSTROOT/g_tracks_0
