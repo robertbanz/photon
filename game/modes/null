@@ -23,11 +23,11 @@ proc debuglog { level msg } {
     variable debuglevel 
 
     if { $level <= $debuglevel } {
-	::debuglog $msg
+  ::debuglog $msg
     }
 
 }
-	       
+         
 
 proc HitHandler { gs data } {
     
@@ -36,16 +36,16 @@ proc HitHandler { gs data } {
 
     # if they're equal, we hit our own player
     if { $tgtgs == $gs } {
-	::Photon::putdown $data
-	debuglog 2 "slot $gs hit own player"
-	return -code ok
+  ::Photon::putdown $data
+  debuglog 2 "slot $gs hit own player"
+  return -code ok
     }
 
     if { ( ( $gs < 20 ) && ( $tgtgs >= 20 ) ) ||
-	 ( ( $gs >= 20 ) && ( $tgtgs < 20 ) ) } {
-	::Photon::putdown $data
-	debuglog 2 "slot $gs hit slot $tgtgs"
-	return -code ok
+   ( ( $gs >= 20 ) && ( $tgtgs < 20 ) ) } {
+  ::Photon::putdown $data
+  debuglog 2 "slot $gs hit slot $tgtgs"
+  return -code ok
     }
 
     debuglog 1 "hit attempt by $gs on slot $tgtgs (on same team!)"
@@ -59,30 +59,30 @@ proc NullHandler { gs } {
 proc TargetHandler { gs data } {
 
     if { ( $gs < 40 ) && ($gs >= 20 ) } {
-	set base1 $Photon::RBASE
-	set base2 $Photon::RBASE2
-	set tower $Photon::RTOWER
+  set base1 $Photon::RBASE
+  set base2 $Photon::RBASE2
+  set tower $Photon::RTOWER
     } elseif { ( $gs >= 0 ) && ($gs < 20) } {
-	set base1 $Photon::GBASE
-	set base2 $Photon::GBASE2
-	set tower $Photon::GTOWER
+  set base1 $Photon::GBASE
+  set base2 $Photon::GBASE2
+  set tower $Photon::GTOWER
     }
     
     if { $data == $Photon::TARGET } {
-	debuglog 2 "slot $gs hit the target"
-	return -code ok
+  debuglog 2 "slot $gs hit the target"
+  return -code ok
     }
 
     if { $data == $base1 } {
-	debuglog 2 "slot $gs hit base"
+  debuglog 2 "slot $gs hit base"
     }
 
     if { $data == $base2 } {
-	debuglog 2 "slot $gs hit baseII"
+  debuglog 2 "slot $gs hit baseII"
     }
 
     if { $data == $tower } {
-	debuglog 2 "slot $gs hit the tower"
+  debuglog 2 "slot $gs hit the tower"
     }
 
 
@@ -90,6 +90,10 @@ proc TargetHandler { gs data } {
 
 proc Init { } {
     
+}
+
+proc End { } {
+
 }
 
 proc Begin { red_used green_used } {

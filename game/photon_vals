@@ -9,48 +9,50 @@
 
 namespace eval Photon {
 
-	set PSYNC 0xC5
-	set GSYNC 0xCA
-	set ESYNC 0xDD
+  set PSYNC 0xC5
+  set GSYNC 0xCA
+  set ESYNC 0xDD
 
-	set PUBLIC 0xE1
-	set LEAGUE 0xE2
-	set FFA 0xE3
-	
-	set REDALPHA 0x40
-	set REDOMEGA 0x41	
-	set GRNALPHA 0x80
-	set GRNOMEGA 0x81
-	set RED 0x40
-	set GRN 0x80
+  set PUBLIC 0xE1
+  set LEAGUE 0xE2
+  set FFA 0xE3
+  
+  set REDALPHA 0x40
+  set REDOMEGA 0x41 
+  set GRNALPHA 0x80
+  set GRNOMEGA 0x81
+  set RED 0x40
+  set GRN 0x80
 
-	set SMISS 0xB0
-	set PRCVD 0xB5
-	set ERCVD 0xBA
-	set SERROR 0xBF
-	set EALARM 0xBB
+  set SMISS 0xB0
+  set PRCVD 0xB5
+  set ERCVD 0xBA
+  set SERROR 0xBF
+  set EALARM 0xBB
 
-	set RBASE 0x35
-	set RBASE2 0x36
-	set GBASE 0x2B
-	set GBASE2 0x2D
-	set RTOWER 0x32
-	set GTOWER 0x24
-	set TARGET 0x38
+  set RBASE 0x35
+  set RBASE2 0x36
+  set GBASE 0x2B
+  set GBASE2 0x2D
+  set RTOWER 0x32
+  set GTOWER 0x24
+  set TARGET 0x38
 
-	set REDIR 0x42
-	set GRNIR 0x80
+  set REDIR 0x42
+  set GRNIR 0x80
 
-	set RED_RFSTART 5
-	set GRN_RFSTART 31
+  set RED_RFSTART 5
+  set GRN_RFSTART 31
 
-	set RF_TX { 25 26 27 28 29 51 52 53 54 55 }
+  set RF_TX { 25 26 27 28 29 51 52 53 54 55 }
 
-	set debug 0
-	set gdebug 0
-	set polldebug 0
+  set RF_SLOT_MAX 66
+  
+  set debug 0
+  set gdebug 0
+  set polldebug 0
 
-	set currentsync 0
+  set currentsync 0
 
-	set lastpollsn -1
+  set lastpollsn -1
 }

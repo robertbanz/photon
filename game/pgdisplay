@@ -1,6 +1,4 @@
-#!/bin/sh
-# \
-exec /usr/photon/`cat /var/photon/.arch`/bin/wish8.0 "$0" ${1+"$@"}
+#!/usr/local/bin/wish8.6
 
 set rcsid { $Id: pgdisplay,v 1.1 1999/01/31 17:12:49 banz Exp game $ }
 
@@ -11,6 +9,8 @@ namespace eval Conf {
     source /var/photon/game.conf
 }
 
+set screenpath $Conf::gamepath/pg_idle
+
 set viewable_top $Conf::v_top
 set viewable_height $Conf::v_height
 set viewable_left $Conf::v_left
@@ -19,11 +19,11 @@ set viewable_width $Conf::v_width
 # load the X app defaults file
 if [ file exists $Conf::displaydefaults ] {
     if [ catch { option readfile $Conf::displaydefaults startup } err ] {
-	puts stderr "error in $Conf::displaydefaults: $err"
+  puts stderr "error in $Conf::displaydefaults: $err"
     }
 }
 
-load $Conf::libpath/libpgtcl.so
+package require Pgtcl
 
 source $Conf::gamepath/displayviews
 
@@ -58,17 +58,17 @@ proc setGameMode { mode } {
     set conn [ pg_connect $Conf::dbname -host $Conf::dbhost ]
     
     pg_select $conn "select name, descr, code, params from g_modes where storeid = 0 and name = '$mode'" array {
-	set ::Game::code $array(code)
-	set ::Game::mode $array(name)
-	set ::Game::mode_descr $array(descr)
-	set ::Game::setparams $array(params)
+  set ::Game::code $array(code)
+  set ::Game::mode $array(name)
+  set ::Game::mode_descr $array(descr)
+  set ::Game::setparams $array(params)
     }
     
     pg_select $conn "select name, descr, code, params from g_modes where storeid = $Conf::storeid and name = '$mode'" array {
-	set ::Game::code $array(code)
-	set ::Game::mode $array(name)
-	set ::Game::mode_descr $array(descr)
-	set ::Game::setparams $array(params)
+  set ::Game::code $array(code)
+  set ::Game::mode $array(name)
+  set ::Game::mode_descr $array(descr)
+  set ::Game::setparams $array(params)
     }
     
     namespace eval ::Game "source $Conf::modes/$::Game::code"
@@ -90,12 +90,12 @@ wm geometry . ${viewable_width}x${viewable_height}+${viewable_left}+${viewable_t
 proc ClientRead { sock } {
     
     if { [ eof $sock ] } {
-	# socket got closed
-	variable s
-	close $s
-	# begin the open loop again..
-	OpenSocket
-	return -code ok
+  # socket got closed
+  variable s
+  close $s
+  # begin the open loop again..
+  OpenSocket
+  return -code ok
     }
     
 #    puts [ ::Display::ClientRead $sock ]
@@ -108,11 +108,11 @@ proc DisplayMode { mode } {
     variable current_parent
 
     if { ! [ info exists current_parent ] } {
-	set current_parent "."
+  set current_parent "."
     }
 
     if { $current_mode == $mode } {
-	return -code ok
+  return -code ok
     }
 
     # if the returned parent == current_parent, don't do the
@@ -121,51 +121,311 @@ proc DisplayMode { mode } {
     set new_parent [ pg_$mode {} ]
 
     if { $new_parent != $current_parent } {
-	if { $current_mode != "" } {
-	    destroy $current_parent
-	}
-	
-	variable viewable_height
-	variable viewable_width
-	
-	place .pg$mode -in . -x 0 -y 0 -width $viewable_width -height $viewable_height -anchor nw
+  if { $current_mode != "" } {
+      destroy $current_parent
+  }
+  
+  variable viewable_height
+  variable viewable_width
+  
+  place .pg$mode -in . -x 0 -y 0 -width $viewable_width -height $viewable_height -anchor nw
 
-	set current_parent $new_parent
+  set current_parent $new_parent
 
-	set current_mode $mode
+  set current_mode $mode
     }
-	
+  
 }
 
-proc pg_IDLE { root } {
+proc pg_IDLE { inRoot } {
 
-    set p $root.pgIDLE
-    variable count_red
-    variable count_green
-    variable sort_red
-    variable sort_green
     variable viewable_width
     variable viewable_height
-    variable last_gameid
-    set i 0
+    variable screenpath
+    variable framelist
+    variable currentframe
+    variable framepos
+    variable framecount
+    variable event_a
 
-    variable score_root
+    set p $inRoot.pgIDLE
+    frame $p -width $viewable_width -height $viewable_height
+
+    pg_main_IDLE $p.slide0
+    place .pgIDLE.slide0 -in .pgIDLE -x 0 -y 0 -width $viewable_width -height $viewable_height -anchor nw
+    set currentframe 0
+    set framepos 0
+
+    set screens [ glob $screenpath/*.tcl ]
+    set screens [ lsort $screens ]
+
+    set framelist { .pgIDLE.slide0 }
+
+    set framecount 1
+    foreach x  $screens {
+  namespace eval Idlescreen'$framecount' [ list source $x ]
+        canvas $p.slide$framecount -width $viewable_width -height $viewable_height -relief flat -borderwidth 0 -highlightthickness 0
+  lappend framelist [ Idlescreen'$framecount'::generate $p.slide$framecount ]
+  incr framecount
+    }
+
+    set event_a [after 10000 "pg_nextIdle"]
+
+#    set event_a [after 15000 "place forget .pgIDLE.main"]
+#    set event_b [after 20000 "place .pgIDLE.second -in .pgIDLE -x 0 -y 0 -width $viewable_width -height $viewable_height -anchor nw"]
+#    set event_c [after 25000 "place forget .pgIDLE.second"]
+#    set event_d [after 30000 "place .pgIDLE.main -in .pgIDLE -x 0 -y 0 -width $viewable_width -height $viewable_height -anchor nw"]
+#    set event_e [after 35000 "place forget .pgIDLE.main"]
+#    set event_f [after 40000 "place .pgIDLE.third -in .pgIDLE -x 0 -y 0 -width $viewable_width -height $viewable_height -anchor nw"]
+    return $p
+
+
+}
+
+proc pg_nextIdle { } {
+    variable viewable_width
+    variable viewable_height
+    variable screenpath
+    variable framelist
+    variable currentframe
+    variable event_a
+    variable framecount
+    variable framepos
+
+    place forget .pgIDLE.slide$currentframe
+    if { $currentframe == 0 } {
+  incr framepos
+  if { $framepos >= $framecount } { set framepos 0 }
+  set currentframe $framepos
+    } else {
+  set currentframe 0
+    }
+
+    place .pgIDLE.slide$currentframe -in .pgIDLE -x 0 -y 0 -width $viewable_width -height $viewable_height -anchor nw
+
+    set event_a [after 15000 "pg_nextIdle"]
+}
+
+proc getPromotions { } {
+
+    set uhsconn [ pg_connect $Conf::dbname -host $Conf::dbhost ]
+    set selCount 0
+
+    for { set x 0 } { $x < 40 } { incr x } {
+  set ::Ginfo::promoted($x) 0
+  set ::Ginfo::level($x) 0
+  
+  if { $::Ginfo::used($x) } {
+      if { $::Ginfo::id($x) != "" } {
+    set res [ pg_exec $uhsconn "select level, xpfornext from lm_levels where memberid = '$::Ginfo::id($x)'" ]
+    set ntups [ pg_result $res -numTuples ]
+    if { $ntups >= 1 } {
+          pg_result $res -tupleArray 0 array
+      if { $array(xpfornext) == 0 } {
+          set ::Ginfo::promoted($x) 1
+          }
+      set ::Ginfo::level($x) $array(level)
+    }
+    pg_result $res -clear
+      }
+  }
+    }
+}
+
+proc run { p } {
+
+    variable advertimage
+    variable nextevent
+
+    frame $p.advert
+    $p.advert configure -width [ winfo reqwidth $p] -height [ winfo reqheight $p]
+
+    getHiScores
+    buildCanvas_testOne $p.advert
+
+    place $p.advert -relx 0.0 -rely 0.0
+
+    bind $p.advert <<Destroy>> "::Idlescreen::end"
+
+    set posLastDot [ string last . $p ]
+    set outParent [ string range $p 0 [expr $posLastDot - 1] ]
+
+    set nextevent [ after 15000 "::Idlescreen::end ; ::dm_next_IDLE $outParent" ]
+
+}
+
+proc end { } {
+
+    variable advertimage
+    variable nextevent
+
+#    catch [ list image delete advertimage ]
+    catch [ list after cancel $nextevent ]
+
+}
+
+proc buildCanvas_testTwo { oldRoot } {
+   variable hsScore
+   variable hsName
+   variable selCount
+   variable viewable_width 
+   variable viewable_height 
+
+    set packList { }
+   set leftPackList { }
+   set rightPackList { }
+
+#     set p $oldRoot.testOne
+    set p $oldRoot
+
+
+    set c [canvas $p -width $viewable_width -height $viewable_height -borderwidth 0 -relief flat]
+
+    frame $p.status -background black -borderwidth 0
+
+    label $p.status.which -text "Promotions" -font "-*-lucidatypewriter-bold-r-*-*-40-*-*-*-*-*-*" -foreground red
+    lappend packList $p.status.which
+
+    frame $p.status.score
+    lappend packList $p.status.score
+    frame $p.status.score.left
+    frame $p.status.score.right
+
+    set packListLeft {}
+    set packListRight {}
+
+    set fsize 19
+
+    for { set x 0 } { $x < 40 } { incr x } {
+  if  { $::Ginfo::promoted($x) } {
+      label $p.status.score.left.i$x -text "$::Ginfo::name($x)" -font "-*-courier-bold-r-*-*-$fsize-*-*-*-*-*-*"
+      label $p.status.score.right.i$x -text "Level $::Ginfo::level($x)" -font "-*-courier-bold-r-*-*-$fsize-*-*-*-*-*-*"
+      lappend packListLeft $p.status.score.left.i$x
+      lappend packListRight $p.status.score.right.i$x
+  }
+    }
+
+   foreach thingy $packListLeft {
+       pack $thingy -side top
+   }
+
+   foreach thingy $packListRight {
+       pack $thingy -side top
+   }
+
+   pack $p.status.score.left -side left -padx 100
+   pack $p.status.score.right -side left -padx 50
+
+    set aHeight 0
     
+    foreach thingy $packList {
+  pack $thingy -side top
+  incr aHeight [ winfo reqheight $thingy ]
+    }
+pack $p.status
+#    $p.status configure -height $aHeight
+
+#   $c create window [ expr $viewable_width / 2] [ expr $viewable_height - 4 ] -anchor s -window $p.status
+
+
+}
+
+proc buildCanvas_testOne { oldRoot } {
+
+   variable hsScore
+   variable hsName
+   variable selCount
+   variable viewable_width 
+   variable viewable_height 
+
+    set packList { }
+   set leftPackList { }
+   set rightPackList { }
+
+#     set p $oldRoot.testOne
+    set p $oldRoot
+
+
+    set c [canvas $p -width $viewable_width -height $viewable_height -borderwidth 0 -relief flat]
+
+    frame $p.status -background black -borderwidth 0
+
+    label $p.status.which -text "XP Laser Sport" -font "-*-lucida-bold-r-*-*-40-*-*-*-*-*-*" -foreground yellow
+    label $p.status.what1a -text "All-Time High Scores" -font "-*-lucidatypewriter-bold-*-*-*-32-*-*-*-*-*-*" -foreground red
+    lappend packList $p.status.which
+    lappend packList $p.status.what1a
+
+    frame $p.status.score
+   lappend packList $p.status.score
+    frame $p.status.score.left
+    frame $p.status.score.right
+
+    for { set x 1 } { $x <= $selCount } { incr x } {
+  if { $x < 2 } { 
+      set fsize 28 
+  } elseif { $x < 4 } { 
+      set fsize 23 
+  } else { set fsize 19 }
+  label $p.status.score.left.i$x -text "$hsScore($x)" -font "-*-courier-bold-r-*-*-$fsize-*-*-*-*-*-*"
+  label $p.status.score.right.i$x -text "$hsName($x)" -font "-*-courier-bold-r-*-*-$fsize-*-*-*-*-*-*"
+# label $p.status.score$x -text "$hsScore($x) -- $hsName($x)" -font "-*-courier-bold-r-*-*-$fsize-*-*-*-*-*-*"
+  lappend packListLeft $p.status.score.left.i$x
+  lappend packListRight $p.status.score.right.i$x
+    }
+
+   foreach thingy $packListLeft {
+       pack $thingy -side top
+   }
+
+   foreach thingy $packListRight {
+       pack $thingy -side top
+   }
+
+   pack $p.status.score.left -side left -padx 100
+   pack $p.status.score.right -side left -padx 50
+
+    set aHeight 0
+    
+    foreach thingy $packList {
+  pack $thingy -side top
+  incr aHeight [ winfo reqheight $thingy ]
+    }
+pack $p.status
+#    $p.status configure -height $aHeight
+
+#   $c create window [ expr $viewable_width / 2] [ expr $viewable_height - 4 ] -anchor s -window $p.status
+
+
+}
+
+proc pg_tertiary_IDLE { root } {
+
+    set p $root.third
+
+    getPromotions
+
+    buildCanvas_testTwo $p
+
+}
+
+proc getGameScores { } {
+    variable last_gameid
     set conn [ pg_connect $Conf::dbname -host $Conf::dbhost ]
     
     if { ! [ info exists last_gameid ] } {
-	set res [ pg_exec $conn "select max(id) from g_data where storeid = $Conf::storeid and state = 'COMPLETE'" ]
-	pg_result $res -tupleArray 0 gdata
-	set gameid $gdata(max)
+  set res [ pg_exec $conn "select max(id) from g_data where storeid = $Conf::storeid and state = 'COMPLETE'" ]
+  pg_result $res -tupleArray 0 gdata
+  set gameid $gdata(max)
+  set last_gameid $gameid
     } else {
-	set gameid $last_gameid
+  set gameid $last_gameid
     }
     
     set res [ pg_exec $conn "select * from g_data where id = $gameid and storeid = $Conf::storeid" ]
     
     if { [ pg_result $res -numTuples ] != 1 } {
-	puts "error loading game"
-	return -code ok
+  puts "error loading game"
+  return -code ok
     }
     
     pg_result $res -tupleArray 0 gdata
@@ -182,25 +442,45 @@ proc pg_IDLE { root } {
 
     
     for { set x 0 } { $x < 40 } { incr x } {
-	set ::Ginfo::used($x) 0
+  set ::Ginfo::used($x) 0
     }
     
     # load player information
     
     pg_select $conn "select * from g_players where id = $gameid and storeid = $Conf::storeid and used " array {
-	set adder [ expr { $array(team) * 20 } ]
-	set j [ expr { $array(slot) + $adder } ]
-	
-	set ::Ginfo::used($j) 1
-	set ::Ginfo::name($j) $array(name)
-	set ::Ginfo::id($j) $array(idnum)
-	set ::Ginfo::score($j) $array(score)
+  set adder [ expr { $array(team) * 20 } ]
+  set j [ expr { $array(slot) + $adder } ]
+  
+  set ::Ginfo::used($j) 1
+  set ::Ginfo::name($j) $array(name)
+  set ::Ginfo::id($j) $array(idnum)
+  set ::Ginfo::score($j) $array(score)
 
-	set ::Display::Server::score($j) $array(score)
-	namespace eval ::Display::Server "$array(modeparams)"
+  set ::Display::Server::score($j) $array(score)
+  namespace eval ::Display::Server "$array(modeparams)"
     }    
     
     pg_disconnect $conn
+
+}
+
+
+proc pg_main_IDLE { root } {
+
+    variable viewable_width
+    variable viewable_height
+    set p $root
+    variable count_red
+    variable count_green
+    variable sort_red
+    variable sort_green
+    set i 0
+    variable last_gameid
+    variable score_root
+
+    getGameScores
+    # set gameid must be here in case getGameScores needs to retrieve it
+    set gameid $last_gameid   
 
     set c [ canvas $p -width $viewable_width -height $viewable_height -relief flat -borderwidth 0 -highlightthickness 0 ]
 
@@ -280,10 +560,15 @@ proc pg_POSTGAME { root } {
     
     set p $root.pgPOSTGAME
 
-    
     variable last_gameid
     variable viewable_width
     variable viewable_height
+    variable event_a
+
+    if { [info exists event_a] } { 
+  catch [ list after cancel $event_a ]
+  unset event_a
+    }
 
     canvas $p -width $viewable_width -height $viewable_height
     $p create image 0 0 -image ::postgame_downloadinprogress -anchor nw
@@ -299,8 +584,8 @@ proc pg_GAME { root } {
     set p $root.pgIDLE
 
     if { ! [ winfo exists $p ] } {
-	
-	return [ pg_IDLE $root ]
+  
+  return [ pg_IDLE $root ]
     
     }
 
@@ -313,8 +598,8 @@ proc pg_PREGAME { root } {
     set p $root.pgIDLE
 
     if { ! [ winfo exists $p ] } {
-	
-	return [ pg_IDLE $root ]
+  
+  return [ pg_IDLE $root ]
     
     }
 
@@ -341,9 +626,9 @@ proc OpenSocket { } {
     set bob [ catch "socket $::Conf::server_name $::Conf::disp_listenport" s ]
     
     if { $bob != 0 } {
-	puts "Failed to open game computer connection...sleeping"
-	after 1000 OpenSocket
-	return -code ok
+  puts "Failed to open game computer connection...sleeping"
+  after 1000 OpenSocket
+  return -code ok
     }
 
 
