@@ -446,19 +446,16 @@ proc dm_GAME { root } {
   upvar 0 viewable_height vh
   upvar 0 viewable_width vw
 
-  image create photo photonbug -file $Conf::gamepath/images/photon-bug.tif
-  $c create image 10 0 -image photonbug -anchor nw
-
   # plop game_display in it...
   
-  frame $p.score -width [ expr $vw - 8 ] -height [ expr $vh - 30 ]
+  frame $p.score -width $vw -height $vh
   game_display_setup $p
   
   set score_root $p
 
   dm_GAME_update
 
-  $c create window 4 27 -anchor nw -window $p.score
+  $c create window 0 0 -anchor nw -window $p.score
 
   # status thingy stuff
 
@@ -468,7 +465,6 @@ proc dm_GAME { root } {
   place $p.status.time -relx 1.0 -rely 0.0 -width [ winfo reqwidth $p.status.time ] -relheight 1.0 -anchor ne
   place $p.status.timelabel -x 0 -y 0 -width [ winfo reqwidth $p.status.timelabel ] -relheight 1.0
   
-
   $p.status configure -width [ expr [ winfo reqwidth $p.status.time ] + [ winfo reqwidth $p.status.timelabel ] ]
   $p.status configure -height [ winfo reqheight $p.status.timelabel  ]
 
@@ -478,16 +474,27 @@ proc dm_GAME { root } {
 
   # play by play stuff
   
-  frame $p.hbh -height [ expr $vh - ( 27 + [ winfo reqheight $p.score ] + 20 + 6  ) - $stheight ] -width [ expr $vw - 8 ] -borderwidth 0 -relief flat
+  frame $p.hbh -height [ expr $vh - ( [ winfo reqheight $p.score ] + 20 ) - $stheight ] -width $vw -borderwidth 0 -relief flat
 
-  variable play_by_play    
-  set play_by_play [ text $p.hbh.stuff -background "#111133" -borderwidth 0 -relief flat -highlightthickness 0 ]
+  variable play_by_play_red   
+  variable play_by_play_green 
+  set play_by_play_red [ text $p.hbh.red -borderwidth 0 -relief flat -highlightthickness 0 ]
+  set play_by_play_green [ text $p.hbh.green -borderwidth 0 -relief flat -highlightthickness 0 ]
+  
   trace variable ::Display::Server::play_by_play w dm_Game_Play_by_Play
-  $play_by_play tag configure red -foreground "#ff8888"
-  $play_by_play tag configure green -foreground "#88ff88"
-  place $p.hbh.stuff -x 0 -y 0 -height [ winfo reqheight $p.hbh ] -width [ winfo reqwidth $p.hbh ] 
+  
+  $play_by_play_red tag configure red -foreground "#ff8888"
+  $play_by_play_red tag configure green -foreground "#88ff88"
+  $play_by_play_red tag configure justify -justify left
+  
+  $play_by_play_green tag configure red -foreground "#ff8888"
+  $play_by_play_green tag configure green -foreground "#88ff88"
+  $play_by_play_green tag configure justify -justify right
+  
+  place $p.hbh.red -relx 0.05 -y 0 -height [ winfo reqheight $p.hbh ] -relwidth 0.30
+  place $p.hbh.green -relx 0.65 -y 0 -height [ winfo reqheight $p.hbh ] -relwidth 0.30
 
-  set pbp_window [ $c create window 3 [ expr 27 + [ winfo reqheight $p.score ] + 10 + 10 ] -window $p.hbh -anchor nw ]
+  set pbp_window [ $c create window 3 [ expr 20 + [ winfo reqheight $p.score ] ] -window $p.hbh -anchor nw ]
   
   return $p
 
@@ -497,29 +504,42 @@ proc dm_GAME { root } {
 proc dm_Game_Play_by_Play { name name2 op } {
   if { $::Display::Server::STATE == "GAME" } {
 
-	variable play_by_play
+	variable play_by_play_red
+  variable play_by_play_green
 	
 	foreach x $::Display::Server::play_by_play {
-	    # tokenize, and for each element in the list, do the
-	    # appropriate replacement
+	  # tokenize, and for each element in the list, do the
+	  # appropriate replacement
 	  set l [ split $x " " ]
-	    foreach y $l {
-		    if { [ regexp -nocase {^%([0-9]+)%$} $y match what ] } {
-		      if { $what < 20 } {
-			      set color red
-		      } else {
-            set color green
-		      }
-		      $play_by_play insert end "$::Ginfo::name($what) " $color
-		    } else {
-		      $play_by_play insert end "$y "
+    # default is red.
+    upvar 0 play_by_play_red windowvar
+    set picked 0
+    foreach y $l {
+	    if { [ regexp -nocase {^%([0-9]+)%$} $y match what ] } {
+	      if { $what < 20 } {
+		      set color { red justify }
+          if { $picked == 0 } {
+            upvar 0 play_by_play_red windowvar
+            set picked 1
+          }
+	      } else {
+          set color { green justify }
+          if { $picked == 0 } {
+            upvar 0 play_by_play_green windowvar
+            set picked 1
+          }
+	      }
+	      $windowvar insert end "$::Ginfo::name($what) " $color
+	    } else {
+	      $windowvar insert end "$y " { justify }
 		  }
 	  }
-	  $play_by_play insert end "\n"  
+	  $windowvar insert end "\n" { justify }
 	}
 
 	set ::Display::Server::play_by_play ""
-	$play_by_play see end
+	$play_by_play_green see end
+  $play_by_play_red see end
   }
 }
 

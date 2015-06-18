@@ -32,9 +32,12 @@
 *dmGAME*borderWidth:	0
 *dmGAME*Font: -*-lucidatypewriter-bold-*-*-*-17-*-*-*-*-*-*
 
+*dmGAME*status*background: #b837d2
+
 *dmGAME*score*Font: -*-courier-bold-r-*-*-19-*-*-*-*-*-*
 *dmGAME*score*teamname.Font: -*-lucida-bold-*-*-*-21-*-*-*-*-*-*
 *dmGAME*status*Font: -*-lucida-bold-r-*-*-24-*-*-*-*-*-*
+*dmGAME*status*background: #b837d2
 *dmGAME*hbh*Font: -*-lucida-bold-i-*-*-17-*-*-*-*-*-*
 
 

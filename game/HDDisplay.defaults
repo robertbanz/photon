@@ -30,14 +30,16 @@
 *dmPREGAME*borderWidth: 0
 *dmPREGAME*highlightThickness: 0
 *dmGAME*borderWidth:	0
-*dmGAME*Font: -*-lucidatypewriter-bold-*-*-*-17-*-*-*-*-*-*
+*dmGAME*Font: -*-bitstream vera sans-bold-*-*-*-17-*-*-*-*-*-*
 
-*dmGAME*score*Font: -*-courier-bold-r-*-*-19-*-*-*-*-*-*
-*dmGAME*score*teamname.Font: -*-lucida-bold-*-*-*-21-*-*-*-*-*-*
-*dmGAME*status*Font: -*-lucida-bold-r-*-*-24-*-*-*-*-*-*
-*dmGAME*hbh*Font: -*-lucida-bold-i-*-*-17-*-*-*-*-*-*
+*dmGAME*status*background: #b837d2
 
-
+*dmGAME*score*Font: -*-bitstream vera sans-bold-r-*-*-28-*-*-*-*-*-*
+*dmGAME*score*teamname.Font: -*-bitstream vera sans-bold-*-*-*-30-*-*-*-*-*-*
+*dmGAME*status*Font: -*-bitstream vera sans-bold-r-*-*-30-*-*-*-*-*-*
+*dmGAME*hbh*Font: -*-bitstream vera sans-bold-r-*-*-17-*-*-*-*-*-*
+*dmGAME*hbh*background:         #111133
+*dmGAME*hbh*foreground:         #ffffff
 
 *dmPREGAME.l1*text:			Stuff Part 1
 *dmGAME.status.terminated.text:		Maneuver Complete
