@@ -117,7 +117,11 @@ if { "$argv" == "nopg" } {
 puts "preloading images..."
 
 set imagepath "$Conf::gamepath/images"
-set alertdir "$imagepath/alert/photon/vga"
+if { $hd_mode == 0 } {
+  set alertdir "$imagepath/alert/photon/vga"
+} else {
+  set alertdir "$imagepath/alert/photon/hd"
+}
 
 for { set x 0 } { $x < 31 } { incr x } {
   puts "alert/$x.tif"
@@ -327,6 +331,8 @@ proc dm_IDLE_Set_Advert_Image { } {
 
 proc dm_PREGAME { root } {
   
+  variable hd_mode
+  
   variable viewable_width
   variable viewable_height
 
@@ -340,16 +346,27 @@ proc dm_PREGAME { root } {
   image create photo ::alert_image -height [ image height ::alert_alert-on ] -width [ image width ::alert_alert-on ]
   ::alert_image copy ::alert_alert-on
   
-  $p create image 145 0 -image ::alert_image -anchor nw
-
+  if { $hd_mode } {
+    $p create image 247 39 -image ::alert_image -anchor nw
+  } else {
+    $p create image 145 0 -image ::alert_image -anchor nw
+  }
 
   image create photo ::alert_count -height [ image height ::alert_count_30 ] -width [ image width ::alert_count_30 ]
   ::alert_count copy ::alert_count_30
 
-  $p create image 142 237 -image ::alert_count -anchor nw
+  if { $hd_mode } {
+    $p create image 283 376 -image ::alert_count -anchor nw
+  } else {
+    $p create image 142 237 -image ::alert_count -anchor nw
+  }
 
-  $p create image 0 97 -image ::alert_earthlings -anchor nw
-
+  if { $hd_mode } {
+    $p create image 0 181 -image ::alert_earthlings -anchor nw
+  } else {
+    $p create image 0 97 -image ::alert_earthlings -anchor nw
+  }
+      
   trace variable ::Display::Server::GT_time w dm_PREGAME_time_update 
 
   dm_PREGAME_alert_flash
@@ -397,6 +414,7 @@ proc dm_GAME { root } {
   variable sort_green
   variable viewable_width
   variable viewable_height
+  variable hd_mode
   set i 0
 
   variable score_root
@@ -491,10 +509,15 @@ proc dm_GAME { root } {
   $play_by_play_green tag configure green -foreground "#88ff88"
   $play_by_play_green tag configure justify -justify right
   
-  place $p.hbh.red -relx 0.05 -y 0 -height [ winfo reqheight $p.hbh ] -relwidth 0.30
-  place $p.hbh.green -relx 0.65 -y 0 -height [ winfo reqheight $p.hbh ] -relwidth 0.30
-
-  set pbp_window [ $c create window 3 [ expr 20 + [ winfo reqheight $p.score ] ] -window $p.hbh -anchor nw ]
+  if { $hd_mode } {
+    place $p.hbh.red -relx 0.05 -y 0 -height [ winfo reqheight $p.hbh ] -relwidth 0.30
+    place $p.hbh.green -relx 0.65 -y 0 -height [ winfo reqheight $p.hbh ] -relwidth 0.30
+  } else {
+    place $p.hbh.red -relx 0.0 -y 0 -height [ winfo reqheight $p.hbh ] -relwidth 0.48
+    place $p.hbh.green -relx 0.51 -y 0 -height [ winfo reqheight $p.hbh ] -relwidth 0.48
+  }
+  
+  set pbp_window [ $c create window 0 [ expr 5 + [ winfo reqheight $p.score ] ] -window $p.hbh -anchor nw ]
   
   return $p
 
@@ -520,12 +543,14 @@ proc dm_Game_Play_by_Play { name name2 op } {
 		      set color { red justify }
           if { $picked == 0 } {
             upvar 0 play_by_play_red windowvar
+        	  $windowvar insert end "\n" { justify }            
             set picked 1
           }
 	      } else {
           set color { green justify }
           if { $picked == 0 } {
             upvar 0 play_by_play_green windowvar
+        	  $windowvar insert end "\n" { justify }          
             set picked 1
           }
 	      }
@@ -534,7 +559,7 @@ proc dm_Game_Play_by_Play { name name2 op } {
 	      $windowvar insert end "$y " { justify }
 		  }
 	  }
-	  $windowvar insert end "\n" { justify }
+	#  $windowvar insert end "\n" { justify }
 	}
 
 	set ::Display::Server::play_by_play ""

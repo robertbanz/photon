@@ -13,7 +13,7 @@ set rcsid { $Id: file,v 1.2 1998/11/24 00:33:06 banz Exp $ }
 
 set cdplayer "/usr/sbin/cdcontrol"
 set mixer "/usr/sbin/mixer"
-set soundplayer "/usr/local/bin/mplayer"
+set soundplayer "/usr/photon/bin/mplayer-wrapper"
 
 proc Init { } { }
 

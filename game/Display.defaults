@@ -21,7 +21,6 @@
 *background: 			black
 *foreground: 			white
 
-
 *red*foreground:		#ff8888
 *green*foreground: 		#88ff88
 
@@ -34,11 +33,13 @@
 
 *dmGAME*status*background: #b837d2
 
-*dmGAME*score*Font: -*-courier-bold-r-*-*-19-*-*-*-*-*-*
-*dmGAME*score*teamname.Font: -*-lucida-bold-*-*-*-21-*-*-*-*-*-*
-*dmGAME*status*Font: -*-lucida-bold-r-*-*-24-*-*-*-*-*-*
+*dmGAME*score*Font: -*-bitstream vera sans-bold-r-*-*-19-*-*-*-*-*-*
+*dmGAME*score*teamname.Font: -*-bitstream vera sans-bold-*-*-*-21-*-*-*-*-*-*
+*dmGAME*status*Font: -*-bitstream vera sans-bold-r-*-*-24-*-*-*-*-*-*
 *dmGAME*status*background: #b837d2
-*dmGAME*hbh*Font: -*-lucida-bold-i-*-*-17-*-*-*-*-*-*
+*dmGAME*hbh*Font: -*-bitstream vera sans-bold-r-*-*-15-*-*-*-*-*-*
+*dmGAME*hbh*background:         #111133
+*dmGAME*hbh*foreground:         #ffffff
 
 
 
