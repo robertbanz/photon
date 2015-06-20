@@ -53,8 +53,8 @@ source $Conf::gamepath/helpers
 source $Conf::gamepath/photon_vals
 source $Conf::gamepath/photon_interfaces
 
-if [ file exists $Conf::appdefaults ] {
-  if [ catch { option readfile $Conf::appdefaults startup } err ] {
+if [ file exists $Conf::etdefaults ] {
+  if [ catch { option readfile $Conf::etdefaults startup } err ] {
     puts stderr "error in $Conf::appdefaults: $err"
   }
 }
@@ -62,7 +62,7 @@ if [ file exists $Conf::appdefaults ] {
 wm title . "Entry Terminal"
 wm resizable . 0 0
 wm positionfrom . program
-wm geometry . 800x600+0+0
+wm geometry . ${::Conf::et_xres}x${::Conf::et_yres}+0+0
 
 namespace eval ::Game {
     source $Conf::modes/null    
@@ -118,7 +118,7 @@ proc InitGame { } {
     set trackname "RANDOM"
   }
   
-  setGameMode Public
+  setGameMode $::Conf::default_game_mode
 }
 
 InitGame
@@ -198,9 +198,9 @@ set std_functionlist {
     "Game\nParameters"
     "Start\nGame"
     ""
-    "PreEntered\nGames"
-    "Insert Player"
     ""
+    "Insert Player"
+    "IR Tester"
     "View\nGame"
     "Delete\nPlayer"
     "Flick\nSync"
@@ -214,7 +214,7 @@ set std_functionname {
     "goto_GameParameters"
     "goto_StartGame"
     ""
-    "goto_PreEnter"
+    ""
     ""
     "irTestMenu"
     "goto_ViewCurrentGame"
@@ -520,7 +520,6 @@ proc ET_client_start { s } {
     set finalcode "000"
   }
 
-
   if { [ gets $s line ] < 0 } {
   } else {
     set e [ split $line {} ]     
@@ -580,9 +579,9 @@ $m add command -label "$game_descr($x)" -command "setGameMode \"$x\";ParamsEdito
   menubutton $t.track.mb -textvariable ::Ginfo::trackname -menu $t.track.mb.menu
   set m [ menu $t.track.mb.menu -tearoff 0 ]
   $m add command -label "RANDOM" -command [ list setTrackName RANDOM ]
-  $m add command -label "CD" -command [ list setTrackName "CD" ]
+  # $m add command -label "CD" -command [ list setTrackName "CD" ]
   foreach x [ get_TrackNames ] {
-$m add command -label "$x" -command [ list setTrackName "$x" ]
+    $m add command -label "$x" -command [ list setTrackName "$x" ]
   }
   entry $t.track.number -textvariable ::Ginfo::tracknum -width 2
 
@@ -601,7 +600,8 @@ $m add command -label "$x" -command [ list setTrackName "$x" ]
   radiobutton $t.length.20min -text "20 min" -value 1200 -variable ::Ginfo::length
   radiobutton $t.length.1hr -text "1 hr" -value 3600 -variable ::Ginfo::length
 
-  pack $t.length.label $t.length.30sec $t.length.2min $t.length.6min $t.length.10min $t.length.12min $t.length.15min $t.length.20min $t.length.1hr -side left
+#  pack $t.length.label $t.length.30sec $t.length.2min $t.length.6min $t.length.10min $t.length.12min $t.length.15min $t.length.20min $t.length.1hr -side left
+  pack $t.length.label $t.length.30sec $t.length.6min  $t.length.1hr -side left
   
   pack $t.length -side top -pady 5 -expand y
 
@@ -626,7 +626,7 @@ proc ParamsEditor { path } {
   set y 0
  
   if { ! [ winfo exists $path ] } {
-return -code ok
+    return -code ok
   }
   
   
@@ -826,7 +826,7 @@ proc EditGame { toplevel } {
   
   foreach color { red green } {
 
-    for { set i 0 } { $i < 20 } { incr i } {      
+    for { set i 0 } { $i < $::Conf::max_etable_players } { incr i } {      
       frame $toplevel.$color.$i     
       if { $::Ginfo::used($i) == 1 } {
         set state normal

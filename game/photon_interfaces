@@ -241,23 +241,8 @@ proc podperf_window { i } {
   proc labelit { r var i color } {
     upvar col col
     upvar row row
-    
-    set com "label $r."
-    append com $var
-    append com $i
-    append com " -textvariable ::Photon::pp::"
-    append com $var
-    append com "($i) "
-    append com " -fg $color -width 3"
-    
-    eval $com
-    
-    set com "grid $r."
-    append com $var
-    append com $i
-    append com " -row $row -column [ incr col ] -sticky e"
-    
-    eval $com
+    label ${r}.${var}${i} -textvariable ::Photon::pp::${var}($i) -width 3 -fg $color
+    grid ${r}.${var}${i} -row $row -column [incr col] -sticky e   
   }
 
   if { [ winfo exists .podperf ] } {
@@ -269,8 +254,7 @@ proc podperf_window { i } {
     }
   }
 
-  toplevel .podperf
-  set r .podperf
+  set r [ frame .podperf ]
 
   set row 0
 
@@ -297,10 +281,10 @@ proc podperf_window { i } {
     set col 0
 
     if { ( $i >= $RED_RFSTART ) && ( $i < ( $RED_RFSTART + 20 ) ) } {
-      set color red
+      set color "#ff9999"
       set gs [ rs_to_gs $i ]
     } elseif { ( $i >= $GRN_RFSTART ) && ( $i < ( $GRN_RFSTART + 20 ) ) } {
-      set color green
+      set color "#99ff99"
       set gs [ expr [ rs_to_gs $i ] - 20 ]
     } else {
       continue
@@ -310,7 +294,7 @@ proc podperf_window { i } {
       continue
     }
 
-    label $r.$i -text $gs -fg $color
+    label $r.$i -text $gs
     grid $r.$i -row $row -column 0
 
     foreach x $list  {
@@ -321,7 +305,12 @@ proc podperf_window { i } {
     grid $r.radio$i -row $row -column [ incr col ] -sticky e
 
     incr row
+    
+    # Don't cause the world to pause.
+    update
   }                 
+  wm manage .podperf
+
 }
 
 proc setsync { sync } {
