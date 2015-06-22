@@ -860,15 +860,21 @@ proc EditGame { toplevel } {
       foreach x { picker id name enable } {
         bind $toplevel.$color.$i.$x <Tab> { Edit_Tab %W }
         bind $toplevel.$color.$i.$x <Down> { Edit_DownArrow %W }
+        bind $toplevel.$color.$i.$x <KP_Down> { Edit_DownArrow %W }
         bind $toplevel.$color.$i.$x <Up> { Edit_UpArrow %W }
-        bind $toplevel.$color.$i.$x <F6> { Edit_Insert %W }
+        bind $toplevel.$color.$i.$x <KP_Up> { Edit_UpArrow %W }
+        bind $toplevel.$color.$i.$x <KP_Insert> { Edit_Insert %W }
         bind $toplevel.$color.$i.$x <Insert> { Edit_Insert %W }
-        bind $toplevel.$color.$i.$x <F9> { Edit_Delete %W }
+        bind $toplevel.$color.$i.$x <Delete> { Edit_Delete %W }
+        bind $toplevel.$color.$i.$x <KP_Delete> { Edit_Delete %W }
         bind $toplevel.$color.$i.$x <Home> { Edit_Home %W }
+        bind $toplevel.$color.$i.$x <KP_Home> { Edit_Home %W }        
       }
 
       bind Entry <Insert> { }
-      bind Entry <F6> { }
+      bind Entry <KP_Insert> { }
+      bind Entry <Delete> { }
+      bind Entry <KP_Delete> { }
       bind Entry <Control-G> { }
       bind Entry <Control-g> { }
 
@@ -876,6 +882,8 @@ proc EditGame { toplevel } {
       bind $toplevel.$color.$i.id <FocusIn> { Id_Message }
       bind $toplevel.$color.$i.name <FocusIn> "AutoLoad_Name $j\nName_Message"
       bind $toplevel.$color.$i.enable <FocusIn> { Enable_Message }
+      bind $toplevel.$color.$i.name <Return> { Edit_Done %W }
+      bind $toplevel.$color.$i.name <KP_Enter> { Edit_Done %W }
     
       grid $toplevel.$color.$i -row [ expr { $i + 1 } ] -column $ci
     }
@@ -1099,7 +1107,7 @@ proc Id_Message { } {
 proc Picker_Message { } {
     global Message
 
-    set Message "<F9> to Delete Player, <Ins> or <F6> to Manually Insert, or edit codename"
+    set Message "<Delete> to remove player, <Insert> to add player, <Home> to re-enter player"
 }
 
 proc Name_Message { } { 
@@ -1164,7 +1172,9 @@ proc Edit_UpArrow { widget } {
     return -code break
   }
 
-  if { $slot > 19 } { set slot 19 }
+  if { $slot > ( $::Conf::max_etable_players - 1 ) } {
+    set slot [ expr $::Conf::max_etable_players - 1 ]
+  }
   if { $slot < 0 } { set slot 0 }
 
   if { ! [ info exists edit_wishwhat ] } { 
@@ -1219,7 +1229,9 @@ proc Edit_DownArrow { widget } {
     incr slot
   }
 
-  if { $slot > 19 } { set slot 19 }
+  if { $slot > ( $::Conf::max_etable_players - 1 ) } {
+    set slot [ expr $::Conf::max_etable_players - 1 ]
+  }
   if { $slot < 0 } { set slot 0 }
 
   if { $what != "picker" } { 
@@ -1247,6 +1259,12 @@ proc Edit_DownArrow { widget } {
   Edit_SetCurrent $slot $color
 
   return -code break
+}
+
+proc Edit_Done { widget } {
+  Edit_DownArrow $widget
+  # Picker_Message
+  return -code ok
 }
 
 proc Edit_Tab { widget } { 
@@ -1293,6 +1311,8 @@ proc EditEnable { idwidget namewidget color number } {
     $namewidget configure -state normal
   
     bind $idwidget <Return> "EnterPod $color $number $::Game::Params::etmode\ngrab release $idwidget\nfocus $namewidget\n"
+    bind $idwidget <KP_Enter> "EnterPod $color $number $::Game::Params::etmode\ngrab release $idwidget\nfocus $namewidget\n"
+    
     bind $idwidget <Escape> "grab release $idwidget\nfocus $oldfocus"
   
   # bind $namewidget <Return> "grab release $namewidget\nfocus $oldfocus\nEdit_DownArrow $namewidget"
@@ -1348,7 +1368,7 @@ proc EnterPod { team slot mode } {
   wm title $j ""
   wm resizable $j 0 0
   wm transient $j .
-  wm geometry $j +200+200
+  wm geometry $j +0+500
 
   set Message "Press enter when phaser is ready"
 
@@ -1363,6 +1383,7 @@ proc EnterPod { team slot mode } {
   set cont 0
 
   bind $j <Return> { set cont 1 }
+  bind $j <KP_Enter> { set cont 1 }
   bind $j <Escape> { set cont -1 }
 
   while { $cont == 0 } {
@@ -1374,6 +1395,7 @@ proc EnterPod { team slot mode } {
     focus $old
     destroy .enterpod
     bind $j <Return> { }
+    bind $j <KP_Enter> { }
     bind $j <Escape> { }
     return
   }
