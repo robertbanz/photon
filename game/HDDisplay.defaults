@@ -27,9 +27,13 @@
 
 *teamname*foreground:	white
 
-*dmPREGAME*borderWidth: 0
-*dmPREGAME*highlightThickness: 0
-*dmGAME*borderWidth:	0
+*borderWidth: 0
+*highlightThickness: 0
+*relief: flat
+
+! *dmPREGAME*borderWidth: 0
+! *dmPREGAME*highlightThickness: 0
+! *dmGAME*borderWidth:	0
 *dmGAME*Font: -*-bitstream vera sans-bold-*-*-*-17-*-*-*-*-*-*
 
 *dmGAME*status*background: #b837d2

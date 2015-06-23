@@ -211,8 +211,8 @@ proc DisplayMode { mode } {
     #	grid rowconfigure . 0 -minsize $viewable_height
     #	grid columnconfigure . 0 -minsize $viewable_width
     #	grid .dm$mode -row 0 -column 0 -sticky n 
-	place .dm$mode -in . -x 0 -y 0 -width $viewable_width -height $viewable_height -anchor nw
-
+#	place .dm$mode -in . -x 0 -y 0 -width $viewable_width -height $viewable_height -anchor nw
+  place $new_parent -in . -x 0 -y 0 -width $viewable_width -height $viewable_height -anchor nw
 	set current_parent $new_parent
 	set current_mode $mode
   }
@@ -338,9 +338,18 @@ proc dm_PREGAME { root } {
 
   catch Idlescreen::end
 
-  set p $root.dmPREGAME
   
-  canvas $p -width $viewable_width -height $viewable_height
+  if { $hd_mode } {
+    set p ${root}.c.dmPREGAME
+    canvas ${root}.c -width $viewable_width -height $viewable_height  
+    canvas $p -width 958 -height 720
+    ${root}.c create window [ expr ( $viewable_width - 958 ) / 2 ] 0 -window $p -anchor nw
+  } else {
+    set p $root.dmPREGAME
+    canvas $p -width $viewable_width -height $viewable_height
+  }
+
+
   $p create image 0 0 -image ::alert_background -anchor nw
 
   image create photo ::alert_image -height [ image height ::alert_alert-on ] -width [ image width ::alert_alert-on ]
@@ -371,7 +380,7 @@ proc dm_PREGAME { root } {
 
   dm_PREGAME_alert_flash
 
-  return $p
+  return ${root}.c
 
 }
 

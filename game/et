@@ -199,10 +199,10 @@ set std_functionlist {
     "Start\nGame"
     ""
     ""
-    "Insert Player"
+    "Insert"
     "IR Tester"
     "View\nGame"
-    "Delete\nPlayer"
+    "Delete"
     "Flick\nSync"
     ""
     "Clear\nGame"
@@ -215,10 +215,10 @@ set std_functionname {
     "goto_StartGame"
     ""
     ""
-    ""
+    "nothing1"
     "irTestMenu"
     "goto_ViewCurrentGame"
-    ""
+    "nothing2"
     "goto_FlickSync"
     ""
     "goto_ClearGame"
@@ -228,6 +228,14 @@ ButtonMenu $std_functionlist $std_functionname
 
 bind all <Control-g> { Barcode_Scan %W }
 bind all <Control-G> { Barcode_Scan %W }
+
+proc nothing1 { } {
+  return -code ok
+}
+
+proc nothing2 { } {
+  return -code ok
+}
 
 proc Barcode_Scan { widget } {
   variable Barcode_Scan_Binding
@@ -864,8 +872,10 @@ proc EditGame { toplevel } {
         bind $toplevel.$color.$i.$x <Up> { Edit_UpArrow %W }
         bind $toplevel.$color.$i.$x <KP_Up> { Edit_UpArrow %W }
         bind $toplevel.$color.$i.$x <KP_Insert> { Edit_Insert %W }
+        bind $toplevel.$color.$i.$x <F6> { Edit_Insert %W }      
         bind $toplevel.$color.$i.$x <Insert> { Edit_Insert %W }
         bind $toplevel.$color.$i.$x <Delete> { Edit_Delete %W }
+        bind $toplevel.$color.$i.$x <F8> { Edit_Delete %W }        
         bind $toplevel.$color.$i.$x <KP_Delete> { Edit_Delete %W }
         bind $toplevel.$color.$i.$x <Home> { Edit_Home %W }
         bind $toplevel.$color.$i.$x <KP_Home> { Edit_Home %W }        
@@ -882,8 +892,8 @@ proc EditGame { toplevel } {
       bind $toplevel.$color.$i.id <FocusIn> { Id_Message }
       bind $toplevel.$color.$i.name <FocusIn> "AutoLoad_Name $j\nName_Message"
       bind $toplevel.$color.$i.enable <FocusIn> { Enable_Message }
-      bind $toplevel.$color.$i.name <Return> { Edit_Done %W }
-      bind $toplevel.$color.$i.name <KP_Enter> { Edit_Done %W }
+      bind $toplevel.$color.$i.name <Return> { Edit_DownArrow %W }
+      bind $toplevel.$color.$i.name <KP_Enter> { Edit_DownArrow %W }
     
       grid $toplevel.$color.$i -row [ expr { $i + 1 } ] -column $ci
     }
@@ -1074,7 +1084,7 @@ proc Edit_BarcodeRead { widget code } {
     } else {
       set offset 0
     }
-    for { set x $offset } { $x < [ expr { $offset + 20 } ] } { incr x } {
+    for { set x $offset } { $x < [ expr { $offset + $::Conf::max_etable_players } ] } { incr x } {
       set i [ expr { $x - $offset } ]
       if { ( $Ginfo::used($x) != 1 ) && ( "$Ginfo::id($x)" == "" ) } {
         if { "$code" != "" } {
@@ -1259,12 +1269,6 @@ proc Edit_DownArrow { widget } {
   Edit_SetCurrent $slot $color
 
   return -code break
-}
-
-proc Edit_Done { widget } {
-  Edit_DownArrow $widget
-  # Picker_Message
-  return -code ok
 }
 
 proc Edit_Tab { widget } { 
