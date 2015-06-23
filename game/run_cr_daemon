@@ -1,0 +1,2 @@
+#!/bin/sh
+/usr/photon/bin/cr_daemon < /dev/null > /var/photon/cr.log 2>&1
