@@ -1,0 +1,13 @@
+#if WIDTH == 800
+XTerm*VT100.font:	-adobe-courier-medium-r-*-*-12-*-*-*-m-*-*-*
+XTerm*VT100.boldFont:	-adobe-courier-bold-r-*-*-12-*-*-*-m-*-*-*
+#else
+XTerm*VT100.font:       -adobe-courier-medium-r-*-*-14-*-*-*-m-*-*-*
+XTerm*VT100.boldFont:   -adobe-courier-bold-r-*-*-14-*-*-*-m-*-*-*
+#endif
+
+XTerm*VT100*geometry: 80x25
+XTerm*VT100.Translations: #override <KeyPress>F5: set-appkeypad(toggle)
+XTerm*background:       grey20
+XTerm*foreground:       floralwhite
+XTerm*saveLines:        1024
