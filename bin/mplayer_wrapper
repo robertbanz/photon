@@ -1,0 +1,2 @@
+#!/bin/sh
+/usr/local/bin/mplayer -quiet -vo null $1 < /dev/null

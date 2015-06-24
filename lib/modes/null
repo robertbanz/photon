@@ -1,0 +1,114 @@
+
+# null game type, basically a standard public or league mode
+# debug levels:  0 none
+# debug levels:  1 warnings
+#                2 same as hit by hit
+#                3 lots of crud
+
+#
+# $Log: null,v $
+# Revision 1.2  1998/11/08 22:15:14  banz
+# fixed RCS identifiers
+#
+# Revision 1.1  1998/11/08 22:08:55  banz
+# Initial revision
+#
+#
+
+set rcsid { $Id: null,v 1.2 1998/11/08 22:15:14 banz Exp $ }
+
+set debuglevel 3
+
+proc debuglog { level msg } {
+    variable debuglevel 
+
+    if { $level <= $debuglevel } {
+  ::debuglog $msg
+    }
+
+}
+         
+
+proc HitHandler { gs data } {
+    
+    set tgtgs [ ::Photon::ir_to_gs $data ]
+
+
+    # if they're equal, we hit our own player
+    if { $tgtgs == $gs } {
+  ::Photon::putdown $data
+  debuglog 2 "slot $gs hit own player"
+  return -code ok
+    }
+
+    if { ( ( $gs < 20 ) && ( $tgtgs >= 20 ) ) ||
+   ( ( $gs >= 20 ) && ( $tgtgs < 20 ) ) } {
+  ::Photon::putdown $data
+  debuglog 2 "slot $gs hit slot $tgtgs"
+  return -code ok
+    }
+
+    debuglog 1 "hit attempt by $gs on slot $tgtgs (on same team!)"
+
+}
+
+proc NullHandler { gs } {    
+
+}
+
+proc TargetHandler { gs data } {
+
+    if { ( $gs < 40 ) && ($gs >= 20 ) } {
+  set base1 $Photon::RBASE
+  set base2 $Photon::RBASE2
+  set tower $Photon::RTOWER
+    } elseif { ( $gs >= 0 ) && ($gs < 20) } {
+  set base1 $Photon::GBASE
+  set base2 $Photon::GBASE2
+  set tower $Photon::GTOWER
+    }
+    
+    if { $data == $Photon::TARGET } {
+  debuglog 2 "slot $gs hit the target"
+  return -code ok
+    }
+
+    if { $data == $base1 } {
+  debuglog 2 "slot $gs hit base"
+    }
+
+    if { $data == $base2 } {
+  debuglog 2 "slot $gs hit baseII"
+    }
+
+    if { $data == $tower } {
+  debuglog 2 "slot $gs hit the tower"
+    }
+
+
+}
+
+proc Init { } {
+    
+}
+
+proc End { } {
+
+}
+
+proc Begin { red_used green_used } {
+    
+}
+
+proc Exit { } {
+    
+}
+
+proc ScoreDataOut { } {
+
+}
+
+proc ScoreDataIn { } {
+
+}
+

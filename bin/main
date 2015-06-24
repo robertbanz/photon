@@ -1,0 +1,872 @@
+#!/usr/bin/env wish8.6
+
+
+set rcsid { $Id: main,v 1.10 1999/02/06 20:24:40 game Exp game $ }
+
+# ::Conf -- Game Computer Configuration Options
+namespace eval Conf {
+  source /usr/photon/etc/game.conf
+}
+
+package require Pgtcl
+source /usr/local/bin/tkcon
+
+# load the central radio code
+source $Conf::gamepath/photon_vals
+source $Conf::gamepath/photon_interfaces
+
+namespace import Photon::cr_handler
+
+# load in the sound-blaster code
+source $Conf::gamepath/mixer.tcl
+
+# load the X app defaults file
+if [ file exists $Conf::appdefaults ] {
+  if [ catch { option readfile $Conf::appdefaults startup } err ] {
+    puts stderr "error in $Conf::appdefaults: $err"
+  }
+}
+
+# initialise our current state
+set STATE IDLE
+
+# create the monitor window and things
+wm title . $Conf::title
+wm resizable . 0 0
+wm positionfrom . program
+wm geometry . 640x480+20+20
+
+menu .menubar
+. config -menu .menubar
+frame .statusframe 
+frame .log
+frame .status
+
+set logwin [ text .log.text -wrap word -yscrollcommand ".log.scroll set" ]
+
+$logwin configure -state disabled
+$logwin tag configure warning -foreground red
+scrollbar .log.scroll -orient vert -command ".log.text yview"
+
+pack .log.scroll -side right -fill y
+pack .log.text -side left -fill both -expand true
+
+pack .status -side top
+pack .log -side top -expand true -fill both
+
+
+# simple debug & warning log functions
+proc debuglog { j } {
+  global logwin
+  $logwin configure -state normal
+  $logwin insert end "$j\n" 
+  $logwin configure -state disabled
+  $logwin see end
+}
+
+proc warninglog { j } {
+  global logwin
+  $logwin configure -state normal
+  $logwin insert end "$j\n" { warning }
+  $logwin configure -state disabled
+  $logwin see end
+}
+
+menu .menubar.main -tearoff 0
+.menubar add cascade -label Main -menu .menubar.main
+
+.menubar.main add command -label "Edit Game" -command { editGameInfo }
+.menubar.main add command -label "Run Game" -command { runGame }
+.menubar.main add command -label "View Scores" -command { viewScores }
+.menubar.main add command -label "Console" -command { openConsole }
+.menubar.main add command -label "Audio Control" -command { audioControl }
+
+# Initialize the "Photon" subsystem (pod/radio communications)
+Photon::init
+
+source $Conf::gamepath/photon_phasers
+
+# Create sync status thing
+frame .status.sync
+label .status.sync.label -text "Sync:"
+label .status.sync.info -textvariable Photon::currentsync
+pack .status.sync.label .status.sync.info -side left
+
+# Create state status thing
+frame .status.state
+label .status.state.label -text "State:"
+label .status.state.info -textvariable STATE
+pack .status.state.label .status.state.info -side left
+
+# Time Status
+set GT_desrciption ""
+set GT_time 0
+set GT_direction 0
+set GT_lastseconds [clock seconds]
+
+::Photon::setsync $::Photon::PSYNC
+::Photon::setcrenable 1
+set STATE IDLE
+
+after idle {
+  GT_update
+}
+
+frame .status.time
+label .status.time.label -textvariable GT_description
+label .status.time.info -textvariable GT_time
+pack .status.time.label .status.time.info -side left
+
+pack .status.sync .status.state .status.time -side left
+# load in the null game (needed to continue from here)
+namespace eval ::Game {
+  source $Conf::modes/null    
+}
+
+# initialize game information
+namespace eval ::Ginfo { 
+  for { set i 0 } { $i < 40 } { incr i } {
+    set name($i) ""
+    set id($i) ""
+    set used($i) 0
+    set handicap($i) 0
+  }
+}
+
+# setup the ET Socket listener
+set AwaitingGame 1
+set et_Socket [ socket -server EtSocketAccept $::Conf::et_listenport ]
+
+# load display server code & initialize socket
+namespace eval ::Display {
+  source $Conf::gamepath/display
+  ServerInit
+}
+
+set disp_Socket [ socket -server ::Display::Accept $::Conf::disp_listenport ]
+
+# always run this
+
+# sched_add forever [ clock seconds ] 0.25 [ eh add GT_update ]
+
+
+# fade field audio to their appropriate values
+Mixer::fade vol 75 10
+#Mixer::fade pcm 75 10
+#Mixer::fade cd 75 10
+Mixer::fade rec $Conf::max_background_audio 10
+
+proc openConsole { } {
+  if { [ winfo exists .console ] } {
+    return -code ok
+  }
+  tkcon::Init
+}
+    
+proc setGameMode { mode } {
+
+  set conn [ pg_connect $Conf::dbname -host $Conf::dbhost ]
+    
+  pg_select $conn "select name, descr, code, params from g_modes where storeid = 0 and name = '$mode'" array {
+    set ::Game::code $array(code)
+    set ::Game::mode $array(name)
+    set ::Game::mode_descr $array(descr)
+    set ::Game::setparams "$array(params)"
+  }
+
+  pg_select $conn "select name, descr, code, params from g_modes where storeid = $Conf::storeid and name = '$mode'" array {
+    set ::Game::code $array(code)
+    set ::Game::mode $array(name)
+    set ::Game::mode_descr $array(descr)
+    set ::Game::setparams "$array(params)"
+  }
+
+  namespace eval ::Game "source $Conf::modes/$::Game::code"
+  namespace eval ::Game "Init $::Game::code"
+
+  set ::Ginfo::mode $::Game::mode
+  set ::Ginfo::length $::Game::Params::length
+
+  if { [ info exists ::Game::setparams ] } {
+    namespace eval ::Game::Params $Game::setparams
+  }
+
+  puts $::Game::Params::beginscore
+
+  pg_disconnect $conn
+
+}
+
+proc runGame { } {
+  global Action_l
+  # use info from ::Ginfo
+
+  # build a list of red & green suits used to pass into init
+
+  set red_used { }
+  set grn_used { }
+
+  set Action_l { }
+
+  for { set i 0 } { $i < 20 } { incr i } {  
+    if { $::Ginfo::used($i) } {
+        lappend red_used $i
+    }
+    if { $::Ginfo::used([expr $i + 20]) } {
+        lappend grn_used $i
+    }
+  }
+
+  for { set x 0 } { $x < 40 } { incr x } {
+    for { set y 0 } { $y < 40 } { incr y } {
+      set ::Ginfo::hitarray($x,$y) 0
+    }
+  }
+
+  namespace eval ::Game "Begin { $red_used } { $grn_used }"
+
+  if { [ winfo exists .viewscores ] } {
+    destroy .viewscores
+    viewScores
+  }
+
+  namespace eval ::Photon "begingame { $red_used } { $grn_used }"
+}
+
+
+proc endGame { } {
+  namespace eval ::Game "End"    
+  namespace eval Photon { endgame }
+}
+    
+proc editGameInfo { } {
+  if { [ winfo exists .editgameinfo ] } {
+    return -code ok
+  }
+
+  toplevel .editgameinfo
+  set r .editgameinfo
+   
+  frame $r.players
+
+  label $r.players.label -text "Team & Player Info"
+
+  foreach x { red green } {
+    set t [ frame $r.players.$x ]
+    puts $t
+
+    for { set i 0 } { $i < 20 } { incr i } {
+      if { $x == "red" } {
+        set j $i
+      } else {
+        set j [ expr $i + 20 ]
+      }
+      
+      frame $t.$i
+
+      label $t.$i.num -text $i -bg $x
+
+      entry $t.$i.name -textvariable ::Ginfo::name($j) -width 15
+      entry $t.$i.id -textvariable ::Ginfo::id($j) -width 10
+      checkbutton $t.$i.used -variable ::Ginfo::used($j)
+
+      grid $t.$i.num -row 0 -column 0
+      grid $t.$i.name -row 0 -column 1
+      grid $t.$i.id -row 0 -column 2
+      grid $t.$i.used -row 0 -column 3
+
+      grid $t.$i -row [ expr $i + 1 ] -column 0 -sticky e -columnspan 3
+    }
+    set tnv team_$x
+    label $t.teamnamelabel -text "Team Name:"
+    entry $t.teamname -textvariable $tnv -width 15
+
+    grid $t.teamnamelabel -row 0 -column 0
+    grid $t.teamname -row 0 -column 1
+  }   
+
+  pack $r.players.label -side top
+  pack $r.players.red $r.players.green -side left
+  pack $r.players
+
+  frame $r.length
+
+  label $r.length.label -text "Game Length (in minutes)"
+  pack $r.length.label -side top
+
+  foreach x { 30 60 120 300 600 1200 } {
+    radiobutton $r.length.$x -text [ expr $x / 60.0 ] -variable ::Ginfo::length -value $x
+    pack $r.length.$x -side bottom
+  }
+
+  pack $r.length
+  frame $r.gamemodes
+  listbox $r.gamemodes.list -selectmode single
+  foreach x [ listGameModes ] {
+    $r.gamemodes.list insert end $x
+  }
+
+  pack $r.gamemodes.list
+  pack $r.gamemodes
+}
+
+proc listGameModes { } {
+  set pwd [pwd]
+  cd $Conf::modes
+  set b [ glob * ]
+  foreach x $b {
+    if { [ regexp {~$} $x ] } {
+      continue
+    } 
+    lappend c $x
+  }
+  cd $pwd
+  return $c
+}
+  
+proc viewScores { } {
+  if { [ winfo exists .viewscores ] } {
+    return -code ok
+  }
+
+  set r [ toplevel .viewscores ]
+  foreach x { red green } {
+    frame $r.$x
+    set row 0
+
+    for { set y 0 } { $y < 20 } { incr y } {
+      if { $x == "green" } {
+        set j [ expr $y + 20 ]
+      } else {
+        set j $y
+      }
+
+      if { $::Ginfo::used($j) } {
+        label $r.$x.name$y -text $::Ginfo::name($j)
+        label $r.$x.score$y -textvariable ::Game::score($j)
+        grid $r.$x.name$y -row $row -column 0 -sticky w
+        grid $r.$x.score$y -row $row -column 1 -sticky e
+        incr row
+      }   
+    }
+  }
+  pack $r.red $r.green -side left
+
+}
+      
+proc EtSocketAccept { newSock addr port } {
+  ::debuglog "et connection accepted from $addr / $port"
+  fileevent $newSock readable [ list EtSocketHandler $newSock ]
+}
+
+proc EtSocketHandler { sock } {
+  if [ eof $sock ] {
+    catch { close $sock }
+    ::debuglog "et connection apparently closed"
+    return
+  }
+
+  if { [ gets $sock line ] < 0 } {
+    #need a full line...
+  } else {
+    # valid commands
+    # STATUS (gives game status)
+    # START <gameid> Ask to start <gameid>
+    # valid responses
+    #   201 Game Accpeted <game id>
+    #   202 Game Started <game id>
+    #   501 Busy
+    #   502 Game Transfer Error <game id> <error>
+    #   203 <game status>
+    # FLICK -- Ask to Flick Sync
+    # valid responses
+    #   204 <flick status>
+    #   205 <flick completed>
+    #   504 <flick aborted due to bad state>
+
+    # (Miscellaneous Responses)
+    #   503 Command not recognized
+    ::debuglog "et: $line"
+    set j [ split $line " " ]
+    set b 0
+    set command [ lindex $j 0 ]
+    ::debuglog "$j"
+    set commands { STATUS START FLICK }
+  
+    foreach x $commands {
+      if { $x == $command } {
+        EtSocketHandler_$command $sock $j
+        flush $sock
+        set b 1
+        break
+      }
+    }
+  
+    if { $x != $command } {
+      puts $sock "503 Unknown Command"
+      flush $sock
+    }
+  }
+}
+
+proc EtSocketHandler_FLICK { sock com } {
+  global STATE
+  global GT_time
+  global gameid
+  variable flickHoldTime
+
+  if { $STATE != "GAME" } {
+    puts $sock "504 NO GAME IN SESSION"
+    return -code ok
+  }
+
+  set flickHoldTime 0
+
+  if { $::Photon::currentsync == "GSYNC" } {
+
+    ::Photon::setsync $::Photon::PSYNC
+  
+    while { $flickHoldTime < 6 } {
+        incr flickHoldTime
+        puts $sock "204-FLICKING P-SYNC $flickHoldTime"
+        flush $sock
+        vwait GT_time
+    }
+
+    if { $::Photon::currentsync == "PSYNC" } {
+        ::Photon::setsync $::Photon::GSYNC
+        puts $sock "205 FLICK BACK TO G-SYNC"
+        flush $sock
+    } else {
+        puts $sock "504 P-SYNC UNEXPECTEDLY LOST"
+        flush $sock
+    }
+  } else {
+    puts $sock "504 NO G-SYNC"
+    return -code ok
+  }
+  return -code ok
+}
+
+proc EtSocketHandler_STATUS { sock com } {
+  global STATE
+  global GT_time
+  set command [ lindex $com 0 ]
+  if { $STATE == "PREGAME" } {
+    puts $sock "100-STATE: $STATE"
+    puts $sock "100 TIME: $GT_time"
+  } elseif { $STATE == "GAME" } {
+    puts $sock "100-STATE: $STATE"
+    puts $sock "100 TIME: $GT_time"
+  } else {
+    puts $sock "100 STATE: $STATE"
+  }       
+}
+
+proc EtSocketHandler_START { sock com } {
+  global STATE
+  global GT_time
+  global gameid
+
+  set gameid [ lindex $com 1 ]
+
+  while { $STATE == "TRANSITION" } {
+    vwait GT_time
+  }
+
+  if { $STATE == "PREGAME" } {
+    puts $sock "501 BUSY $GT_time"
+    return -code ok
+  } elseif { $STATE == "GAME" } {
+    puts $sock "501 BUSY $GT_time"
+    return -code ok
+  } elseif { $STATE != "IDLE" } {
+    puts $sock "501 BUSY $GT_time"
+    return -code ok
+  }
+
+  if { [ ET_LoadGame $gameid ] != 0 } {
+    Idle_To_Pregame
+    while { $STATE == "PREGAME" } {
+      puts $sock "100-STARTING IN $GT_time"
+      flush $sock
+      vwait GT_time
+    }
+    puts $sock "100 OK"
+    flush $sock
+  } else {
+    puts $sock "502 Transfer Error"
+    flush $sock
+  }
+}
+
+# system states:
+#
+#
+# IDLE
+#    -> Idle_To_Pregame (responsible for calling the next transition)
+# PREGAME
+#    -> Pregame_To_Game (responsible for calling the next transition)
+# GAME 
+#    -> Game_To_Postgame (rsponsible for calling the next transition)
+# POSTGAME
+#    -> Postgame_To_Idle
+# IDLE
+
+proc GT_update { } {
+  global GT_time
+  global GT_direction
+  global GT_lastseconds
+  set now [ clock seconds ]
+  set diff [ expr { $now - $GT_lastseconds } ]
+
+  if { $diff != 0 } {
+    if { $GT_time != 0 } {
+      set newtime [ expr { $GT_time + ( $diff * $GT_direction )} ]
+      set GT_lastseconds $now
+      if { $newtime >  0 } {
+        set GT_time $newtime
+      } else {
+        set GT_time 0
+      }
+    }
+    update
+    after 250 { GT_update }
+  } else {
+    after 250 { GT_update }
+  }
+  return -code ok
+}
+
+
+proc LoadSoundTrack { trackname length } {
+
+  set conn [ pg_connect $Conf::dbname -host $Conf::dbhost ]
+
+  # select the asked-for track from the database...
+
+  set res [ pg_exec $conn "select * from g_tracks where name = '$trackname' and ( length = $length or length = 0 )" ]
+
+  if { [ pg_result $res -numTuples ] != 1 } {
+    warninglog "Cannot find track named $trackname"
+    set trackname ""
+  } else {
+    pg_result $res -tupleArray 0 tdata
+    if { ( $tdata(length) != 0 ) && ( $tdata(length) != $length ) } {     
+      warninglog "Track selected isn't the correct length"
+      set trackname ""
+    }
+  
+  }
+  pg_result $res -clear
+
+  if { $trackname == "" } {
+    set res [ pg_exec $conn "select * from g_tracks where length = $length" ]
+    set nmatches [ pg_result $res -numTuples ]
+    if { $nmatches == 0 } {
+        warninglog "Can't find *any* matching lengths... using CD Track 1"
+        return [ LoadSoundTrack "CD Track 1" $length ]
+    }
+    # pick one at random
+
+    set num [ expr int(rand() * $nmatches) ]
+
+    pg_result $res -tupleArray $num tdata
+
+    warninglog "Using random track: $tdata(name)"
+    pg_result $res -clear
+    return [ LoadSoundTrack $tdata(name) $length ]
+  }
+
+  # if we get this far, we have a valid soundtrack
+  namespace eval ::STrack "source $Conf::gamepath/sound/$tdata(type)"
+  namespace eval ::STrack $tdata(params)
+  pg_disconnect $conn
+}
+
+proc Idle_To_Pregame { } {
+  global STATE
+  global GT_time
+  global GT_direction
+  global GT_description
+  global GT_lastseconds
+  global button_push_time
+  global game_start_time
+
+  set button_push_time [ clock seconds ]
+  set game_start_time [ expr $button_push_time + 30 ]
+
+  if { $STATE == "TRANSITION" } {
+    return
+  }
+
+  set STATE TRANSITION
+
+  # right now this is pretty empty...
+
+  ::Photon::setsync $::Photon::PSYNC
+
+  set GT_time 30
+  set GT_lastseconds [clock seconds]
+  set GT_direction -1
+  set GT_description "Time Until Start:"
+
+  after [ expr { 10 * 1000 } ] { ::Mixer::fade rec 0 10 }
+#  sched_add once $button_push_time 10 [ eh add { 
+#    ::Mixer::fade rec 0 10 
+#    lappend ekill $sched_data(id)
+#  } ]
+  after [ expr { 30 * 1000 } ] { Pregame_To_Game }
+
+#  sched_add once $button_push_time 30 [ eh add { 
+#    Pregame_To_Game 
+#    lappend ekill $sched_data(id)
+#  } ]
+
+  namespace eval ::Display ServerPregameInit
+
+  # Sound System
+
+  LoadSoundTrack $Ginfo::trackname $Ginfo::length
+  ::STrack::Begin $Ginfo::length
+  set STATE PREGAME
+}
+
+proc Pregame_To_Game { } {
+  global STATE
+  global GT_time
+  global GT_direction
+  global GT_description
+  global GT_lastseconds
+  global sched_data
+  global game_start_time
+  global eh_Game_To_Postgame
+
+  if { $STATE == "TRANSITION" } {
+    return
+  }  
+
+  set STATE TRANSITION
+
+  runGame
+
+  # start counting things once game start is complete
+  set GT_lastseconds [clock seconds]
+  set GT_time $Ginfo::length
+  set GT_direction -1
+  set GT_description "Time Remaining:"
+
+  after [ expr { $Ginfo::length * 1000} ] { Game_To_Postgame }
+#  sched_add once $game_start_time $Ginfo::length [ eh add { Game_To_Postgame 
+#     lappend ekill $sched_data(id)
+#  } ]
+  set ::Photon_ps::phaseron 1
+  set STATE GAME
+}
+
+proc Game_To_Postgame { } {
+  global STATE
+  global GT_time
+  global GT_direction
+  global GT_description
+
+  if { $STATE == "TRANSITION" } {
+    return
+  }
+
+  set STATE TRANSITION
+  endGame
+  
+  set GT_time 0
+  set GT_direction 0
+  set GT_decription ""
+
+  # whatever goes here...
+  after [ expr { 18 * 1000 } ] Postgame_To_Idle
+  saveGame
+  savePods
+
+  after [ expr { 10 * 1000 } ] { Mixer::fade rec $Conf::max_background_audio 7 }
+#  sched_add once [ clock seconds ] 10 [ eh add { 
+#    Mixer::fade rec $Conf::max_background_audio 7
+#    lappend ekill $sched_data(id)
+#  } ]
+
+  after [ expr { 18 * 1000 } ] { Postgame_To_Idle }
+#  sched_add once [ clock seconds ] 18 [ eh add { 
+#    Postgame_To_Idle 
+#    lappend ekill $sched_data(id)
+#  } ]
+
+  set ::Photon_ps::phaseron 0
+
+  set STATE POSTGAME
+}
+
+# set eh_Postgame_To_Idle [ eh add Postgame_To_Idle ]
+
+proc Postgame_To_Idle { } {
+  global STATE
+  if { $STATE == "TRANSITION" } {
+    return
+  }
+  set STATE TRANSITION
+  ::Photon::setsync $::Photon::PSYNC
+  ::Photon::setcrenable 1
+  set STATE IDLE
+}
+
+    
+proc ET_LoadGame { gameid } {
+
+  global team_red
+  global team_green
+
+  set conn [ pg_connect $Conf::dbname -host $Conf::dbhost ]
+  
+  set Ginfo::gameid $gameid
+
+  set res [ pg_exec $conn "select * from g_data where id = $gameid and storeid = $Conf::storeid" ]
+
+  if { [ pg_result $res -numTuples ] != 1 } {
+    ::debuglog "--etxfer, invalid transfer of game $gameid"
+    pg_disconnect $conn
+    return 0
+  }
+
+  pg_result $res -tupleArray 0 gdata
+
+  if { $gdata(state) != "RUNNABLE" } {
+    ::debuglog "--etxfer, invalid game state of game $gameid"
+    pg_disconnect $conn
+    return 0
+  }
+
+  setGameMode $gdata(mode)
+  set Ginfo::trackname $gdata(trackname)
+  set Ginfo::length $gdata(length)
+  set team_red $gdata(red_teamname)
+  set team_green $gdata(green_teamname)
+
+  namespace eval ::Game::Params "$gdata(params)"
+
+  for { set x 0 } { $x < 40 } { incr x } {
+    set ::Ginfo::used($x) 0
+  }
+
+  # load player information
+
+  pg_select $conn "select team, slot, name, idnum from g_players where id = $gameid and storeid = $Conf::storeid and used " array {
+    set adder [ expr { $array(team) * 20 } ]
+    set j [ expr { $array(slot) + $adder } ]
+    set ::Ginfo::used($j) 1
+    set ::Ginfo::name($j) $array(name)
+    set ::Ginfo::id($j) $array(idnum)
+  }    
+
+  pg_disconnect $conn
+
+  return $gameid
+}
+
+proc Action { string } {
+  global GT_time
+  global Action_l
+  ::Display::Action "$string"
+  lappend Action_l "$GT_time $string"
+}
+
+proc saveGame { } {
+
+  global Action_l
+
+  set conn [ pg_connect $Conf::dbname -host $Conf::dbhost ]
+
+  foreach t { 0 1 } { 
+    for { set x 0 } { $x < 20 } { incr x } {
+      if { $t == 1 } {
+        set y [ expr $x + 20 ]
+      } else {
+        set y $x
+      }
+
+      if { $::Ginfo::used($y) } {
+        set podnumber $Photon::pp::id([Photon::gs_to_rs $y])
+
+        # create a list of things n Game::savelist
+        set savelist ""
+        foreach var $Game::player_savelist {
+          upvar #0 ::Game::$var val
+          append savelist "set $var\($y\) \"$val($y)\"; "
+        }
+
+        pg_exec $conn "update g_players set pod=$podnumber, score=$::Game::score($y), modeparams = '$savelist' where id = $Ginfo::gameid and storeid = $Conf::storeid and team = $t and slot = $x"
+      }
+    }
+  }
+
+  foreach action $Action_l {
+    set l [ split "$action" " " ]
+    set timestamp [ lindex $l 0 ]
+    set actionstring [ lrange $l 1 end ]
+
+    set res [ pg_exec $conn "insert into g_events ( id, storeid, timestamp, event ) values ( $Ginfo::gameid, $Conf::storeid, $timestamp, '$actionstring' )" ]
+    pg_result $res -clear
+  }
+
+  set rantime [ SqlTime [ clock seconds ] ]
+
+  pg_exec $conn "update g_data set state = 'COMPLETE', valid = 1, rantime = '$rantime', red_teamscore = $Game::teamscore(red), green_teamscore = $Game::teamscore(green) where id = $Ginfo::gameid and storeid = $Conf::storeid";
+
+  pg_disconnect $conn
+}
+    
+
+proc savePods { } {
+
+  set comm [ pg_connect $Conf::dbname -host $Conf::dbhost ]
+  
+  set colorstart(r) $::Photon::RED_RFSTART
+  set colorstart(g) $::Photon::GRN_RFSTART
+
+  foreach x { r g } {
+    for { set i $colorstart($x) } { $i < ( $colorstart($x) + 20 ) } { incr i } {      
+
+      if { ( $::Ginfo::used([Photon::rs_to_gs $i]) == 1 ) && 
+           ( $::Photon::pp::id($i) != -1 ) } {
+        set res [ pg_exec $comm "insert into g_pods ( storeid, color, id, pod, syncmissed, wsyncrcvd, serror, ealarm, missed, invalid, valid, hitsent, hitsackn, slot, polls, mir ) values ( $Conf::storeid, '$x', $Ginfo::gameid, $::Photon::pp::idlu($i), $::Photon::pp::syncmissed($i), $::Photon::pp::wsyncrcvd($i), $::Photon::pp::serror($i), $::Photon::pp::ealarm($i), $::Photon::pp::missed($i), $::Photon::pp::invalid($i), $::Photon::pp::valid($i),$::Photon::pp::hitssent($i), $::Photon::pp::hitsackn($i), $i, $::Photon::pp::pollcount, $::Photon::pp::missinrow($i) )" ]
+        pg_result $res -clear
+      }
+    }
+  }
+  pg_disconnect $comm
+}
+
+proc SqlTime { time } {
+  return [ clock format $time -format "%Y-%m-%d %T" ]
+}
+
+proc audioControl { } {
+  if { [ winfo exists .audio ] } {
+    return -code ok
+  }
+
+  toplevel .audio
+
+  scale .audio.field -from 0 -to 100 -length 200 -variable ::Mixer::vol -orient horizontal -label "Field Volume" -showvalue true
+#    scale .audio.digital -from 0 -to 100 -length 200 -variable ::Mixer::pcm -orient horizontal -label "CG Game Audio" -showvalue true
+#    scale .audio.cd -from 0 -to 100 -length 200 -variable ::Mixer::cd -orient horizontal -label "CD Game Audio" -showvalue true
+  scale .audio.background -from 0 -to 100 -length 200 -variable ::Mixer::rec -orient horizontal -label "Background Audio (current)" -showvalue true
+  scale .audio.backgroundmax -from 0 -to 100 -length 200 -variable Conf::max_background_audio -orient horizontal -label "Background Audio (max)" -showvalue true
+
+#    pack .audio.field .audio.digital .audio.cd .audio.background .audio.backgroundmax -side top
+  pack .audio.field .audio.background .audio.backgroundmax -side top
+}
+
+
+
+
+
+
+
+

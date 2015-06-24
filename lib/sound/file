@@ -1,0 +1,39 @@
+
+#
+# $Log: file,v $
+# Revision 1.2  1998/11/24 00:33:06  banz
+# fixed rcsid quoting
+#
+# Revision 1.1  1998/11/08 22:10:55  banz
+# Initial revision
+#
+#
+
+set rcsid { $Id: file,v 1.2 1998/11/24 00:33:06 banz Exp $ }
+
+set cdplayer "/usr/sbin/cdcontrol"
+set mixer "/usr/sbin/mixer"
+set soundplayer "/usr/photon/bin/mplayer-wrapper"
+
+proc Init { } { }
+
+# called 30 seconds before game officially begins
+proc Begin { length } { 
+  set ::STrack::events { }
+  set diff [ expr 30 - $::STrack::offset ]
+  lappend ::STrack::events [ after [ expr { $diff * 1000 } ] [ list ::STrack::SFplay "/usr/photon/tracks/$::STrack::file" ] ]
+}
+
+proc SFplay { filename } {
+  catch [ list exec $::STrack::soundplayer "$filename" "&" ] result
+}
+
+# Play sound is intended to be used by external files,
+# it will try SFplay in cd mode, it will do nothing
+# in file mode since it will expect to fail anyway
+
+proc PlaySound { filename { delay 0 } } {
+
+# do nothing
+
+}

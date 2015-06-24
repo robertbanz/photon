@@ -1,0 +1,59 @@
+!
+! $Log: Display,v $
+! Revision 1.6  1999/01/31 17:10:39  banz
+! Font modifications
+! BETA RELEASE
+!
+! Revision 1.5  1998/12/13 05:31:14  banz
+! blah.
+!
+! Revision 1.3  1998/11/29 22:20:01  banz
+! more stuff.
+!
+! Revision 1.2  1998/11/15 21:14:04  banz
+! testing defaults for pregame screen
+!
+! Revision 1.1  1998/11/08 22:01:05  banz
+! Initial revision
+!
+!
+
+*background: 			black
+*foreground: 			white
+
+*red*foreground:		#ff8888
+*green*foreground: 		#88ff88
+
+*teamname*foreground:	white
+
+*dmPREGAME*borderWidth: 0
+*dmPREGAME*highlightThickness: 0
+*dmGAME*borderWidth:	0
+*dmGAME*Font: -*-lucidatypewriter-bold-*-*-*-17-*-*-*-*-*-*
+
+*dmGAME*status*background: #b837d2
+
+*dmGAME*score*Font: -*-bitstream vera sans-bold-r-*-*-19-*-*-*-*-*-*
+*dmGAME*score*teamname.Font: -*-bitstream vera sans-bold-*-*-*-21-*-*-*-*-*-*
+*dmGAME*status*Font: -*-bitstream vera sans-bold-r-*-*-24-*-*-*-*-*-*
+*dmGAME*status*background: #b837d2
+*dmGAME*hbh*Font: -*-bitstream vera sans-bold-r-*-*-15-*-*-*-*-*-*
+*dmGAME*hbh*background:         #111133
+*dmGAME*hbh*foreground:         #ffffff
+
+
+
+*dmPREGAME.l1*text:			Stuff Part 1
+*dmGAME.status.terminated.text:		Maneuver Complete
+
+*pgIDLE*Font: -*-lucidatypewriter-bold-*-*-*-17-*-*-*-*-*-*
+
+
+*pgIDLE*score*Font: -*-courier-bold-r-*-*-19-*-*-*-*-*-*
+*pgIDLE*score*teamname.Font: -*-lucida-bold-*-*-*-21-*-*-*-*-*-*
+*pgIDLE*status*Font: -*-lucida-bold-r-*-*-24-*-*-*-*-*-*
+*pgIDLE*status.what1*Font: -*-lucida-bold-r-*-*-16-*-*-*-*-*-*
+*pgIDLE*status.what2*Font: -*-lucida-bold-r-*-*-16-*-*-*-*-*-*
+*pgIDLE*hbh*Font: -*-lucida-bold-i-*-*-17-*-*-*-*-*-*
+*pgIDLE.status.terminated.text:		Maneuver Complete
+

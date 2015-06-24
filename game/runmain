@@ -1,3 +1,0 @@
-#!/bin/sh
-resolution="1600x1000x24"
-xinit -- /usr/local/bin/Xvfb :0 -screen 0 $resolution
