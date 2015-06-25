@@ -285,28 +285,25 @@ proc dm_next_IDLE { p } {
 	      break
       }
     }
-
+    
     set x [ expr { $x % [ llength $screens ] } ]
 
     set script [ lindex $screens $x ]
   } else {    
     set script [ lindex $screens 0 ]    
   }
-  set last_idle $script
-  namespace eval Idlescreen [ list source $script ]
-  Idlescreen::run $r
-
-  if { [ info exists previous_frame ] && [ winfo exists $p.frame$previous_frame ] } {
-    place $r -relx 0.0 -rely 0.0
-    # Wait for new frame to become visible,
-    # catch in case it is destroyed before becoming visible by a
-    # game-start or some condition
-    catch { tkwait visibility $r }
-    catch { place forget $p.frame$previous_frame }
-    catch { destroy $p.frame$previous_frame }
-  } else {
-    place $r -relx 0.0 -rely 0.0
+  
+  if { [ info exists previous_frame ] } {
+    ::Idlescreen::end $p.frame${previous_frame}
   }
+  
+  set last_idle $script
+  
+  catch { namespace delete ::Idlescreen }
+  namespace eval ::Idlescreen [ list source $script ]
+
+  ::Idlescreen::run $r
+  place $r -relx 0.0 -rely 0.0 -width $viewable_width -height $viewable_height  
 }
 
 
@@ -342,7 +339,6 @@ proc dm_PREGAME { root } {
   variable viewable_height
 
   catch Idlescreen::end
-
   
   if { $hd_mode } {
     set p ${root}.c.dmPREGAME

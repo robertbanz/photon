@@ -3,3 +3,7 @@
 .esd_auth
 .mplayer/**
 .psql_history
+.Xauthority
+.bash_history
+.lesshst
+.ssh/**
