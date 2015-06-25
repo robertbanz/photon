@@ -5,7 +5,7 @@ proc run { p } {
 
     canvas $p.advert -width [ winfo reqwidth $p ] -height [ winfo reqheight $p ]
 
-    set advertimage [ image create photo -file ${Conf::gamepath}/images/cg_idle_/image.tif ]
+    set advertimage [ image create photo -file ${Conf::gamepath}/images/cg_idle/image.tif ]
     
     $p.advert create image 0 0 -image $advertimage -anchor nw
     
@@ -14,7 +14,7 @@ proc run { p } {
 #    bind $p.advert <<Destroy>> "::Idlescreen::end"
 
     # wait 1 minute
-    set nextevent [ after 2000 "::dm_next_IDLE $p" ]
+    set nextevent [ after 45000 "::dm_next_IDLE $p" ]
 }
 
 proc end { p } {

@@ -406,8 +406,7 @@ proc dm_PREGAME { root } {
 
   dm_PREGAME_alert_flash
 
-  return ${root}.c
-
+  return $p
 }
 
 proc dm_PREGAME_alert_flash { } {
