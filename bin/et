@@ -1616,9 +1616,9 @@ proc get_TrackNames { } {
   set conn [ pg_connect -conninfo [list dbname = $Conf::dbname host = $Conf::dbhost ] ]
 
   set l { }
-  pg_select $conn "select distinct name from g_tracks where type != 'cd'" array     {
+  pg_select $conn "select distinct name from g_tracks where type != 'cd'" array {
       lappend l "$array(name)"
-    }
+  }
   pg_disconnect $conn
   return $l
 }

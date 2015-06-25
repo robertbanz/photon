@@ -565,6 +565,7 @@ proc LoadSoundTrack { trackname length } {
     set nmatches [ pg_result $res -numTuples ]
     if { $nmatches == 0 } {
         warninglog "Can't find *any* matching lengths... using CD Track 1"
+        pg_disconnect $conn
         return [ LoadSoundTrack "CD Track 1" $length ]
     }
     # pick one at random
@@ -575,6 +576,7 @@ proc LoadSoundTrack { trackname length } {
 
     warninglog "Using random track: $tdata(name)"
     pg_result $res -clear
+    pg_disconnect $conn
     return [ LoadSoundTrack $tdata(name) $length ]
   }
 

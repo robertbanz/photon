@@ -13,15 +13,15 @@ set rcsid { $Id: file,v 1.2 1998/11/24 00:33:06 banz Exp $ }
 
 set cdplayer "/usr/sbin/cdcontrol"
 set mixer "/usr/sbin/mixer"
-set soundplayer "/usr/photon/bin/mplayer-wrapper"
-
+set soundplayer "/usr/photon/bin/mplayer_wrapper"
+set trackdir "/usr/photon/lib/tracks/"
 proc Init { } { }
 
 # called 30 seconds before game officially begins
 proc Begin { length } { 
   set ::STrack::events { }
   set diff [ expr 30 - $::STrack::offset ]
-  lappend ::STrack::events [ after [ expr { $diff * 1000 } ] [ list ::STrack::SFplay "/usr/photon/tracks/$::STrack::file" ] ]
+  lappend ::STrack::events [ after [ expr { $diff * 1000 } ] [ list ::STrack::SFplay ${trackdir}${::STrack::file} ] ]
 }
 
 proc SFplay { filename } {

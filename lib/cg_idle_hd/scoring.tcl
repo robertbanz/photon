@@ -18,7 +18,7 @@ proc run { p } {
 
     set pid [fork]
     if { $pid == 0 } {
-      exec "/usr/local/bin/mplayer" "-nosound" "-wid" [ winfo id $p.video.ad ]  "/usr/photon/git/photon/game/images/video.mp4"
+      exec "mplayer" "-nosound" "-wid" [ winfo id $p.video.ad ]  "/usr/photon/lib/clips/instructional.mp4"
     } else {
       set mplayer_pid $pid
     }

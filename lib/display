@@ -149,12 +149,10 @@ proc ServerRead { sock } {
   }
 
   catch { set rc [ gets $sock line ] } {
-    ::debuglog "error reading from display $sock"
-    catch { close $sock }
+    return -code ok
   }
 
-  if { $rc >= 0 }
-
+  if { $rc >= 0 } {
     # valid commands
     # STATUS (gives status info)
     # MODE <stream|poll> (switches port modes)

@@ -442,6 +442,7 @@ proc dm_GAME { root } {
 
   if { [ pg_result $res -numTuples ] != 1 } {
     puts "error loading game"
+    pg_disconnect $conn
     return -code ok
   } 
   

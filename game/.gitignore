@@ -1,0 +1,5 @@
+.config/**
+.dbus/**
+.esd_auth
+.mplayer/**
+.psql_history
