@@ -34,8 +34,7 @@ proc run { p } {
   set clip [ pick_clip $clipdir ]
 
   if { $mplayer_pid == 0 } {
-    execl "mplayer" [ list "-nosound" "-wid" $window_id ${clip} "-frames" 100 ]
-    #execl "mplayer" [ list "-nosound" ${clip} ]
+    execl "mplayer" [ list "-nosound" "-quiet" "-wid" $window_id ${clip} ]
     kill [id process]
   }
   

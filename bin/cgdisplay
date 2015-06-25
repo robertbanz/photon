@@ -57,7 +57,7 @@ set options {
   {p "Also act as the post-game display."}
 }
 
-set usage ": pgdisplay \[options] filename ...\noptions:"
+set usage ": cgdisplay \[options] filename ...\noptions:"
 
 try {
   array set params [::cmdline::getoptions argv $options $usage]
@@ -230,8 +230,16 @@ proc dm_IDLE { root } {
   variable advert_image
   variable noidle
   variable last_idle
-
+  variable hold_time
+  
   trace vdelete ::Display::Server::play_by_play w dm_Game_Play_by_Play
+
+  if { [ winfo exists $root.dmGAME ] } {
+    if { $hold_time < [ clock seconds ] } {
+      after 1000 [ list DisplayMode $::Display::Server::STATE ]
+      return ${root}.dmGAME
+    }
+  }
 
   if { [ winfo exists $root.dmGAME ] && ( $noidle == 1 ) } {
 	  set p $root.dmGAME
@@ -253,7 +261,18 @@ proc dm_next_IDLE { p } {
   variable viewable_height
   variable frame_count
   variable screenpath
-
+  variable idle_root
+  
+  if { $::Display::Server::STATE != "IDLE" } {
+    return -code ok
+  }
+  
+  if { ! [ info exists idle_root ] } {
+    set idle_root $p
+  } else {
+    set p $idle_root
+  }
+  
   if { ! [ info exists frame_count ] } {
 	  set frame_count 0
   } else {
@@ -302,34 +321,36 @@ proc dm_next_IDLE { p } {
   catch { namespace delete ::Idlescreen }
   namespace eval ::Idlescreen [ list source $script ]
 
+  set idle_window $r
+  puts $r
   ::Idlescreen::run $r
   place $r -relx 0.0 -rely 0.0 -width $viewable_width -height $viewable_height  
 }
 
 
-proc dm_IDLE_Set_Advert_Image { } {
-  
-  variable advert_width
-  variable advert_height
-
-  image create photo tmpimage -file $Conf::gamepath/images/xptest.tif
-  
-  if { ! [ info exists ::advert_image ] } {
-    image create photo ::advert_image
-  }
-
-  set ih [ image height tmpimage ]
-  set iw [ image width tmpimage ]
-  
-  if { $ih > $advert_height } {
-    set ih $advert_height
-  }
-
-  if { $iw > $advert_width } {
-    set iw $advert_width
-  }
-  ::advert_image copy tmpimage -from 0 0 $iw $ih
-}
+#proc dm_IDLE_Set_Advert_Image { } {
+#  
+#  variable advert_width
+#  variable advert_height
+#
+#  image create photo tmpimage -file $Conf::gamepath/images/xptest.tif
+#  
+#  if { ! [ info exists ::advert_image ] } {
+#    image create photo ::advert_image
+#  }
+#
+#  set ih [ image height tmpimage ]
+#  set iw [ image width tmpimage ]
+#  
+#  if { $ih > $advert_height } {
+#    set ih $advert_height
+#  }
+#
+#  if { $iw > $advert_width } {
+#    set iw $advert_width
+#  }
+#  ::advert_image copy tmpimage -from 0 0 $iw $ih
+#}
 
 proc dm_PREGAME { root } {
   
@@ -338,7 +359,12 @@ proc dm_PREGAME { root } {
   variable viewable_width
   variable viewable_height
 
-  catch Idlescreen::end
+  variable idle_window
+  
+  if { [ info exists idle_window ] } {    
+    catch Idlescreen::end $idle_window
+    unset idle_window
+  }
   
   if { $hd_mode } {
     set p ${root}.c.dmPREGAME
@@ -349,7 +375,6 @@ proc dm_PREGAME { root } {
     set p $root.dmPREGAME
     canvas $p -width $viewable_width -height $viewable_height
   }
-
 
   $p create image 0 0 -image ::alert_background -anchor nw
 
@@ -585,6 +610,9 @@ proc dm_POSTGAME { root } {
   # say "game completed" or something...
 
   # we make a new frame, and stick dm_GAME in it...
+  
+  variable hold_time
+  set hold_time [ expr [ clock seconds ] + 30 ]
   
   set p $root.dmGAME
 

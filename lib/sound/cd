@@ -30,49 +30,49 @@ proc Begin { length } {
 
     set ::Mixer::cd 40
 
-    sched_add once $now 12 [ eh add { 
-	::STrack::SFplay /usr/photon/tracks/begin-generic.wav
-	lappend ekill $sched_data(id)
-    } ]
+#    sched_add once $now 12 [ eh add { 
+#	::STrack::SFplay /usr/photon/tracks/begin-generic.wav
+#	lappend ekill $sched_data(id)
+#    } ]
     
-    sched_add once $now 25 [ eh add {
-	::STrack::CDPlay $::STrack::trackno
-	lappend ekill $sched_data(id)
-    } ]
+#    sched_add once $now 25 [ eh add {
+#	::STrack::CDPlay $::STrack::trackno
+#	lappend ekill $sched_data(id)
+#    } ]
 
-    sched_add once $now 25 [ eh add {
-	::Mixer::fade cd 75 5
-	lappend ekill $sched_data(id)
-    } ]
+#    sched_add once $now 25 [ eh add {
+#	::Mixer::fade cd 75 5
+#	lappend ekill $sched_data(id)
+#    } ]
 
-    sched_add once [ expr $now + 30 ] [ expr $length - 5 ] [ eh add {
-	::Mixer::fade cd 0 10
-	lappend ekill $sched_data(id)
-    } ]  
+#    sched_add once [ expr $now + 30 ] [ expr $length - 5 ] [ eh add {
+#	::Mixer::fade cd 0 10
+#	lappend ekill $sched_data(id)
+#    } ]  
 
-    sched_add once [ expr $now + 30 ] [ expr $length - 2 ] [ eh add {
-	::STrack::SFplay /usr/photon/tracks/end-generic.wav 
-	lappend ekill $sched_data(id)
-    } ]
+#    sched_add once [ expr $now + 30 ] [ expr $length - 2 ] [ eh add {
+#	::STrack::SFplay /usr/photon/tracks/end-generic.wav 
+#	lappend ekill $sched_data(id)
+#    } ]
 
-    sched_add once [ expr $now + 30 ] [ expr $length + 3 ] [ eh add {
-	::STrack::CDStop
-	lappend ekill $sched_data(id)
-    } ]
+#    sched_add once [ expr $now + 30 ] [ expr $length + 3 ] [ eh add {
+#	::STrack::CDStop
+#	lappend ekill $sched_data(id)
+#    } ]
 
 }
 
 proc CDPlay { trackno } {  
-    catch [ list exec $::STrack::cdplayer play $trackno "&" ] 
+#    catch [ list exec $::STrack::cdplayer play $trackno "&" ] 
 
 }
 
 proc CDStop { } {
-    catch [ list exec $::STrack::cdplayer stop "&" ]
+#    catch [ list exec $::STrack::cdplayer stop "&" ]
 }
 
 proc SFplay { filename } {
-    catch [ list exec $::STrack::soundplayer "-d" "/dev/audio1" $filename "&" ] result
+#    catch [ list exec $::STrack::soundplayer "-d" "/dev/audio1" $filename "&" ] result
 }
 
 

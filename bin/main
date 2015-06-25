@@ -818,7 +818,14 @@ proc saveGame { } {
 
   set rantime [ SqlTime [ clock seconds ] ]
 
-  pg_exec $conn "update g_data set state = 'COMPLETE', valid = 1, rantime = '$rantime', red_teamscore = $Game::teamscore(red), green_teamscore = $Game::teamscore(green) where id = $Ginfo::gameid and storeid = $Conf::storeid";
+  set statement "update g_data set state = 'COMPLETE', valid = true, rantime = '$rantime', red_teamscore = $Game::teamscore(red), green_teamscore = $Game::teamscore(green) where id = $Ginfo::gameid and storeid = $Conf::storeid"
+  set res [ pg_exec $conn $statement ]
+  
+  if {[pg_result $res -status] != "PGRES_COMMAND_OK"} {
+    puts "[pg_result $res -error] executing '$statement'"
+  }
+  
+  pg_result $res -clear
 
   pg_disconnect $conn
 }

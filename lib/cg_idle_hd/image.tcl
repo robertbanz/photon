@@ -14,7 +14,7 @@ proc run { p } {
 #    bind $p.advert <<Destroy>> "::Idlescreen::end"
 
     # wait 1 minute
-    set nextevent [ after 2000 "::dm_next_IDLE $p" ]
+    set nextevent [ after 30000 "::dm_next_IDLE $p" ]
 }
 
 proc end { p } {

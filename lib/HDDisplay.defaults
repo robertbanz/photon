@@ -48,14 +48,9 @@
 *dmPREGAME.l1*text:			Stuff Part 1
 *dmGAME.status.terminated.text:		Maneuver Complete
 
-*pgIDLE*Font: -*-lucidatypewriter-bold-*-*-*-17-*-*-*-*-*-*
-
-
-*pgIDLE*score*Font: -*-courier-bold-r-*-*-19-*-*-*-*-*-*
-*pgIDLE*score*teamname.Font: -*-lucida-bold-*-*-*-21-*-*-*-*-*-*
-*pgIDLE*status*Font: -*-lucida-bold-r-*-*-24-*-*-*-*-*-*
-*pgIDLE*status.what1*Font: -*-lucida-bold-r-*-*-16-*-*-*-*-*-*
-*pgIDLE*status.what2*Font: -*-lucida-bold-r-*-*-16-*-*-*-*-*-*
-*pgIDLE*hbh*Font: -*-lucida-bold-i-*-*-17-*-*-*-*-*-*
-*pgIDLE.status.terminated.text:		Maneuver Complete
-
+*pgIDLE*Font: -*-bitstream vera sans-bold-*-*-*-17-*-*-*-*-*-*
+*pgIDLE*status*foreground: #aaaaaa
+*pgIDLE*status*background: #000000
+*pgIDLE*score*Font: -*-bitstream vera sans-bold-r-*-*-33-*-*-*-*-*-*
+*pgIDLE*score*teamname.Font: -*-bitstream vera sans-bold-*-*-*-32-*-*-*-*-*-*
+*pgIDLE*status*Font: -*-bitstream vera sans-bold-r-*-*-30-*-*-*-*-*-*
