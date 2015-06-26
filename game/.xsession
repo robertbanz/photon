@@ -1,5 +1,5 @@
 #!/bin/sh
 xterm &
-/usr/photon/bin/main &
 x11vnc -display :0 -forever &
+/usr/local/bin/start-pulseaudio-x11
 exec /usr/local/bin/fvwm2

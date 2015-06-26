@@ -252,15 +252,6 @@ proc pg_main_IDLE { root } {
 
   upvar 0 viewable_height vh
   upvar 0 viewable_width vw
-
-#  image create photo xpbug -file $Conf::gamepath/images/xp-bug.gif
-#  $c create image 10 0 -image xpbug -anchor nw
-#  $c create arc 0 13 20 33 -start 90 -extent 90 -style arc -outline yellow -width 3
-#  $c create arc [ expr $vw - 23 ] [ expr $vh - 23 ] [ expr $vw - 3 ] [ expr $vh - 3 ] -extent 90 -start 270 -width 3 -outline yellow -style arc
-#  $c create arc 0 [ expr $vh - 23 ] 20 [ expr $vh - 3 ] -extent 90 -start 180 -width 3 -outline yellow -style arc
-#  $c create arc [ expr $vw - 23 ] 13 [ expr $vw - 3 ] 33  -extent 90 -start 0 -width 3 -outline yellow -style arc
-
-  # plop game_display in it...
   
   frame $p.score -width $vw -height $vh
   game_display_setup $p
@@ -297,20 +288,8 @@ proc pg_main_IDLE { root } {
 
   set stheight [ expr [ winfo reqheight $p.status ] + 2 ]
 
-#  $c create line 0 [ expr $vh - $stheight - 5 ]  $vw [ expr $vh - $stheight - 5 ]  -fill yellow -width 3
 
   $c create window [ expr $vw / 2 ] [ expr $vh - 4 ] -anchor s -window $p.status
-
-# draw outside border
-
-#  $c create line 0 18 0 [ expr $vh - 8 ] -width 3 -fill yellow
-#  $c create line [ expr $vw - 3 ] 18 [ expr $vw - 3 ] [ expr $vh - 8 ] -width 3 -fill yellow
-  # bug is 38 wide (arc is 10)
-#  $c create line 48 13 [ expr $vw - 13 ] 13 -width 3 -fill yellow
-#  $c create line 10 [ expr $vh - 3 ] [ expr $vw - 13 ] [ expr $vh - 3 ] -width 3 -fill yellow
-
-#  image create photo score_strip -file $Conf::gamepath/images/prevgame.tif
-#  $c create image [ expr $vw - 20 ] 0 -image score_strip -anchor ne
 
   return $p
 }
@@ -402,9 +381,3 @@ set go 0
 set current_mode ""
 
 OpenSocket
-
-
-
-
-
-

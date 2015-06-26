@@ -212,14 +212,10 @@ proc DisplayMode { mode } {
 	
 	  variable viewable_height
 	  variable viewable_width
-	
-    #	grid rowconfigure . 0 -minsize $viewable_height
-    #	grid columnconfigure . 0 -minsize $viewable_width
-    #	grid .dm$mode -row 0 -column 0 -sticky n 
-#	place .dm$mode -in . -x 0 -y 0 -width $viewable_width -height $viewable_height -anchor nw
-  place $new_parent -in . -x 0 -y 0 -width $viewable_width -height $viewable_height -anchor nw
-	set current_parent $new_parent
-	set current_mode $mode
+
+    place $new_parent -in . -x 0 -y 0 -width $viewable_width -height $viewable_height -anchor nw
+    set current_parent $new_parent
+    set current_mode $mode
   }
 }
 
@@ -326,31 +322,6 @@ proc dm_next_IDLE { p } {
   ::Idlescreen::run $r
   place $r -relx 0.0 -rely 0.0 -width $viewable_width -height $viewable_height  
 }
-
-
-#proc dm_IDLE_Set_Advert_Image { } {
-#  
-#  variable advert_width
-#  variable advert_height
-#
-#  image create photo tmpimage -file $Conf::gamepath/images/xptest.tif
-#  
-#  if { ! [ info exists ::advert_image ] } {
-#    image create photo ::advert_image
-#  }
-#
-#  set ih [ image height tmpimage ]
-#  set iw [ image width tmpimage ]
-#  
-#  if { $ih > $advert_height } {
-#    set ih $advert_height
-#  }
-#
-#  if { $iw > $advert_width } {
-#    set iw $advert_width
-#  }
-#  ::advert_image copy tmpimage -from 0 0 $iw $ih
-#}
 
 proc dm_PREGAME { root } {
   
