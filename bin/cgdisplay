@@ -143,6 +143,8 @@ proc GT_time_formatter { name name2 what } {
   set ::GT_time_formatted [ format "%d:%02d" [ expr { $GT_time / 60 } ] [ expr { $GT_time % 60 } ] ]    
 }
 
+set hold_time 0
+
 proc setGameMode { mode } {
     
   set conn [ pg_connect $Conf::dbname -host $Conf::dbhost ]
@@ -153,7 +155,7 @@ proc setGameMode { mode } {
 	  set ::Game::mode_descr $array(descr)
 	  set ::Game::setparams $array(params)
   }
-    
+  
   pg_select $conn "select name, descr, code, params from g_modes where storeid = $Conf::storeid and name = '$mode'" array {
 	  set ::Game::code $array(code)
 	  set ::Game::mode $array(name)
@@ -206,16 +208,18 @@ proc DisplayMode { mode } {
   set new_parent [ dm_$mode {} ]
     
   if { $new_parent != $current_parent } {
-	  if { $current_mode != "" } {
+	  if { [ winfo exists $current_parent ] && $current_mode != "" } {
 	    destroy $current_parent
 	  }
 	
 	  variable viewable_height
 	  variable viewable_width
 
-    place $new_parent -in . -x 0 -y 0 -width $viewable_width -height $viewable_height -anchor nw
-    set current_parent $new_parent
-    set current_mode $mode
+    if { [ winfo exists $new_parent ] } {
+      place $new_parent -in . -x 0 -y 0 -width $viewable_width -height $viewable_height -anchor nw
+      set current_parent $new_parent
+      set current_mode $mode
+    }
   }
 }
 
@@ -338,11 +342,13 @@ proc dm_PREGAME { root } {
   }
   
   if { $hd_mode } {
+    set r ${root}.c
     set p ${root}.c.dmPREGAME
     canvas ${root}.c -width $viewable_width -height $viewable_height  
     canvas $p -width 958 -height 720
     ${root}.c create window [ expr ( $viewable_width - 958 ) / 2 ] 0 -window $p -anchor nw
   } else {
+    set r ${root}.dmPREGAME
     set p $root.dmPREGAME
     canvas $p -width $viewable_width -height $viewable_height
   }
@@ -377,7 +383,7 @@ proc dm_PREGAME { root } {
 
   dm_PREGAME_alert_flash
 
-  return $p
+  return $r
 }
 
 proc dm_PREGAME_alert_flash { } {

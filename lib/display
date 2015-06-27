@@ -145,8 +145,11 @@ proc ServerRead { sock } {
 
     catch { close $sock }
     ::debuglog "display connection apparently closed"
-    return
+    return -code ok
   }
+
+  set rc 0
+  set line ""
 
   catch { set rc [ gets $sock line ] } {
     return -code ok
