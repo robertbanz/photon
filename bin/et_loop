@@ -1,0 +1,9 @@
+#!/bin/sh
+while true; do
+  echo "Updating software from server."
+  /usr/photon/bin/update_remote_sw
+  echo "Starting remote display"
+  su - et -c startx
+  echo "Sleeping 30 seconds..."
+  sleep 30
+done
