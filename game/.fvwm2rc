@@ -77,11 +77,7 @@ Mouse 3	TSIF	A	RaiseLower
 
 ######################## Initialization Functions ############################
 AddToFunc InitFunction 	  "I" exec xsetroot -solid black
-#+			  "I" exec xclock -digital -bg black -fg grey -display -0+0
-#+			  "I" exec xterm
-#+			  "I" exec main
-#+			  "I" exec cgdisplay -display :0.1 -visual truecolor
-#+			  "I" exec pgdisplay -display :0.2 -visual truecolor 
++			  "I" exec /usr/photon/bin/run_main_sw
 
 
 ######################## Menus ###################

@@ -1,0 +1,2 @@
+#!/bin/sh
+/usr/photon/bin/main < /dev/null > /var/tmp/gamelog 2>&1

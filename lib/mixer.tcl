@@ -29,40 +29,35 @@ namespace eval ::Mixer {
     }
   }
 
-  proc fadestep { device target stepsize } {
+  proc fadestep { device target startval starttime endtime } {
     global sched_data
-    upvar ::Mixer::${device}_float float
+    set nowtime [ clock milliseconds ]
+    set nowtime [ expr { $nowtime / 1000.0 } ]
+    set fade_duration [ expr { $endtime - $starttime } ]
+    set fade_remaining [ expr { $endtime - $nowtime } ]
 
-    set now [ set ::Mixer::$device ]
-    set float [ expr $float + $stepsize ]
-    set next [ expr int($float) ]
-
-    if { $stepsize < 0 } {
-      if { $next < $target } {
-        set next $target
-      }
-    } elseif { $stepsize > 0 } {
-      if { $next > $target } { 
-        set next $target
-      }
+    if { $fade_remaining < 0 } {
+      set fade_remaining 0
     }
 
-    if { $next != $target } {
-      set ::Mixer::${device}_schedule [ after 250 [ list ::Mixer::fadestep $device $target $stepsize ] ]
+    # what percentage of the way should we be?
+    set fade_percentage [ expr { double( $fade_duration - $fade_remaining ) / $fade_duration } ]
+
+    set fade_difference [ expr { $target - $startval } ]
+    set desired_value [ expr { ( $fade_difference * $fade_percentage ) + $startval } ]
+    
+    set ::Mixer::$device [ expr { int($desired_value) } ]
+
+    if { int($desired_value) == $target } {
+      return -code ok
     }
-    set ::Mixer::$device $next
+
+    if { $fade_remaining != 0 } {
+      set ::Mixer::${device}_schedule [ after 250 [ list ::Mixer::fadestep $device $target $startval $starttime $endtime ] ]
+    }
   }
 
   proc fade { device target seconds } { 
-
-  #if { [ info exists ::Mixer::${device}_schedule ] } {
-  #    upvar ::Mixer::${device}_schedule v
-  #    catch [ list  sched_delete $v ]
-  #    upvar ::Mixer::${device}_event e
-  #    catch [ list  eh delete $e ]
-  #    
-  #}
-
     if { [ info exists ::Mixer::${device}_schedule ] } {
       upvar 0 ::Mixer::${device}_schedule stuff
       after cancel $stuff
@@ -70,17 +65,7 @@ namespace eval ::Mixer {
 
     # upvar ::Mixer::$device now 
     set now [ set ::Mixer::$device ]
-    set ::Mixer::${device}_float $now
-    set stepsize [ expr (( $target - $now ) / ( $seconds * 4.00 )) ]
-    # puts "stepsize for $device is $stepsize"
-
-    puts [ list ::Mixer::fadestep $device $target $stepsize ]
-    set ::Mixer::${device}_schedule [ after 250 [ list ::Mixer::fadestep $device $target $stepsize ] ]
-# set ::Mixer::${device}_schedule [ sched_add forever [ clock seconds ] .25 [ set ::Mixer::${device}_event [ eh add "::Mixer::fadestep $device $target $stepsize" ] ] ]
-  
+    set timenow [ clock seconds ]
+    ::Mixer::fadestep $device $target $now $timenow [ expr $timenow + $seconds ]
   }
-#    Mixer::fadestep vol 0 -3
-
 }
-
-    

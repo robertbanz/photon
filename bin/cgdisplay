@@ -182,9 +182,9 @@ proc ClientRead { sock } {
   if { [ eof $sock ] } {
     # socket got closed
 	  variable s
-	  close $s
+	  catch { close $s }
 	  # begin the open loop again..
-	  OpenSocket
+	  OpenSocket_Wrapper
 	  return -code ok
   }  
   ::Display::ClientRead $sock 
@@ -606,20 +606,22 @@ proc ChangeState { name name2 op } {
   DisplayMode $::Display::Server::STATE
 }
 
+proc OpenSocket_Wrapper { } {
+  if { [ catch { OpenSocket } err ] } {
+    puts "failed on opensocket..., $err"
+    after 1000 OpenSocket_Wrapper
+    return -code ok
+  }
+}
+
 proc OpenSocket { } {
   global s
   global go
   
   trace vdelete ::Display::Server::STATE w ChangeState
   
-  set bob [ catch "socket $::Conf::server_name $::Conf::disp_listenport" s ]
+  set s [ socket $::Conf::server_name $::Conf::disp_listenport ]
   
-  if { $bob != 0 } {
-    puts "Failed to open game computer connection...sleeping"
-    after 1000 OpenSocket
-    return -code ok
-  }
-
   fconfigure $s -buffering line
   fconfigure $s -blocking 1
   
@@ -646,5 +648,5 @@ proc OpenSocket { } {
 set go 0
 set current_mode ""
 
-OpenSocket
+OpenSocket_Wrapper
 

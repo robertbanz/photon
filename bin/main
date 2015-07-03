@@ -151,7 +151,7 @@ set disp_Socket [ socket -server ::Display::Accept $::Conf::disp_listenport ]
 
 
 # fade field audio to their appropriate values
-Mixer::fade vol 75 10
+Mixer::fade vol 100 10
 #Mixer::fade pcm 75 10
 #Mixer::fade cd 75 10
 Mixer::fade rec $Conf::max_background_audio 10
@@ -613,17 +613,8 @@ proc Idle_To_Pregame { } {
   set GT_direction -1
   set GT_description "Time Until Start:"
 
-  after [ expr { 10 * 1000 } ] { ::Mixer::fade rec 0 10 }
-#  sched_add once $button_push_time 10 [ eh add { 
-#    ::Mixer::fade rec 0 10 
-#    lappend ekill $sched_data(id)
-#  } ]
+  after [ expr { 5 * 1000 } ] { ::Mixer::fade rec 0 10 }
   after [ expr { 30 * 1000 } ] { Pregame_To_Game }
-
-#  sched_add once $button_push_time 30 [ eh add { 
-#    Pregame_To_Game 
-#    lappend ekill $sched_data(id)
-#  } ]
 
   namespace eval ::Display ServerPregameInit
 
@@ -659,9 +650,6 @@ proc Pregame_To_Game { } {
   set GT_description "Time Remaining:"
 
   after [ expr { $Ginfo::length * 1000} ] { Game_To_Postgame }
-#  sched_add once $game_start_time $Ginfo::length [ eh add { Game_To_Postgame 
-#     lappend ekill $sched_data(id)
-#  } ]
   set ::Photon_ps::phaseron 1
   set STATE GAME
 }
@@ -684,28 +672,16 @@ proc Game_To_Postgame { } {
   set GT_decription ""
 
   # whatever goes here...
-  after [ expr { 18 * 1000 } ] Postgame_To_Idle
   saveGame
   savePods
 
-  after [ expr { 10 * 1000 } ] { Mixer::fade rec $Conf::max_background_audio 7 }
-#  sched_add once [ clock seconds ] 10 [ eh add { 
-#    Mixer::fade rec $Conf::max_background_audio 7
-#    lappend ekill $sched_data(id)
-#  } ]
-
+  after [ expr { 10 * 1000 } ] { Mixer::fade rec $Conf::max_background_audio 10 }
   after [ expr { 18 * 1000 } ] { Postgame_To_Idle }
-#  sched_add once [ clock seconds ] 18 [ eh add { 
-#    Postgame_To_Idle 
-#    lappend ekill $sched_data(id)
-#  } ]
-
   set ::Photon_ps::phaseron 0
 
   set STATE POSTGAME
 }
 
-# set eh_Postgame_To_Idle [ eh add Postgame_To_Idle ]
 
 proc Postgame_To_Idle { } {
   global STATE
@@ -871,11 +847,4 @@ proc audioControl { } {
 #    pack .audio.field .audio.digital .audio.cd .audio.background .audio.backgroundmax -side top
   pack .audio.field .audio.background .audio.backgroundmax -side top
 }
-
-
-
-
-
-
-
 

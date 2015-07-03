@@ -35,9 +35,11 @@ proc Accept { newSock addr port } {
 
   ::debuglog "display connection accepted from $addr/$port"
 
+  fconfigure $newSock -blocking 0
+  fconfigure $newSock -buffering line
+
   fileevent $newSock readable [ list namespace eval ::Display [ list ServerRead $newSock ] ]
 
-  fconfigure $newSock -blocking 0
   set writable_$newSock 1
   set subscriptions_$newSock { }
 
@@ -130,6 +132,18 @@ proc ServerStreamWriteBuffer { name element op } {
     set buffer [ lreplace $buffer 0 0 ]
   }
   sflush $sock
+  return -code ok
+}
+
+proc CloseSock { sock } {
+  variable streaming_sockets
+  if { [ lsearch $streaming_sockets $sock ] != -1 } {
+    set j [ lsearch $streaming_sockets $sock ]
+    set streaming_sockets [ lreplace $streaming_sockets $j $j ]
+  }
+  catch { close $sock }
+  ::debuglog "display connection apparently closed"
+  return -code ok
 }
 
 proc ServerRead { sock } {
@@ -137,14 +151,7 @@ proc ServerRead { sock } {
   variable streaming_sockets
 
   if [ eof $sock ] {
-    # quickly remove it from the list
-    if { [ lsearch $streaming_sockets $sock ] != -1 } {
-      set j [ lsearch $streaming_sockets $sock ]
-      set streaming_sockets [ lreplace $streaming_sockets $j $j ]
-    }
-
-    catch { close $sock }
-    ::debuglog "display connection apparently closed"
+    CloseSock $sock
     return -code ok
   }
 
@@ -177,7 +184,7 @@ proc ServerRead { sock } {
 
     if { $x != $command } {
         sputs $sock "503 Unknown Command"
-        flush $sock
+        sflush $sock
     }
   }
 }
@@ -196,7 +203,8 @@ proc ServerHandler_STATUS { sock line } {
   } else {
     sputs $sock "100 IDLE"
   }
-  flush $sock
+  sflush $sock
+  return -code ok
 }
 
 proc ServerHandler_UPDATE { sock line } {
@@ -210,6 +218,7 @@ proc ServerHandler_UPDATE { sock line } {
   ServerDumpGameInfo $sock
 
   sflush $sock
+  return -code ok
 }
 
 proc ServerDumpGameInfo { sock } {
@@ -228,6 +237,7 @@ proc ServerDumpGameInfo { sock } {
     upvar 0 ::Game::$myvar stuff
     sputs $sock "903-$myvar $stuff"
   }
+  return -code ok
 }
 
 proc ServerHandler_MODE { sock line } {
@@ -388,12 +398,16 @@ proc ClientRead { sock } {
 proc sputs { sock message } {
   if { [ catch [ list puts $sock $message ] stuff ] } {
     ::warninglog "write error to socket $sock ($stuff)"
-  }
+    CloseSock $sock
+    return -code ok
+  } 
 }
 
 proc sflush { sock } {
-  if { [ catch [ flush $sock ] stuff ] } {
+  if { [ catch { flush $sock } stuff ] } {
     ::warninglog "flush error to socket $sock ($stuff)"
+    CloseSock $sock
+    return -code ok
   }
 }
 

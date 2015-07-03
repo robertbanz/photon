@@ -15,7 +15,7 @@ proc cr_newdata { sock } {
   if { [ catch [ list cr_readdata $sock ] stuff ]} {
     puts "cr_readdata failed $stuff"
   }
-  cr_readdata $sock
+  return -code ok
 }
 
 
@@ -47,8 +47,6 @@ proc cr_enable { on } {
     set mode "ON"
   }
   cr_sputs $cr_sock "ENABLE ON"
-  cr_sflush $cr_sock
-
   cr_sputs $cr_sock "READ ON"
   cr_sflush $cr_sock
 }
@@ -83,11 +81,9 @@ proc cr_readdata { sock } {
 }
 
 proc cr_sputs { sock message } {
-     
-    if { [ catch [ list puts $sock $message ] stuff ] } {
-        ::warninglog "write error to socket $sock ($stuff)"
-    }
-    
+  if { [ catch [ list puts $sock $message ] stuff ] } {
+    ::warninglog "write error to socket $sock ($stuff)"
+  }
 }
 
 proc cr_sflush { sock } {
@@ -110,6 +106,14 @@ proc cr_reconnect { } {
     puts "Failed to open CR connection... sleeping $::Conf::cr_server_name $::Conf::cr_listenport"
     after 1000 cr_reconnect
     return -code ok
+  }
+  set rc [ catch {
+    puts $s "ENABLE ON"
+    puts $s "READ ON"
+    flush $s
+  } stuff ]
+  if { $rc != 0 } {
+    ::warninglog "error initializing cr $stuff"
   }
   fconfigure $s -buffering line
   fconfigure $s -blocking 0
