@@ -116,12 +116,11 @@ proc ClientRead { sock } {
   if { [ eof $sock ] } {
     # socket got closed
     variable s
-    close $s
+    catch { close $s }
     # begin the open loop again..
-    OpenSocket
+    OpenSocket_Wrapper
     return -code ok
   }  
-#    puts [ ::Display::ClientRead $sock ]
   ::Display::ClientRead $sock 
 }
 
@@ -142,9 +141,9 @@ proc DisplayMode { mode } {
   set new_parent [ pg_$mode {} ]
 
   if { $new_parent != $current_parent } {
-    if { $current_mode != "" } {
-      destroy $current_parent
-    }
+	  if { [ winfo exists $current_parent ] && $current_mode != "" } {
+	    destroy $current_parent
+	  }
   
     variable viewable_height
     variable viewable_width
@@ -277,7 +276,7 @@ proc pg_main_IDLE { root } {
   set min [ lindex $timelist 1 ]
   set month [ lindex $datelist 1 ]
   set day [ lindex $datelist 2 ]
-  set what2string [ format "completed at %02d:%02d on %s/%02d" $hour $min $month $day ]
+  set what2string [ format "completed at %s:%s on %s/%s" $hour $min $month $day ]
 
   label $p.status.which -text "Game #$dispgameid"
   label $p.status.what1 -text "Mode: $Ginfo::mode, Length: $dispgamelength mins"
@@ -341,8 +340,15 @@ proc ChangeState { name name2 op } {
   DisplayMode $::Display::Server::STATE
 }
 
-proc OpenSocket { } {
+proc OpenSocket_Wrapper { } {
+  if { [ catch { OpenSocket } err ] } {
+    puts "failed on opensocket..., $err"
+    after 1000 OpenSocket_Wrapper
+    return -code ok
+  }
+}
 
+proc OpenSocket { } {
   global s
   global go
   trace vdelete ::Display::Server::STATE w ChangeState
@@ -351,7 +357,7 @@ proc OpenSocket { } {
   
   if { $bob != 0 } {
     puts "Failed to open game computer connection...sleeping"
-    after 1000 OpenSocket
+    after 1000 OpenSocket_Wrapper
     return -code ok
   }
 
@@ -380,4 +386,4 @@ proc OpenSocket { } {
 set go 0
 set current_mode ""
 
-OpenSocket
+OpenSocket_Wrapper
