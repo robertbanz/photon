@@ -145,15 +145,9 @@ namespace eval ::Display {
 
 set disp_Socket [ socket -server ::Display::Accept $::Conf::disp_listenport ]
 
-# always run this
-
-# sched_add forever [ clock seconds ] 0.25 [ eh add GT_update ]
-
 
 # fade field audio to their appropriate values
-Mixer::fade vol 100 10
-#Mixer::fade pcm 75 10
-#Mixer::fade cd 75 10
+Mixer::fade vol $Conf::field_audio 10
 Mixer::fade rec $Conf::max_background_audio 10
 
 proc openConsole { } {
