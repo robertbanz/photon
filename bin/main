@@ -607,7 +607,7 @@ proc Idle_To_Pregame { } {
   set GT_direction -1
   set GT_description "Time Until Start:"
 
-  after [ expr { 5 * 1000 } ] { ::Mixer::fade rec 0 10 }
+  after [ expr { 1 * 1000 } ] { ::Mixer::fade rec 0 12 }
   after [ expr { 30 * 1000 } ] { Pregame_To_Game }
 
   namespace eval ::Display ServerPregameInit
