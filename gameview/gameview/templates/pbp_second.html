@@ -1,0 +1,10 @@
+<tr class="{{ odd }}">
+  <td class="pbpremaining">
+    {{ time }}
+  </td>
+  <td class="pbpaction">
+    {% for i in events %}
+    {{ i }}<br>
+    {% endfor %}
+  </td>
+</tr>

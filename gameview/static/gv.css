@@ -1,0 +1,206 @@
+body {
+  color: white;
+  background: black;
+  font-family: "Helvetica", sans-serif;
+}
+
+a:link {
+  color: #a0a0a0;
+}
+a:visited {
+  color: #a0a0a0;
+}
+a:hover {
+  color: #ffff00;
+}
+a:active {
+  color: #ffff00;
+}
+
+.collectionstable table, td, th {
+  vertical-align: top;
+  cell-padding: 10px;
+}
+
+.collectionname {
+  white-space: nowrap;
+  text-align: right;
+  vertical-align: top;
+  padding-right: 10px;
+}
+
+.collectiondescription {
+  vertical-align: top;
+  font-size: .8em;
+  text-align: left;
+}
+
+.index {
+  margin-top: 50px;
+  margin-bottom: 50px;
+  margin-left: 20%;
+  margin-right: 20%;
+}
+
+.index h2 {
+  text-align: center;
+}
+
+.banner {
+  text-align: center;
+  font-size: 2em;
+  vertical-align: middle;
+}
+
+.scores {
+  border: 0px;
+  table-layout: fixed;
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+.mdtable {
+  table-layout: fixed;
+  vertical-align: top;
+  width: 100%;
+}
+
+.mdtable td {
+  vertical-align: top;
+}
+
+.collectionstats {
+  vertical-align: top;
+}
+
+td.right {
+  text-align: right;
+}
+
+.team {
+  width: 50%;
+  vertical-align: top;
+}
+
+.redteam {
+  color: red;
+  font-size: inherit;
+  table-layout: fixed;
+}
+
+.greenteam {
+  color: green;
+  font-size: inherit;
+  table-layout: fixed;
+  white-space: nowrap;
+}
+
+.playerscore {
+  text-align: right;
+}
+
+.playername {
+  text-align: left;
+}
+
+.teamscore {
+  text-align: right;
+}
+
+.teamname {
+  font-size: 1.1em;
+  text-align: center;
+  color: white;
+}
+
+.padding {
+  visibility: hidden;
+}
+
+#navigation {
+  text-align: center;
+  font-size: 1.5em;
+}
+
+.navbar table {
+  table-layout: fixed;
+  width: 50%;
+  border-collapse: collapse;
+}
+
+.navbar td {
+  padding: 5px;
+}
+.navbar a:link {
+  color: #ffffff;
+}
+.navbar a:visited {
+  color: #ffffff;
+}
+.navbar a:hover {
+  color: #ffff00;
+}
+
+.prev_day {
+  background-color: #aa0000;
+}
+
+.prev_game {
+  background-color: #aa3333;
+}
+
+.next_game {
+  background-color: #33aa33;
+}
+
+.next_day {
+  background-color: #00aa00;
+}
+
+.navgamenumber {
+  font-size: .7em;
+}
+
+.navbar td {
+  white-space: nowrap;
+  
+  text-align: center;
+  vertical-align: center;
+}
+
+#scorecontainer {
+  text-align: center;  
+}
+
+#scorecontainer p {
+  display: inline;
+}
+
+#pbpcontainer {
+  text-align: center;
+}
+
+.pbp {
+  font-size: .8em;
+  border-collapse: collapse;
+}
+
+.pbp td {
+  background-color: #303030;
+}
+
+.pbpaction {
+  vertical-align: top;
+  
+}
+
+.odd td {
+  background-color: #101010;
+}
+
+.pbpremaining {
+  vertical-align: top;
+  text-align: right;
+  color: grey;
+}
+

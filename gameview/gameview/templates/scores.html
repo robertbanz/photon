@@ -1,0 +1,70 @@
+<div id="scorecontainer">
+<p align="center">
+  <table class="scores">
+    <tbody>
+      <tr>
+        <td class="team">
+          <table class="redteam">
+            <thead>
+              <tr>
+                <th class="teamname" colspan="2"> {{ g.redteam.name }} </th>
+              </tr>
+            </thead>
+            <tbody>
+              {%for i in g.redteam.sortedplayers %}
+              <tr>
+                <td class="playername">{{ i.codename }}</td>
+                <td class="playerscore">{{ i.score }}</td>
+              </tr>
+              {% endfor %}
+              {%for i in red_pad %}
+                <tr>
+                  <td class="padding">w</td><td></td>
+                </tr>
+              {% endfor %}
+              <tr>
+                <td class="padding">wwwwwwwwwwwwwwww</td>
+                <td class="padding">wwwwwww</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td class="teamscore">{{ g.redteam.score }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </td>
+        <td class="team">
+          <table class="greenteam">
+            <thead>
+              <tr>
+                <th class="teamname" colspan="2"> {{ g.greenteam.name }} </th>
+              </tr>
+            </tbody>
+            {%for i in g.greenteam.sortedplayers %}
+            <thead>
+              <tr>
+                <td class="playername">{{ i.codename }}</td>
+                <td class="playerscore">{{ i.score }}</td>
+              </tr>
+              {% endfor %}
+              {%for i in green_pad %}
+                <tr>
+                  <td class="padding">w</td><td></td>
+                </tr>
+              {% endfor %}
+              <tr>
+                <td class="padding">wwwwwwwwwwwwwwww</td>
+                <td class="padding">wwwwwww</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td class="teamscore">{{ g.greenteam.score }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </td>
+      </tbody>
+    </tr>
+  </table>
+</p>
+</div>
