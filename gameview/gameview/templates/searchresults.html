@@ -1,0 +1,13 @@
+{{ search_form }}
+<table>
+  {% for result in searchresults %}
+  <tr>
+    <td>{{ result.collectionname }}</td>
+    <td>{{ result.gamedatetime }}</td>
+    <td><A HREF="{{ result.url }}">{{ result.gamenumber }}</A></td>
+    <td>{{ result.redteamname }}</td>
+    <td>{{ result.greenteamname }}</td>
+    <td>{{ result.gamenode }}</td>
+  </tr>
+  {% endfor %}
+</table>

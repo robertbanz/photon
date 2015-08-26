@@ -2,8 +2,20 @@
 
 import re
 import string
+import json
+import hashlib
 
 from datetime import datetime
+from django.db import transaction
+from string import Template
+
+
+def dictfetchall(cursor):
+  desc = cursor.description
+  return [
+      dict(zip([col[0] for col in desc], row))
+      for row in cursor.fetchall()
+  ]
 
 class Player(object):
   """A Photon Player"""
@@ -31,7 +43,6 @@ class Player(object):
 
   def __str__(self):
     return "(%s) %s %d" % (self.passportid(), self.codename(), self.score())
-
 
 class GameEvent(object):
   """An play-by-play event"""
@@ -73,6 +84,162 @@ class Team(object):
   def sortedplayers(self):
     return sorted(self._players, key=lambda score: score.score(), reverse=True)
 
+class GameSearchResult(object):
+  def __init__(self, collectionname, gameid):
+    self._redteamname = None
+    self._greenteamname = None
+    self._gamemode = None
+    self._gamenumber = None
+    self._gamedatetime = None
+    self._collectionname = collectionname
+    self._gameid = gameid
+
+  def redteamname(self):
+    return self._redteamname
+
+  def greenteamname(self):
+    return self._greenteamname
+
+  def gamemode(self):
+    return self._gamemode
+
+  def gamenumber(self):
+    return self._gamenumber
+
+  def gamedatetime(self):
+    return self._gamedatetime
+
+  def collectionname(self):
+    return self._collectionname
+
+  def gameid(self):
+    return self._gameid    
+
+  def set_url(self, url):
+    self._url = url
+
+  def url(self):
+    return self._url;
+
+  def populate_from_result(self, result):
+    self._redteamname = result['red_teamname']
+    self._greenteamname = result['green_teamname']
+    self._gamemode = result['mode']
+    if 'manuever' in result:
+      self._gamenumber = result['manuever']
+    else:
+      self._gamenumber = result['id']
+    self._gamedatetime = result['rantime']
+    
+
+class GameSearch(object):
+  # TODO: these should be defined somewhere else.
+  classiccollections = ['baltimore89']
+  collections = sorted(['laurel', 'pc2015', 'baltimore92', 'chicago92'])
+
+  def __init__(self, connection, searchterms={ }):
+    self._searchterms = searchterms
+    self._connection = connection
+    self._resultcount = None
+    self._resultlist = []
+    self._myhash = None
+  def _serialize(self):
+    return json.dumps(self._searchterms)
+
+  def _deserialize(self, data):
+    self._searchterms = json.loads(data)
+    return True
+    
+  def searchterms(self):
+    return self._searchterms
+
+  def _hash(self):
+    if self._myhash:
+      return self._myhash
+    else:
+      digester = hashlib.sha1()
+      digester.update(self._serialize())
+      return digester.hexdigest()
+  
+  def _load_from_hash(self):
+    '''load search paramters from database by hash'''
+    cursor = self._connection.cursor()
+    cursor.execute('SELECT * from searches where hash = %s', [self._hash()])
+    if cursor.rowcount == 0:
+      raise LookupError
+    result = dictfetchall(cursor)
+    self._deserialize(result[0]['searchterms'])
+  
+  def _populate_results(self):
+    cursor = self._connection.cursor()
+    for collectionname in sorted(self.collections):
+      collection = newgamecollection(collectionname, self._connection)
+      self._resultlist.extend(collection.searchresultsfor(self._hash()))
+
+  def do_with_hash(self, hash):
+    self._myhash = hash
+    self._load_from_hash()
+    self._populate_results()
+    return self._resultlist
+
+  def do(self):
+    cursor = self._connection.cursor()
+    cursor.execute('SELECT * FROM searches WHERE hash = %s', [self._hash()])
+    if cursor.rowcount != 1:
+      self._do_real_search()
+    self._populate_results()
+    return self._resultlist
+  
+  def nextid(self, collection, gameid):
+    cursor = self._connection.cursor()
+    cursor.execute(
+        'SELECT * FROM search_results WHERE hash = %s '
+        'AND ((id > %s and collection = %s) '
+        'OR (collection > %s)) '
+        'ORDER BY collection ASC, id ASC LIMIT 1', [
+          self._hash(), gameid, collection, collection])
+    if cursor.rowcount != 1:
+      return None
+    else:
+      result = dictfetchall(cursor)
+      return { 'collection': result[0]['collection'],
+               'id': result[0]['id'] }
+    
+  def previousid(self, collection, gameid):
+    cursor = self._connection.cursor()
+    cursor.execute(
+        'SELECT * FROM search_results WHERE hash = %s '
+        'AND ((id < %s and collection = %s) '
+        'OR (collection < %s)) '
+        'ORDER BY collection DESC, id DESC LIMIT 1', [
+          self._hash(), gameid, collection, collection])
+    if cursor.rowcount != 1:
+      return None
+    else:
+      result = dictfetchall(cursor)
+      return { 'collection': result[0]['collection'],
+               'id': result[0]['id'] }
+        
+  # This should do transactions somehows.
+  def _do_real_search(self):
+    cursor = self._connection.cursor()
+    cursor.execute("DELETE FROM search_results WHERE hash = %s", [
+        self._hash()])
+    cursor.execute("DELETE FROM searches WHERE hash = %s", [
+        self._hash()])
+    for collectionname in self.collections:
+      collection = newgamecollection(collectionname, self._connection)
+      searchquery = collection.searchquery(self._searchterms)
+      cursor.execute(
+          "INSERT INTO search_results (hash, collection, id) " +
+          searchquery, [self._hash(),collectionname])
+      #transaction.set_dirty()
+    cursor.execute(
+        "INSERT INTO searches (hash, searchterms, created) VALUES " +
+        "(%s, %s, CURRENT_TIMESTAMP)", [self._hash(), self._serialize()])
+    #transaction.commit_unless_managed()
+    return self._hash()
+    
 
 class Game(object):
   """A Game.
@@ -94,10 +261,6 @@ class Game(object):
     self._indexid = int(gameid)
     self._events = []
     self._slot = {}
-
-#  def teams(self):
-#    """Return a list of teams (always 0 & 1)"""
-#    return [0, 1]
 
   def redteam(self):
     """Returns a Team"""
@@ -301,6 +464,37 @@ class SQLGameCollection(GameCollection):
         slotid += 20
       game._slot[slotid] = p
 
+  def searchquery(self, parameters):
+    query_template = Template(
+        "SELECT DISTINCT %s as hash, %s as collection, d.id as id " +
+        "FROM "
+        "$gametable d, $playerstable p WHERE d.id = p.id AND "
+        "p.searchcodename LIKE '%%$codename%%' ORDER BY d.id")
+    if 'codename' not in parameters:
+      raise LookupError
+    myparams = {'gametable': self._games_table,
+                'playerstable': self._players_table,
+                'codename': parameters['codename']}
+    return query_template.substitute(myparams)
+
+  def searchresultsfor(self, hash):
+    out = []
+    query_template = Template(
+        "SELECT DISTINCT d.id as id, d.mode as mode, " +
+        "d.storeid as storeid, d.red_teamname as red_teamname, " +
+        "d.green_teamname as green_teamname, d.rantime as rantime " +
+        "FROM $gametable d, search_results r WHERE "
+        "hash = %s AND collection = %s AND d.id = r.id AND " +
+        "d.storeid = %s ORDER BY d.id ASC")
+    query = query_template.substitute({'gametable': self._games_table})
+    cursor = self._connection.cursor()
+    cursor.execute(query, [hash, self.name(), self._store])
+    for row in dictfetchall(cursor):
+      gs = GameSearchResult(self.name(), row['id'])
+      gs.populate_from_result(row)
+      out.append(gs)
+    return out
+      
 class TCLGameCollection(SQLGameCollection):
   def getgamebyid(self, indexid):
     cursor = self._connection.cursor()
@@ -334,6 +528,21 @@ class TCLGameCollection(SQLGameCollection):
     for event in self._dictfetchall(cursor):
       ev = self._playbyplayreplace(game, event['event'])
       game._events.append(GameEvent(event['timestamp'], ev))
+
+  def searchquery(self, parameters):
+    query_template = Template(
+        "SELECT DISTINCT %s as hash, %s as collection, d.id as id " +
+        "FROM " +
+        "$gametable d, $playerstable p WHERE d.id = p.id AND " +
+        "d.state = 'COMPLETE' AND " +
+        "p.searchcodename LIKE '%%$codename%%' ORDER BY d.id")
+    if 'codename' not in parameters:
+      raise LookupError
+    myparams = {'gametable': self._games_table,
+                'playerstable': self._players_table,
+                'codename': parameters['codename']}
+    return query_template.substitute(myparams)
+
 
   def _playbyplayreplace(self, game, event):
     o = []

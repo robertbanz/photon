@@ -35,6 +35,11 @@ a:active {
   text-align: left;
 }
 
+.searchform {
+  margin-left: 20%;
+  margin-right: 20%;
+}
+
 .index {
   margin-top: 50px;
   margin-bottom: 50px;

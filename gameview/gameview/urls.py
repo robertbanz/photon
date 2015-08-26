@@ -20,6 +20,14 @@ from gameview import view
 
 urlpatterns = [
     url(r'^$', view.home, name='home'),
+    # first time search op.
+    url(r'^search/$', view.search, name='search'),
+    # view the search results (id, page)
+    url(r'^search/([a-z0-9]+)/([0-9]+)/$', view.search, name='search'),
+    # view something from the search results
+    url(r'^search/([a-z0-9]+)/([0-9]+)/([A-Za-z0-9]+)/([0-9]+)/', view.search,
+        name='search'),
+    # view a game
     url(r'^([A-Za-z0-9]+)/([0-9]+|start|end)/', view.game, name='game'),
 #    url(r'^admin/', include(admin.site.urls)),
 ]
