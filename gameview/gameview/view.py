@@ -4,6 +4,7 @@ import traceback
 
 from django.db import connection
 from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from django.template.loader import get_template
 from django.template import Context
 from gameview.game import newgamecollection
@@ -20,9 +21,7 @@ from gameview.game import newgamecollection
 
 
 def home(request):
-  return HttpResponse('''
-  Hello World
-  ''')
+  return HttpResponseRedirect('/static/gvindex.html')
 
 def game_url(collection, gameid):
   return "/game/%s/%d" % (collection, gameid)

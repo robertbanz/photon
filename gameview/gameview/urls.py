@@ -20,6 +20,6 @@ from gameview import view
 
 urlpatterns = [
     url(r'^$', view.home, name='home'),
-    url(r'^game/([A-Za-z0-9]+)/([0-9]+|start|end)/', view.game, name='game'),
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^([A-Za-z0-9]+)/([0-9]+|start|end)/', view.game, name='game'),
+#    url(r'^admin/', include(admin.site.urls)),
 ]

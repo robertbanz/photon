@@ -192,7 +192,7 @@ class MockGameCollection(GameCollection):
   def getgamebyid(self, gameid):
     o = Game(self, gameid)
     o._gamemode = "Public"
-    o._gamelength = 300
+    o._gamelength = 360
     o._gamedatetime = datetime(1986, 05, 05, 12, 00)
     o._gamenumber = 999
     return o
@@ -398,7 +398,7 @@ class ClassicGameCollection(SQLGameCollection):
     o._gamenumber = result[0]['manuever']
     o._gamedatetime = result[0]['rantime']
     o._gamemode = result[0]['mode']
-    o._gamelength = 300
+    o._gamelength = 360
 
     self._loadplayerstogame(o, indexid)
     return o
