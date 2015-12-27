@@ -29,10 +29,10 @@ def game_url(collection, gameid):
   return "/game/%s/%d" % (collection, gameid)
   
 def search_game_url(searchid, page, collection, gameid):
-  return "/search/%s/%d/%s/%s" % (searchid, page, collection, gameid)
+  return "/game/search/%s/%d/%s/%s" % (searchid, page, collection, gameid)
 
 def search_index_url(searchid, page):
-  return "/search/%s/%d" % (searchid, page)
+  return "/game/search/%s/%d" % (searchid, page)
 
 def format_seconds(s):
   return "%dm%02s" % (int(s / 60), s % 60)
@@ -230,7 +230,7 @@ def search_post(request):
   search = GameSearch(connection, {'codename': codename})
   # populate database with search results.
   search.do()
-  return HttpResponseRedirect('/search/%s/0' % (search._hash()))
+  return HttpResponseRedirect('/game/search/%s/0' % (search._hash()))
 
 def search_form(request):
   search_template = get_template('templates/searchform.html')
