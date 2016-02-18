@@ -31,18 +31,38 @@
 
 namespace photon {
 
-static const char kPsyncName[] = "PSYNC";
-static const char kGsyncName[] = "GSYNC";
-static const char kEsyncName[] = "ESYNC";
-static const char kUnknownName[] = "UNKNOWN";
+extern const unsigned char kPsync;
+extern const unsigned char kGsync;
+extern const unsigned char kEsync;
+extern const char *kPsyncName;
+extern const char *kGsyncName;
+extern const char *kEsyncName;
+extern const char *kUnknownName;
 
-static unsigned int kNumSlots = 67;
+extern unsigned int kNumSlots;
+
+extern unsigned int kRedRfStart;
+extern unsigned int kGreenRfStart;
+
+extern unsigned char kRedBase;
+extern unsigned char kGreenBase;
+
+extern unsigned char kRedIrStart;
+extern unsigned char kGreenIrStart;
 
 const char* GetSyncNameFromByte(const unsigned char byte);
 unsigned char GetSyncByteFromName(const char* name);
 
 inline bool IsTxSlot(unsigned int slot) {
   if (slot == 0 || (slot > 24 && slot < 30) || (slot > 54 && slot < 60)) {
+    return true;
+  }
+  return false;
+}
+
+inline bool IsRealRxSlot(unsigned int slot) {
+  if (((slot >= kRedRfStart) && (slot < kRedRfStart + 20)) ||
+      ((slot >= kGreenRfStart) && (slot < kGreenRfStart + 20))) {
     return true;
   }
   return false;

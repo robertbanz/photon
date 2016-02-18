@@ -43,12 +43,12 @@ byte ip[] = { 192, 168, 3, 78 };
 EthernetServer server = EthernetServer(23);
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(250000);
 
   Ethernet.begin(mac, ip);
   server.begin();
 
-  gcinterface = new photon::GcInterface(&Serial, &server);
+  gcinterface = new photon::GcInterface(nullptr, &server);
   // put your setup code here, to run once:
   crdriver = new photon::CrDriver(&Serial1,
                                   13, // sync,

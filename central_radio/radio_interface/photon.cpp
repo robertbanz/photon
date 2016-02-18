@@ -27,6 +27,26 @@
 
 namespace photon {
 
+const unsigned char kPsync = 0xc5;
+const unsigned char kGsync = 0xca;
+const unsigned char kEsync = 0xdd;
+
+const char* kPsyncName = "PSYNC";
+const char* kGsyncName = "GSYNC";
+const char* kEsyncName = "ESYNC";
+const char* kUnknownName = "UNKNOWN";
+
+unsigned int kNumSlots = 67;
+
+unsigned int kRedRfStart = 5;
+unsigned int kGreenRfStart = 31;
+
+unsigned char kRedBase = 0x35;
+unsigned char kGreenBase = 0x2b;
+
+unsigned char kRedIrStart = 0x42;
+unsigned char kGreenIrStart = 0x80;
+
 const char* GetSyncNameFromByte(const unsigned char byte) {
   switch (byte) {
     case 0xc5:

@@ -36,7 +36,7 @@ std::string GcData::ToString() const {
   char buffer[255];
   std::string out;
   snprintf(buffer, 255,
-           "905 %d %s %d %d", sequence, TypeToCstring(type), slot, data);
+           "905 %d %d %s %d", sequence, slot, TypeToCstring(type), data);
   out.assign(buffer);
   return out;
 }
@@ -51,11 +51,16 @@ std::string SerialGcConnection::ProcessInput() {
     int read = connection_->readBytes(
         buffer, num_bytes <= sizeof(buffer) ? num_bytes : sizeof(buffer));
     input_buffer_.append(buffer, read);
+    // Terminate at \r or \n.
     unsigned int pos = input_buffer_.find('\n');
     if (pos != std::string::npos) {
       line = input_buffer_.substr(0, pos);
       connection_->println(line.c_str());
       input_buffer_.replace(0, pos + 1, "");
+      // kill \r if it's there.
+      if ((pos = line.find('\r')) != std::string::npos) {
+        line[pos] = '\0';
+      }
     }
   }
   return line;
@@ -85,6 +90,10 @@ std::string EthernetGcConnection::ProcessInput() {
       if (pos != std::string::npos) {
         line = input_buffer_.substr(0, pos);
         input_buffer_.replace(0, pos + 1, "");
+        // kill \r if it's there.
+        if ((pos = line.find('\r')) != std::string::npos) {
+          line[pos] = '\0';
+        }
       }
     }
   }
@@ -125,11 +134,11 @@ void GcInterface::CheckInputs(CrDriver* driver) {
 void GcInterface::ParseAndDo(CrDriver* driver, const std::string& input,
                              GcConnection* connection) {
   // Pull out command name.
-  int pos = input.find(' ');
+  unsigned int pos = input.find(' ');
   auto command = input.substr(0, pos);
   auto arg = input.substr(pos + 1, std::string::npos);
-  Serial.println(command.c_str());
-  Serial.println(arg.c_str());
+//  Serial.println(command.c_str());
+//  Serial.println(arg.c_str());
   if (command == "SETSYNC") {
     unsigned char sync = GetSyncByteFromName(arg.c_str());
     if (sync == 0x00) {
@@ -149,6 +158,21 @@ void GcInterface::ParseAndDo(CrDriver* driver, const std::string& input,
       return;
     } else {
       connection->SendOutput("503-Bad Write");
+      return; // tood: print error
+    }
+  } else if (command == "TUNE") {
+    char* result;
+    int data = strtol(arg.c_str(), &result, 10);
+    if (result != nullptr) {
+      unsigned long old = driver->Tune(data);
+      connection->SendOutput("100-TUNE");
+      Serial.print("Tune ");
+      Serial.print(old);
+      Serial.print("->");
+      Serial.println(data);
+      return;
+    } else {
+      connection->SendOutput("503-Bad Tune");
       return; // tood: print error
     }
   } else if (command == "READ" ||

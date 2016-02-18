@@ -30,6 +30,7 @@
 #include <queue>
 
 #include "gc_interface.h"
+#include "photon.h"
 
 #include "Arduino.h"
 
@@ -38,13 +39,11 @@ namespace photon {
 
 class TxQueue {
  public:
-   TxQueue() {}
+   TxQueue(unsigned int max) : max_(max) {}
    ~TxQueue() {}
  
    void Clear() {
-     while (!queue_.empty()) {
-       queue_.pop();
-     }
+     queue_.clear();
    }
  
    bool Empty() {
@@ -57,19 +56,68 @@ class TxQueue {
  
    unsigned char Pop() {
      unsigned char out = queue_.front();
-     queue_.pop();
+     queue_.erase(queue_.begin());
      return out;
    }
  
    void Insert(unsigned char in) {
-     queue_.push(in);
+     if (queue_.size() > max_) {
+       // Check to see if he's in the queue already.
+       for (auto i : queue_) {
+         if (i == in) {
+           Serial.println("Queue Overflow: not adding duplicate");
+           return;
+         }
+       }
+#if 0
+       bool is_there[255] = {false};
+       bool try_again = false;
+       std::vector<unsigned char> newqueue;
+       // De-dup the queue?
+       for (auto i : queue_) {
+         if (is_there[i] == false) {
+           is_there[i] = true;
+           newqueue.push_back(i);
+         } else {
+           Serial.print("Queue Overflow: removed a dup of ");
+           Serial.println(i);
+           try_again = true;
+         }
+       }
+       if (try_again) {
+         queue_ = newqueue;
+         queue_.push_back(in);
+       } else {
+         Serial.println("Queue Overflow: not adding ");
+       }
+#endif
+       return;
+     }
+
+     queue_.push_back(in);
    }
  
  private:
-   std::queue<unsigned char> queue_;   
+   const unsigned int max_;
+   std::vector<unsigned char> queue_;   
 
 };
 
+class Faker {
+ public:
+   Faker();
+   ~Faker() { }
+   // Clears has_base state;
+   void Reset();
+   // If there's a faker for this slot, return it, else 0.
+   unsigned char GetRxForSlot(unsigned int slot);
+ private:
+   unsigned int GetPlayerForSlot(unsigned int slot);
+   unsigned char GetIdForSlot(unsigned int slot);
+   unsigned char GetIrForPlayer(unsigned int i);
+   bool is_fake_[40];
+   bool has_base_[40];
+};
 
 class Signal {
  public:
@@ -112,10 +160,19 @@ class CrDriver {
 
   void SetSync(unsigned char sync) {
     current_sync_ = sync;
+    if (current_sync_ == kPsync) {
+      faker_.Reset();
+    }
   }
 
   void Transmit(unsigned char data) {
     transmit_queue_.Insert(data);
+  }
+  
+  unsigned long Tune(unsigned long micros) {
+    unsigned long old = slot_micros_;
+    slot_micros_ = micros;
+    return old;
   }
   
  private:
@@ -145,7 +202,7 @@ class CrDriver {
   unsigned long target_micros_;
   
   // # of microseconds in a slot.
-  int slot_micros_;
+  unsigned long slot_micros_;
 
   // Transmission queue.
   TxQueue transmit_queue_;
@@ -156,6 +213,7 @@ class CrDriver {
   // Current sequence id
   unsigned char sequence_num_;
   GcInterface* gc_interface_;
+  Faker faker_;
 };
 
 }  // namespace
