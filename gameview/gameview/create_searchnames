@@ -1,0 +1,15 @@
+alter table laurel_g_players add column searchcodename varchar(16);
+alter table bmore90_g_players add column searchcodename varchar(16);
+alter table pc2015_g_players add column searchcodename varchar(16);
+alter table chi90_g_players add column searchcodename varchar(16);
+update laurel_g_players set searchcodename = lower(replace(name, ' ', ''));
+update bmore90_g_players set searchcodename = lower(replace(name, ' ', ''));
+update pc2015_g_players set searchcodename = lower(replace(name, ' ', ''));
+update chi90_g_players set searchcodename = lower(replace(name, ' ', ''));
+create index laurel_g_players_searchcodename on laurel_g_players using btree(searchcodename);
+create index bmore90_g_players_searchcodename on bmore90_g_players using btree(searchcodename);
+create index pc2015_g_players_searchcodename on pc2015_g_players using btree(searchcodename);
+create index chi90_g_players_searchcodename on chi90_g_players using btree(searchcodename);
+create table searches (hash varchar, searchterms, varchar, created timestamp);
+create table search_results(hash varchar, collection varchar, id int);
+create index search_results_index on search_results hash, collection, id     

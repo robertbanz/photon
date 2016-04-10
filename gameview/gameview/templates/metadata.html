@@ -1,0 +1,40 @@
+<div id="gamemetadata">
+  <p>
+    <table class="mdtable">
+      <tr>
+        <td class="left">
+          <table class="gamestats">
+            <tr>
+              <td>Date:</td>
+              <td>{{ g.gamedatetime }} ({{ g.gamedayofweek }})</td>
+            </tr>
+            <tr>
+              <td>Maneuver:</td>
+              <td>{{ g.gamenumber }}</td>
+            </tr>
+            <tr>
+              <td>Mode:</td>
+              <td>{{ g.gamemode }}</td>
+            </tr>
+            <tr>
+              <td>Length:</td>
+              <td>{{ g.gamelength }}</td>
+            </tr>
+          </table>
+        </td>
+        <td class="right">
+          <table class="collectionstats">
+            <tr>
+              <td>Collection ID:</td>
+              <td>{{ g.collection.name }}</td>
+            </tr>
+            <tr>
+              <td>Index ID:</td>
+              <td>{{ g.indexid }}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </p>
+</div>
