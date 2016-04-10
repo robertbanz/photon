@@ -18,10 +18,10 @@ proc cr_newdata { sock } {
   return -code ok
 }
 
-
 proc cr_setsync { sync } {
   variable cr_sock
   cr_sputs $cr_sock "SETSYNC $sync"
+  puts "SETSYNC $sync"
   cr_sflush $cr_sock
 }
 
@@ -61,6 +61,7 @@ proc cr_readdata { sock } {
 
   if { [ gets $sock line ] < 0 } {
   } else {
+    set line [ string trim $line "\r\n" ]
     set e [ split $line {} ]
     set code [ join [ lrange $e 0 2 ] "" ]
     set message [ join [ lrange $e 4 end ] "" ]
@@ -101,12 +102,27 @@ proc cr_init { } {
 proc cr_reconnect { } {
   variable cr_sock
 
-  set rc [ catch "socket $::Conf::cr_server_name $::Conf::cr_listenport" s ]
+  if {[info exists ::Conf::cr_tty ]} {
+    puts "Opening radio at $::Conf::cr_tty"
+    set rc [ catch "open $::Conf::cr_tty RDWR" s ]
+  } else {
+    puts "Opening radio at $::Conf::cr_server_name $::Conf::cr_listenport"
+    set rc [ catch "socket $::Conf::cr_server_name $::Conf::cr_listenport" s ]
+  }
+
   if { $rc != 0 } {
-    puts "Failed to open CR connection... sleeping $::Conf::cr_server_name $::Conf::cr_listenport"
+    puts "Failed to open CR connection... sleeping"
+    puts $s
     after 1000 cr_reconnect
     return -code ok
   }
+
+  fconfigure $s -buffering line
+  fconfigure $s -blocking 0
+  fconfigure $s -mode 115200,n,8,1
+  fconfigure $s -translation binary
+  fconfigure $s -eofchar {}
+
   set rc [ catch {
     puts $s "ENABLE ON"
     puts $s "READ ON"
@@ -115,8 +131,6 @@ proc cr_reconnect { } {
   if { $rc != 0 } {
     ::warninglog "error initializing cr $stuff"
   }
-  fconfigure $s -buffering line
-  fconfigure $s -blocking 0
 
   fileevent $s readable [ list ::cr_newdata $s ]
 
