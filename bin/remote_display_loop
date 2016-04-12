@@ -1,4 +1,6 @@
 #!/bin/sh
+echo "Waiting for display to settle down."
+sleep 10
 while /bin/true; do
   echo "Updating software from server."
   /usr/photon/bin/update_remote_sw

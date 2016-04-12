@@ -76,7 +76,7 @@ proc game_cr_event_handler { serialnum slot action data } {
           set ::Photon::lastpollsn $serialnum
         } else {
           incr ::Photon::lastpollsn
-          if { $::Photon::lastpollsn == 255 } {
+          if { $::Photon::lastpollsn == 256 } {
             set ::Photon::lastpollsn 0
           }
           if { $::Photon::lastpollsn != $serialnum } {
