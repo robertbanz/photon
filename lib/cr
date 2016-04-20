@@ -13,7 +13,7 @@ proc cr_newdata { sock } {
     return -code ok
   }
   if { [ catch [ list cr_readdata $sock ] stuff ]} {
-    puts "cr_readdata failed $stuff"
+    ::warninglog "cr_readdata failed $stuff"
   }
   return -code ok
 }
@@ -21,7 +21,6 @@ proc cr_newdata { sock } {
 proc cr_setsync { sync } {
   variable cr_sock
   cr_sputs $cr_sock "SETSYNC $sync"
-  puts "SETSYNC $sync"
   cr_sflush $cr_sock
 }
 
@@ -69,13 +68,13 @@ proc cr_readdata { sock } {
 
     if { $code == 905 } {
       lappend cr_pending "$message"
-    } else {
-      puts $line
+    } elseif { $code == 999 } {
+      ::warninglog "$message"
     }
   }
   
   if { [ catch [ list ::Photon::cr_handler ] stuff ] } {
-    puts "cr_handler failed $stuff"
+    ::warninglog "cr_handler failed $stuff"
   }
 
   return -code ok
@@ -87,11 +86,10 @@ proc cr_sputs { sock message } {
   }
 }
 
-proc cr_sflush { sock } {
-    
-    if { [ catch [ flush $sock ] stuff ] } {
-        ::warninglog "flush error to socket $sock ($stuff)"
-    }
+proc cr_sflush { sock } {  
+  if { [ catch [ flush $sock ] stuff ] } {
+    ::warninglog "flush error to socket $sock ($stuff)"
+  }
 }   
 
 proc cr_init { } {
@@ -103,16 +101,16 @@ proc cr_reconnect { } {
   variable cr_sock
 
   if {[info exists ::Conf::cr_tty ]} {
-    puts "Opening radio at $::Conf::cr_tty"
+    ::warninglog "Opening radio at $::Conf::cr_tty"
     set rc [ catch "open $::Conf::cr_tty RDWR" s ]
   } else {
-    puts "Opening radio at $::Conf::cr_server_name $::Conf::cr_listenport"
+    ::warninglog "Opening radio at $::Conf::cr_server_name $::Conf::cr_listenport"
     set rc [ catch "socket $::Conf::cr_server_name $::Conf::cr_listenport" s ]
   }
 
   if { $rc != 0 } {
-    puts "Failed to open CR connection... sleeping"
-    puts $s
+    ::warninglog "Failed to open CR connection... sleeping"
+    ::warninglog $s
     after 1000 cr_reconnect
     return -code ok
   }
