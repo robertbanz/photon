@@ -1,3 +1,8 @@
+proc db_connect { } {
+  return [pg_connect -conninfo 
+      [list dbname = $Conf::dbname host = $Conf::dbhost]]
+}
+
 proc my_pg_exec { conn statement } {
   set result [ pg_exec $conn $statement ]
   if {[pg_result $result -status] != "PGRES_COMMAND_OK"} {

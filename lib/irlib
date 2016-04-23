@@ -1,0 +1,100 @@
+namespace eval ::IrLib {
+
+set fd ""
+set outqueue [list]
+set position 0
+
+set kEtBarker 0x9d
+set kEtNotBarker 0x62
+
+proc ir_setup { device } {
+  variable fd
+  
+  if { "$fd" ne "" } {
+    return -code error "Ir Device Already Initialized"
+  }
+
+  set rc [ catch {open $device RDWR} fd ]
+  if { $rc != 0 } {
+    return -code error "Cannot open Ir Device $device"
+  }
+  
+  fconfigure $fd -buffering none
+  fconfigure $fd -blocking 0
+  fconfigure $fd -encoding binary
+  fconfigure $fd -eofchar {}
+  fconfigure $fd -translation binary
+  fconfigure $fd -mode 1200,n,8,1
+  
+  return -code ok
+}
+
+proc ir_sendbyte { byte } {
+  ir_out [list [binary format c $byte]]
+}
+
+proc ir_enterpod { team slot mode } {
+  variable outqueue
+  variable position
+  variable kEtBarker
+  variable kEtNotBarker
+  
+  ir_stop
+  
+  if { $slot < 0 || $slot > 19 } {
+    return -code error "slot out of range"
+  }
+  
+  if { $team == 0 } {
+    set rfcode [expr {$Photon::RED_RFSTART + $slot}]
+    set ircode [expr {$Photon::REDIR + $slot}]
+  } elseif { $team == 1 } {
+    set rfcode [expr {$Photon::GRN_RFSTART + $slot}]
+    set ircode [expr {$Photon::GRNIR + $slot}]
+    if { $ircode == 0x80 } {
+      set ircode 0x94
+    }
+  } else {
+    return -code error "team out of range"
+  }
+  
+  set modecode [expr {$mode + 0xc0}]
+  
+  set checksum [\
+      expr {$kEtBarker ^ $kEtNotBarker ^ $ircode ^ $rfcode ^ $modecode}]
+  ir_out [list [binary format c $kEtBarker] \
+               [binary format c $kEtNotBarker] \
+               [binary format c $ircode] \
+               [binary format c $rfcode] \
+               [binary format c $modecode] \
+               [binary format c $checksum] ] 
+}
+
+proc ir_out { bytes } {
+  variable outqueue
+  variable position
+  ir_stop
+  set position 0
+  set outqueue $bytes
+  set schedule [after 16 {::IrLib::ir_event}]
+}
+
+proc ir_stop { } {
+  if { [ info exists ::IrLib::schedule ] } {
+    upvar 0 ::IrLib::schedule stuff
+    after cancel $stuff
+  }
+  return -code ok
+}
+
+proc ir_event { } {
+  variable outqueue
+  variable position
+  variable fd
+  variable schedule
+  set rc [catch [puts -nonewline $fd [lindex $outqueue $position]]]
+  set position [expr {($position + 1) % [llength $outqueue]}]
+  set schedule [after 16 {::IrLib::ir_event}] 
+}
+
+}

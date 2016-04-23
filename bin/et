@@ -47,11 +47,13 @@ namespace eval Conf {
   source /usr/photon/etc/game.conf
 }
 
-load $Conf::libpath/ph_et.so
+#load $Conf::libpath/ph_et.so
 
 source $Conf::gamepath/helpers
 source $Conf::gamepath/photon_vals
 source $Conf::gamepath/photon_interfaces
+source $Conf::gamepath/irlib
+
 
 if [ file exists $Conf::etdefaults ] {
   if [ catch { option readfile $Conf::etdefaults startup } err ] {
@@ -146,7 +148,7 @@ namespace eval ::Ginfo {
   trace variable id w ::Ginfo::FixId
 }
 
-ir_setup $Conf::ettty
+::IrLib::ir_setup $Conf::ettty
 
 #menu .menubar
 #. config -menu .menubar
@@ -1406,7 +1408,7 @@ proc EnterPod { team slot mode } {
 
   bind $j <Escape> { }
 
-  ir_enterpod $team [ expr { $slot - ( $team * 20 ) } ] $mode
+  ::IrLib::ir_enterpod $team [ expr { $slot - ( $team * 20 ) } ] $mode
 
   set Message "Press enter when pod is activated"
 
@@ -1419,7 +1421,7 @@ proc EnterPod { team slot mode } {
     tkwait variable cont
   }
 
-  ir_stop
+  ::IrLib::ir_stop
 
   grab release $j
   focus $old
@@ -1442,7 +1444,7 @@ proc irTestMenu { } {
 
   bind .irtestmenu <Destroy> { 
     if { $irfunc } { 
-      ir_stop 
+      ::IrLib::ir_stop 
       set irfunc 0  
     }
   }
@@ -1461,7 +1463,7 @@ proc irTestMenu { } {
 
     radiobutton $j.red.$i -text $i -relief flat \
         -variable irfunc -value $irval \
-        -command { ir_sendbyte $irfunc }
+        -command { ::IrLib::ir_sendbyte $irfunc }
 
     grid $j.red.$i -column 0 -row $i
 
@@ -1469,7 +1471,7 @@ proc irTestMenu { } {
   
     radiobutton $j.green.$i -text $i -relief flat \
         -variable irfunc -value $irval \
-        -command { ir_sendbyte $irfunc }
+        -command { ::IrLib::ir_sendbyte $irfunc }
 
     grid $j.green.$i -column 0 -row $i
   
@@ -1485,28 +1487,28 @@ proc irTestMenu { } {
 
   radiobutton $j.target -text "Target" -relief flat \
 -variable irfunc -value $::Photon::TARGET \
--command { ir_sendbyte [ expr { int($::Photon::TARGET) } ] }
+-command { ::IrLib::ir_sendbyte [ expr { int($::Photon::TARGET) } ] }
 
   grid $j.target -row 3 -column 0 -columnspan 2
 
   radiobutton $j.rbase -text "Red Base" -relief flat \
 -variable irfunc -value $::Photon::RBASE \
--command { ir_sendbyte [ expr { int($::Photon::RBASE) } ] }
+-command { ::IrLib::ir_sendbyte [ expr { int($::Photon::RBASE) } ] }
   radiobutton $j.rbase2 -text "Red BaseII" -relief flat \
 -variable irfunc -value $::Photon::RBASE2 \
--command { ir_sendbyte [ expr { int($::Photon::RBASE2) } ] }
+-command { ::IrLib::ir_sendbyte [ expr { int($::Photon::RBASE2) } ] }
   radiobutton $j.rtower -text "Red Tower" -relief flat \
 -variable irfunc -value $::Photon::RTOWER \
--command { ir_sendbyte [ expr { int($::Photon::RTOWER) } ] }
+-command { ::IrLib::ir_sendbyte [ expr { int($::Photon::RTOWER) } ] }
   radiobutton $j.gbase -text "Grn Base" -relief flat \
 -variable irfunc -value $::Photon::GBASE \
--command { ir_sendbyte [ expr { int($::Photon::GBASE) } ] }
+-command { ::IrLib::ir_sendbyte [ expr { int($::Photon::GBASE) } ] }
   radiobutton $j.gbase2 -text "Grn BaseII" -relief flat \
 -variable irfunc -value $::Photon::GBASE2 \
--command { ir_sendbyte [ expr { int($::Photon::GBASE2) } ] }
+-command { ::IrLib::ir_sendbyte [ expr { int($::Photon::GBASE2) } ] }
   radiobutton $j.gtower -text "Grn Tower" -relief flat \
 -variable irfunc -value $::Photon::GTOWER \
--command { ir_sendbyte [ expr { int($::Photon::GTOWER) } ] }
+-command { ::IrLib::ir_sendbyte [ expr { int($::Photon::GTOWER) } ] }
 
 
   grid $j.rbase -row 4 -column 0
