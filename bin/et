@@ -83,14 +83,16 @@ for { set x 0 } { $x < 40 } { incr x } {
 proc setGameMode { mode } {
   set conn [ pg_connect -conninfo [list dbname = $Conf::dbname host = $Conf::dbhost ] ]
     
-  pg_select $conn "select name, descr, code, params from g_modes where storeid = 0 and name = '$mode'" array {
+  pg_select $conn "select name, descr, code, params from g_modes where \
+      storeid = 0 and name = '$mode'" array {
     set ::Game::code $array(code)
     set ::Game::mode $array(name)
     set ::Game::mode_descr $array(descr)
     set ::Game::setparams $array(params)
   }
     
-  pg_select $conn "select name, descr, code, params from g_modes where storeid = $Conf::storeid and name = '$mode'" array {
+  pg_select $conn "select name, descr, code, params from g_modes where \
+      storeid = $Conf::storeid and name = '$mode'" array {
     set ::Game::code $array(code)
     set ::Game::mode $array(name)
     set ::Game::mode_descr $array(descr)
@@ -186,7 +188,10 @@ proc ButtonMenu { functionlist functionname } {
       } else {
         set bname $fname 
         button .buttonmenu.$bname -command $fname -text "F$i \n$ftitle"
-        place .buttonmenu.$bname -in .buttonmenu -relx [ expr ( 1.0 / 12.0 ) * ( $i - 1 )] -relwidth [ expr ( 1.0 / 12.0 ) ] -rely 0.0 -bordermode inside -relheight 1
+        place .buttonmenu.$bname -in .buttonmenu \
+            -relx [ expr ( 1.0 / 12.0 ) * ( $i - 1 )] \
+            -relwidth [ expr ( 1.0 / 12.0 ) ] \
+            -rely 0.0 -bordermode inside -relheight 1
         bind . $bindstring "ButtonMenuExec .buttonmenu.$bname"
       }
     }
@@ -310,12 +315,14 @@ proc LoadGame { gameid } {
   if { [ info exists old_game ] } {
     # if the previous game we were editing is in the
     # ETING state, change it back to it's old state
-    my_pg_exec $conn "update g_data set state = '$old_state' where id = $old_game and storeid = $Conf::storeid and state = 'ETING'"
+    my_pg_exec $conn "update g_data set state = '$old_state' where \
+        id = $old_game and storeid = $Conf::storeid and state = 'ETING'"
   }
 
   set Ginfo::gameid $gameid
 
-  set res [ pg_exec $conn "select * from g_data where id = $gameid and storeid = $Conf::storeid" ]
+  set res [ pg_exec $conn "select * from g_data where id = $gameid \
+      and storeid = $Conf::storeid" ]
 
   if { [ pg_result $res -numTuples ] != 1 } {
     pg_disconnect $conn
@@ -323,7 +330,8 @@ proc LoadGame { gameid } {
   }
 
   # set game to "ETING"
-  my_pg_exec $conn "update g_data set state='ETING' where id = $gameid and storeid = $Conf::storeid"  
+  my_pg_exec $conn "update g_data set state='ETING' where id = $gameid \
+      and storeid = $Conf::storeid"  
 
   pg_result $res -tupleArray 0 gdata
 
@@ -349,7 +357,8 @@ proc LoadGame { gameid } {
 
   # load player information
 
-  my_pg_select $conn "select team, slot, name, idnum from g_players where id = $gameid and storeid = $Conf::storeid and used " array {
+  my_pg_select $conn "select team, slot, name, idnum from g_players \
+      where id = $gameid and storeid = $Conf::storeid and used " array {
     set adder [ expr { $array(team) * 20 } ]
     set j [ expr { $array(slot) + $adder } ]
     set ::Ginfo::name($j) $array(name)
@@ -427,12 +436,18 @@ proc BeginGame { } {
     }
   }
 
-  my_pg_exec $conn "delete from g_data where id = $Ginfo::gameid and storeid = $Conf::storeid"
+  my_pg_exec $conn "delete from g_data where id = $Ginfo::gameid \
+      and storeid = $Conf::storeid"
   
   # inserto the game information
-  my_pg_exec $conn "insert into g_data ( id, modtime, state, mode, length, params, red_teamname, green_teamname, storeid, trackname) values ( $Ginfo::gameid, '$Ginfo::modtime', 'ETING', '$Ginfo::mode', $Ginfo::length, '$Ginfo::params', '$Ginfo::redteamname', '$Ginfo::greenteamname', $Conf::storeid, '$Ginfo::track' )"
+  my_pg_exec $conn "insert into g_data ( id, modtime, state, mode, length, \
+      params, red_teamname, green_teamname, storeid, trackname) \
+      values ( $Ginfo::gameid, '$Ginfo::modtime', 'ETING', '$Ginfo::mode', \
+      $Ginfo::length, '$Ginfo::params', '$Ginfo::redteamname', \
+      '$Ginfo::greenteamname', $Conf::storeid, '$Ginfo::track' )"
   
-  my_pg_exec $conn "delete from g_players where id = $Ginfo::gameid and storeid = $Conf::storeid"
+  my_pg_exec $conn "delete from g_players where id = $Ginfo::gameid and \
+      storeid = $Conf::storeid"
  
   for { set x 0 } { $x < 40 } { incr x } {
     if { $x < 20 } {
@@ -446,23 +461,28 @@ proc BeginGame { } {
     }
   
     if { $Ginfo::used($x) == 1 } {
-      my_pg_exec $conn  "insert into g_players (id, storeid, used, team, slot, name, idnum ) values ( $Ginfo::gameid, $Conf::storeid, [ int_as_bool $Ginfo::used($x) ], $colornum, $slot, '$Ginfo::name($x)', '$Ginfo::id($x)' )"
+      my_pg_exec $conn  "insert into g_players (id, storeid, used, team, slot, \
+          name, idnum ) values ( $Ginfo::gameid, $Conf::storeid, \
+          [ int_as_bool $Ginfo::used($x) ], $colornum, $slot, \
+          '$Ginfo::name($x)', '$Ginfo::id($x)' )"
       
       if { ( $codename_update($x) > 0 ) && ( "$Ginfo::id($x)" != "" ) } {
-        set result [ pg_exec $conn "select alias from member where memberid = '$Ginfo::id($x)'" ]
+        set result [ pg_exec $conn "select alias from member where \
+            memberid = '$Ginfo::id($x)'" ]
         if { [ pg_result $result -numTuples ] != 1 } {
-          puts "insert into member ( memberid, alias ) values ( '$Ginfo::id($x)', '$Ginfo::name($x)'"
-          pg_exec $conn "insert into member ( memberid, alias ) values ( '$Ginfo::id($x)', '$Ginfo::name($x)')"
+          pg_exec $conn "insert into member ( memberid, alias ) \
+              values ( '$Ginfo::id($x)', '$Ginfo::name($x)')"
         } else {
-          puts "insert into member ( memberid, alias ) values ( '$Ginfo::id($x)', '$Ginfo::name($x)'"
-          pg_exec $conn "update member set alias = '$Ginfo::name($x)' where memberid = '$Ginfo::name($x)'"
+          pg_exec $conn "update member set alias = '$Ginfo::name($x)' \
+              where memberid = '$Ginfo::name($x)'"
         }
         set codename_update($x) 0
       }
     }
   }
 
-  my_pg_exec $conn "update g_data set state='RUNNABLE' where storeid = $Conf::storeid and id = $Ginfo::gameid"
+  my_pg_exec $conn "update g_data set state='RUNNABLE' where storeid = \
+      $Conf::storeid and id = $Ginfo::gameid"
 
   set Message "Connecting to Game Computer..."
     
@@ -470,7 +490,8 @@ proc BeginGame { } {
     set Message "Error connecting to Game Computer"
   } else {
     fconfigure $s -buffering line
-    my_pg_exec $conn "update g_data set state='RUNNABLE' where storeid = $Conf::storeid and id = $Ginfo::gameid"
+    my_pg_exec $conn "update g_data set state='RUNNABLE' where \
+        storeid = $Conf::storeid and id = $Ginfo::gameid"
 
     set Message "Sending start command to Game Computer..."
     puts $s "START $Ginfo::gameid"
@@ -483,7 +504,8 @@ proc BeginGame { } {
     vwait finalcode
   
     if { $finalcode >= 500 } {
-      pg_exec $conn "update g_data set state='ETING' where storeid = $Conf::storeid and id = $Ginfo::gameid"
+      pg_exec $conn "update g_data set state='ETING' where storeid = \
+          $Conf::storeid and id = $Ginfo::gameid"
     }
   
   close $s
@@ -500,7 +522,6 @@ proc ET_client_flick { s } {
   if { [ eof $s ] } {
     set finalcode "000"
   }
-
 
   if { [ gets $s line ] < 0 } {
   } else {
@@ -576,12 +597,12 @@ proc EditGameParameters { toplevel } {
   menubutton $t.mode.mb -textvariable Game::mode_descr -menu $t.mode.mb.menu
   set m [ menu $t.mode.mb.menu -tearoff 0 ]
   foreach x [ get_GameModes ] {
-$m add command -label "$game_descr($x)" -command "setGameMode \"$x\";ParamsEditor $t.params.stuff"
+    $m add command -label "$game_descr($x)" -command \
+        "setGameMode \"$x\";ParamsEditor $t.params.stuff"
   }
 
   pack $t.mode.mb $t.mode.label -side right
   pack $t.mode -side top -pady 5 -expand y -fill y
-
 
   # game track
   frame $t.track
@@ -601,20 +622,26 @@ $m add command -label "$game_descr($x)" -command "setGameMode \"$x\";ParamsEdito
   
   frame $t.length
   label $t.length.label -text "Game Length:"
-  radiobutton $t.length.30sec -text "30sec" -value 30 -variable ::Ginfo::length
-  radiobutton $t.length.2min -text "2 min" -value 120 -variable ::Ginfo::length
-  radiobutton $t.length.6min -text "6 min" -value 360 -variable ::Ginfo::length
-  radiobutton $t.length.10min -text "10 min" -value 600 -variable ::Ginfo::length
-  radiobutton $t.length.12min -text "12 min" -value 720 -variable ::Ginfo::length
-  radiobutton $t.length.15min -text "15 min" -value 870 -variable ::Ginfo::length
-  radiobutton $t.length.20min -text "20 min" -value 1200 -variable ::Ginfo::length
-  radiobutton $t.length.1hr -text "1 hr" -value 3600 -variable ::Ginfo::length
+  radiobutton $t.length.30sec -text "30sec" -value 30 \
+      -variable ::Ginfo::length
+  radiobutton $t.length.2min -text "2 min" -value 120 \
+      -variable ::Ginfo::length
+  radiobutton $t.length.6min -text "6 min" -value 360 \
+      -variable ::Ginfo::length
+  radiobutton $t.length.10min -text "10 min" -value 600 \
+      -variable ::Ginfo::length
+  radiobutton $t.length.12min -text "12 min" -value 720 \
+      -variable ::Ginfo::length
+  radiobutton $t.length.15min -text "15 min" -value 870 \
+      -variable ::Ginfo::length
+  radiobutton $t.length.20min -text "20 min" -value 1200 \
+      -variable ::Ginfo::length
+  radiobutton $t.length.1hr -text "1 hr" -value 3600 \
+      -variable ::Ginfo::length
 
-#  pack $t.length.label $t.length.30sec $t.length.2min $t.length.6min $t.length.10min $t.length.12min $t.length.15min $t.length.20min $t.length.1hr -side left
   pack $t.length.label $t.length.30sec $t.length.6min  $t.length.1hr -side left
   
   pack $t.length -side top -pady 5 -expand y
-
 
   frame $t.params -width 700 -height 500
   label $t.params.title -text "Parameters"
@@ -627,18 +654,14 @@ $m add command -label "$game_descr($x)" -command "setGameMode \"$x\";ParamsEdito
   pack $t -expand y -fill both
 
   ParamsEditor $t.params.stuff
-
 }
 
 
 proc ParamsEditor { path } {
-
   set y 0
- 
   if { ! [ winfo exists $path ] } {
     return -code ok
   }
-  
   
   foreach x [ winfo children $path ] {
     destroy $x
@@ -656,8 +679,8 @@ proc ParamsEditor { path } {
 
   foreach x $::Game::paramslist { 
     label $path.canvas.stuff.p${y}label -text "$x"
-    entry $path.canvas.stuff.p${y}value -textvariable ::Game::Params::$x -width 5
-
+    entry $path.canvas.stuff.p${y}value -textvariable ::Game::Params::$x \
+        -width 5
     grid $path.canvas.stuff.p${y}label -column 0 -row $y
     grid $path.canvas.stuff.p${y}value -column 1 -row $y
     incr y
@@ -725,7 +748,8 @@ proc PreEnter { toplevel } {
 
   incr j
 
-  pg_select $conn "select * from g_data where storeid = $::Conf::storeid and ( state = 'ETABLE' OR state = 'SCHEDULE' OR state = 'ETING' )" data {
+  pg_select $conn "select * from g_data where storeid = $::Conf::storeid and \
+      ( state = 'ETABLE' OR state = 'SCHEDULE' OR state = 'ETING' )" data {
     set c 0
     set s $data(state)
   
@@ -762,14 +786,11 @@ proc Preenter_Load { id } {
 }
 
 proc Preenter_Down { id } {
-
   variable preenter_current
   variable preenter_list
-
   if { $preenter_current < [ llength $preenter_list ] } {
     Preenter_Goto [ lindex $preenter_list $preenter_current ]
   }
-
 }    
 
 proc Preenter_Up { id } {
@@ -781,7 +802,6 @@ proc Preenter_Up { id } {
   }
 
   return -code ok
-
 }
 
 
@@ -814,7 +834,6 @@ proc Preenter_Goto { id } {
 }
       
 proc EditGame { toplevel } {
-
   set bigtoplevel $toplevel
   global game_descr
   variable EditToplevel
@@ -854,17 +873,23 @@ proc EditGame { toplevel } {
         set bitmap "@$Conf::gamepath/images/rdblarrow.xbm"
       }
     
-      entry $toplevel.$color.$i.id -textvariable ::Ginfo::id($j) -state $state -width 10
-      entry $toplevel.$color.$i.name -textvariable ::Ginfo::name($j) -state $state -width 15
-      checkbutton $toplevel.$color.$i.enable -variable ::Ginfo::used($j) -command "EditEnable $toplevel.$color.$i.id $toplevel.$color.$i.name $ci $j" -text $i -state disabled
+      entry $toplevel.$color.$i.id -textvariable ::Ginfo::id($j) \
+          -state $state -width 10
+      entry $toplevel.$color.$i.name -textvariable ::Ginfo::name($j) \
+          -state $state -width 15
+      checkbutton $toplevel.$color.$i.enable -variable ::Ginfo::used($j) \
+          -command "EditEnable $toplevel.$color.$i.id \
+              $toplevel.$color.$i.name $ci $j" -text $i -state disabled
     
 
       label $toplevel.$color.$i.picker -bitmap $bitmap
       
       if { "$color" == "red" } {
-        pack $toplevel.$color.$i.picker $toplevel.$color.$i.enable $toplevel.$color.$i.id $toplevel.$color.$i.name -side left 
+        pack $toplevel.$color.$i.picker $toplevel.$color.$i.enable \
+            $toplevel.$color.$i.id $toplevel.$color.$i.name -side left 
       } else {
-        pack $toplevel.$color.$i.enable $toplevel.$color.$i.id $toplevel.$color.$i.name $toplevel.$color.$i.picker -side left
+        pack $toplevel.$color.$i.enable $toplevel.$color.$i.id \
+            $toplevel.$color.$i.name $toplevel.$color.$i.picker -side left
       }
     
       foreach x { picker id name enable } {
@@ -933,7 +958,9 @@ proc Edit_SetCurrent { num color } {
   variable EditToplevel
 
   if { [ info exists cur_old_num ] } {
-    $EditToplevel.$cur_old_color.$cur_old_num.picker configure -foreground [ $EditToplevel.$cur_old_color.$cur_old_num.picker cget -background ]
+    $EditToplevel.$cur_old_color.$cur_old_num.picker configure \
+        -foreground [ $EditToplevel.$cur_old_color.$cur_old_num.picker \
+            cget -background ]
   }
 
   $EditToplevel.$color.$num.picker configure -foreground "#ffffff"
@@ -972,10 +999,12 @@ proc Edit_Home { widget } {
     }
   }
     
-  if { [ info exists color ] && ( ( $::Ginfo::id($rnumber) != "" ) || ( $::Ginfo::name($rnumber) != "" ) ) } {
+  if { [ info exists color ] && ( ( $::Ginfo::id($rnumber) != "" ) \
+      || ( $::Ginfo::name($rnumber) != "" ) ) } {
     set ::Ginfo::used($rnumber) 1
          
-    EditEnable $EditToplevel.$color.$number.id $EditToplevel.$color.$number.name $ci $rnumber
+    EditEnable $EditToplevel.$color.$number.id \
+        $EditToplevel.$color.$number.name $ci $rnumber
   
     EnterPod $ci $rnumber $::Game::Params::etmode
     focus $EditToplevel.$color.$number.name
@@ -1006,7 +1035,8 @@ proc Edit_Delete { widget } {
     
   if { [ info exists color ] } {
     set ::Ginfo::used($rnumber) 0
-    EditEnable $EditToplevel.$color.$number.id $EditToplevel.$color.$number.name $ci $rnumber
+    EditEnable $EditToplevel.$color.$number.id \
+        $EditToplevel.$color.$number.name $ci $rnumber
   } 
 }
 
@@ -1051,13 +1081,15 @@ proc Edit_BarcodeRead { widget code } {
     
         if { $Ginfo::used($x) } {  
           focus $EditToplevel.$color.$i.id
-          catch [ list EditEnable $EditToplevel.$color.$i.id $EditToplevel.$color.$i.name $colorcode $x ]
+          catch [ list EditEnable $EditToplevel.$color.$i.id \
+              $EditToplevel.$color.$i.name $colorcode $x ]
           # enter up pod
           EnterPod $colorcode $x $::Game::Params::etmode
           focus $EditToplevel.$color.$i.name
         } else {
           set Ginfo::used($x) 1
-          catch [ list EditEnable $EditToplevel.$color.$i.id $EditToplevel.$color.$i.name $colorcode $x ]
+          catch [ list EditEnable $EditToplevel.$color.$i.id \
+              $EditToplevel.$color.$i.name $colorcode $x ]
           set Edit_BarcodeReadLockout 0
           return [ catch [ list Edit_BarcodeRead $widget $code ] ]
         }
@@ -1086,18 +1118,21 @@ proc Edit_BarcodeRead { widget code } {
     } else {
       set offset 0
     }
-    for { set x $offset } { $x < [ expr { $offset + $::Conf::max_etable_players } ] } { incr x } {
+    for { set x $offset } \
+        { $x < [ expr { $offset + $::Conf::max_etable_players } ] } { incr x } {
       set i [ expr { $x - $offset } ]
       if { ( $Ginfo::used($x) != 1 ) && ( "$Ginfo::id($x)" == "" ) } {
         if { "$code" != "" } {
           set Ginfo::used($x) 1
           set Ginfo::id($x) "$code"
-          catch [ list EditEnable $EditToplevel.$color.$i.id $EditToplevel.$color.$i.name $colornum $x ]
+          catch [ list EditEnable $EditToplevel.$color.$i.id \
+              $EditToplevel.$color.$i.name $colornum $x ]
           set Edit_BarcodeReadLockout 0
           return [ catch list [ Edit_BarcodeRead $widget "$code" ] ]
         } else {
           set Ginfo::used($x) 1
-          catch [ list EditEnable $EditToplevel.$color.$i.id $EditToplevel.$color.$i.name $colornum $x ]
+          catch [ list EditEnable $EditToplevel.$color.$i.id \
+              $EditToplevel.$color.$i.name $colornum $x ]
           set Edit_BarcodeReadLockout 0
           return -code break
         }
@@ -1112,14 +1147,14 @@ proc Edit_BarcodeRead { widget code } {
     
 
 proc Id_Message { } {   
-    global Message
-    set Message "Scan Passport Now"
+  global Message
+  set Message "Scan Passport Now"
 }
 
 proc Picker_Message { } {
-    global Message
-
-    set Message "<Delete> to remove player, <Insert> to add player, <Home> to re-enter player"
+  global Message
+  set Message "<Delete> to remove player, <Insert> to add player, \
+      <Home> to re-enter player"
 }
 
 proc Name_Message { } { 
@@ -1143,7 +1178,8 @@ proc AutoLoad_Name { slot } {
 
     # get next game ID from sequence
 
-    set res [ pg_exec $conn "select alias from member where memberid = '$::Ginfo::id($slot)'" ]
+    set res [ pg_exec $conn "select alias from member \
+        where memberid = '$::Ginfo::id($slot)'" ]
     set ntups [ pg_result $res -numTuples ]
 
     if { $ntups != 1 } {
@@ -1316,8 +1352,10 @@ proc EditEnable { idwidget namewidget color number } {
     $idwidget configure -state normal
     $namewidget configure -state normal
   
-    bind $idwidget <Return> "EnterPod $color $number $::Game::Params::etmode\ngrab release $idwidget\nfocus $namewidget\n"
-    bind $idwidget <KP_Enter> "EnterPod $color $number $::Game::Params::etmode\ngrab release $idwidget\nfocus $namewidget\n"
+    bind $idwidget <Return> "EnterPod $color $number \
+        $::Game::Params::etmode\ngrab release $idwidget\nfocus $namewidget\n"
+    bind $idwidget <KP_Enter> "EnterPod $color $number \
+        $::Game::Params::etmode\ngrab release $idwidget\nfocus $namewidget\n"
     
     bind $idwidget <Escape> "grab release $idwidget\nfocus $oldfocus"
   
@@ -1326,7 +1364,7 @@ proc EditEnable { idwidget namewidget color number } {
   
     grab $idwidget
     focus $idwidget
-      } else {
+  } else {
   
     bind $idwidget <Return> { }
     bind $idwidget <Escape> { }
@@ -1535,7 +1573,8 @@ proc goto_ViewCurrentGame { } {
   
   pack .contents.stuff
 
-  exec /usr/local/bin/wish8.6 /usr/photon/bin/cgdisplay -use [ winfo id .contents.stuff ] &
+  exec /usr/local/bin/wish8.6 /usr/photon/bin/cgdisplay \
+      -use [ winfo id .contents.stuff ] &
 }
 
 proc goto_ClearGame { } {
@@ -1618,7 +1657,8 @@ proc get_TrackNames { } {
   set conn [ pg_connect -conninfo [list dbname = $Conf::dbname host = $Conf::dbhost ] ]
 
   set l { }
-  pg_select $conn "select distinct name from g_tracks where type != 'cd'" array {
+  pg_select $conn "select distinct name from g_tracks \
+      where type != 'cd'" array {
       lappend l "$array(name)"
   }
   pg_disconnect $conn
@@ -1632,7 +1672,8 @@ proc get_GameModes { } {
 
   set l { }
 
-  pg_select $conn "select name, descr from g_modes where storeid = $Conf::storeid or storeid = 0" array {
+  pg_select $conn "select name, descr from g_modes \
+      where storeid = $Conf::storeid or storeid = 0" array {
     lappend l $array(name)
     set game_descr($array(name)) $array(descr)
   }

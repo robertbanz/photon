@@ -161,14 +161,16 @@ proc setGameMode { mode } {
 
   set conn [ pg_connect $Conf::dbname -host $Conf::dbhost ]
     
-  pg_select $conn "select name, descr, code, params from g_modes where storeid = 0 and name = '$mode'" array {
+  pg_select $conn "select name, descr, code, params from g_modes where \
+      storeid = 0 and name = '$mode'" array {
     set ::Game::code $array(code)
     set ::Game::mode $array(name)
     set ::Game::mode_descr $array(descr)
     set ::Game::setparams "$array(params)"
   }
 
-  pg_select $conn "select name, descr, code, params from g_modes where storeid = $Conf::storeid and name = '$mode'" array {
+  pg_select $conn "select name, descr, code, params from g_modes \
+      where storeid = $Conf::storeid and name = '$mode'" array {
     set ::Game::code $array(code)
     set ::Game::mode $array(name)
     set ::Game::mode_descr $array(descr)
@@ -289,7 +291,8 @@ proc editGameInfo { } {
   pack $r.length.label -side top
 
   foreach x { 30 60 120 300 600 1200 } {
-    radiobutton $r.length.$x -text [ expr $x / 60.0 ] -variable ::Ginfo::length -value $x
+    radiobutton $r.length.$x -text [ expr $x / 60.0 ] \
+        -variable ::Ginfo::length -value $x
     pack $r.length.$x -side bottom
   }
 
@@ -539,7 +542,8 @@ proc LoadSoundTrack { trackname length } {
 
   # select the asked-for track from the database...
 
-  set res [ pg_exec $conn "select * from g_tracks where name = '$trackname' and ( length = $length or length = 0 )" ]
+  set res [ pg_exec $conn "select * from g_tracks where name = \
+      '$trackname' and ( length = $length or length = 0 )" ]
 
   if { [ pg_result $res -numTuples ] != 1 } {
     warninglog "Cannot find track named $trackname"
@@ -669,7 +673,8 @@ proc Game_To_Postgame { } {
   saveGame
   savePods
 
-  after [ expr { 10 * 1000 } ] { Mixer::fade rec $Conf::max_background_audio 10 }
+  after [ expr { 10 * 1000 } ] {
+    Mixer::fade rec $Conf::max_background_audio 10 }
   after [ expr { 18 * 1000 } ] { Postgame_To_Idle }
   set ::Photon_ps::phaseron 0
 
@@ -698,7 +703,8 @@ proc ET_LoadGame { gameid } {
   
   set Ginfo::gameid $gameid
 
-  set res [ pg_exec $conn "select * from g_data where id = $gameid and storeid = $Conf::storeid" ]
+  set res [ pg_exec $conn "select * from g_data where id = $gameid and \
+      storeid = $Conf::storeid" ]
 
   if { [ pg_result $res -numTuples ] != 1 } {
     ::debuglog "--etxfer, invalid transfer of game $gameid"
@@ -728,7 +734,8 @@ proc ET_LoadGame { gameid } {
 
   # load player information
 
-  pg_select $conn "select team, slot, name, idnum from g_players where id = $gameid and storeid = $Conf::storeid and used " array {
+  pg_select $conn "select team, slot, name, idnum from g_players where \
+      id = $gameid and storeid = $Conf::storeid and used " array {
     set adder [ expr { $array(team) * 20 } ]
     set j [ expr { $array(slot) + $adder } ]
     set ::Ginfo::used($j) 1
@@ -772,7 +779,10 @@ proc saveGame { } {
           append savelist "set $var\($y\) \"$val($y)\"; "
         }
 
-        pg_exec $conn "update g_players set pod=$podnumber, score=$::Game::score($y), modeparams = '$savelist' where id = $Ginfo::gameid and storeid = $Conf::storeid and team = $t and slot = $x"
+        pg_exec $conn "update g_players set pod=$podnumber, \
+            score=$::Game::score($y), modeparams = '$savelist' \
+            where id = $Ginfo::gameid and storeid = $Conf::storeid and \
+            team = $t and slot = $x"
       }
     }
   }
@@ -782,13 +792,18 @@ proc saveGame { } {
     set timestamp [ lindex $l 0 ]
     set actionstring [ lrange $l 1 end ]
 
-    set res [ pg_exec $conn "insert into g_events ( id, storeid, timestamp, event ) values ( $Ginfo::gameid, $Conf::storeid, $timestamp, '$actionstring' )" ]
+    set res [ pg_exec $conn "insert into g_events \
+        ( id, storeid, timestamp, event ) values ( $Ginfo::gameid, \
+        $Conf::storeid, $timestamp, '$actionstring' )" ]
     pg_result $res -clear
   }
 
   set rantime [ SqlTime [ clock seconds ] ]
 
-  set statement "update g_data set state = 'COMPLETE', valid = true, rantime = '$rantime', red_teamscore = $Game::teamscore(red), green_teamscore = $Game::teamscore(green) where id = $Ginfo::gameid and storeid = $Conf::storeid"
+  set statement "update g_data set state = 'COMPLETE', valid = true, \
+      rantime = '$rantime', red_teamscore = $Game::teamscore(red), \
+      green_teamscore = $Game::teamscore(green) where id = $Ginfo::gameid \
+      and storeid = $Conf::storeid"
   set res [ pg_exec $conn $statement ]
   
   if {[pg_result $res -status] != "PGRES_COMMAND_OK"} {
@@ -813,7 +828,16 @@ proc savePods { } {
 
       if { ( $::Ginfo::used([Photon::rs_to_gs $i]) == 1 ) && 
            ( $::Photon::pp::id($i) != -1 ) } {
-        set res [ pg_exec $comm "insert into g_pods ( storeid, color, id, pod, syncmissed, wsyncrcvd, serror, ealarm, missed, invalid, valid, hitsent, hitsackn, slot, polls, mir ) values ( $Conf::storeid, '$x', $Ginfo::gameid, $::Photon::pp::idlu($i), $::Photon::pp::syncmissed($i), $::Photon::pp::wsyncrcvd($i), $::Photon::pp::serror($i), $::Photon::pp::ealarm($i), $::Photon::pp::missed($i), $::Photon::pp::invalid($i), $::Photon::pp::valid($i),$::Photon::pp::hitssent($i), $::Photon::pp::hitsackn($i), $i, $::Photon::pp::pollcount, $::Photon::pp::missinrow($i) )" ]
+        set res [ pg_exec $comm "insert into g_pods ( storeid, color, id, \
+            pod, syncmissed, wsyncrcvd, serror, ealarm, missed, invalid, valid, \
+            hitsent, hitsackn, slot, polls, mir ) values ( $Conf::storeid, \
+            '$x', $Ginfo::gameid, $::Photon::pp::idlu($i), \
+            $::Photon::pp::syncmissed($i), $::Photon::pp::wsyncrcvd($i), \
+            $::Photon::pp::serror($i), $::Photon::pp::ealarm($i), \
+            $::Photon::pp::missed($i), $::Photon::pp::invalid($i), \
+            $::Photon::pp::valid($i),$::Photon::pp::hitssent($i), \
+            $::Photon::pp::hitsackn($i), $i, $::Photon::pp::pollcount, 
+            $::Photon::pp::missinrow($i) )" ]
         pg_result $res -clear
       }
     }
@@ -831,14 +855,14 @@ proc audioControl { } {
   }
 
   toplevel .audio
-
-  scale .audio.field -from 0 -to 100 -length 200 -variable ::Mixer::vol -orient horizontal -label "Field Volume" -showvalue true
-#    scale .audio.digital -from 0 -to 100 -length 200 -variable ::Mixer::pcm -orient horizontal -label "CG Game Audio" -showvalue true
-#    scale .audio.cd -from 0 -to 100 -length 200 -variable ::Mixer::cd -orient horizontal -label "CD Game Audio" -showvalue true
-  scale .audio.background -from 0 -to 100 -length 200 -variable ::Mixer::rec -orient horizontal -label "Background Audio (current)" -showvalue true
-  scale .audio.backgroundmax -from 0 -to 100 -length 200 -variable Conf::max_background_audio -orient horizontal -label "Background Audio (max)" -showvalue true
-
-#    pack .audio.field .audio.digital .audio.cd .audio.background .audio.backgroundmax -side top
+  scale .audio.field -from 0 -to 100 -length 200 -variable ::Mixer::vol \
+      -orient horizontal -label "Field Volume" -showvalue true
+  scale .audio.background -from 0 -to 100 -length 200 -variable \
+      ::Mixer::rec -orient horizontal -label "Background Audio (current)" \
+      -showvalue true
+  scale .audio.backgroundmax -from 0 -to 100 -length 200 \
+      -variable Conf::max_background_audio -orient horizontal \
+      -label "Background Audio (max)" -showvalue true
   pack .audio.field .audio.background .audio.backgroundmax -side top
 }
 

@@ -62,8 +62,6 @@ set usage ": cgdisplay \[options] filename ...\noptions:"
 try {
   array set params [::cmdline::getoptions argv $options $usage]
 } trap {CMDLINE USAGE} {msg o} {
-  # Trap the usage signal, print the message, and exit the application.
-  # Note: Other errors are not caught and passed through to higher levels!
   puts $msg
   exit 1
 }
@@ -129,12 +127,10 @@ if { $hd_mode == 0 } {
 }
 
 for { set x 0 } { $x < 31 } { incr x } {
-  puts "alert/$x.tif"
   image create photo ::alert_count_$x -file $alertdir/$x.tif
 }
 
 foreach x { alert-blank alert-on background earthlings } {
-  puts "alert/$x.tif"
   image create photo ::alert_$x -file $alertdir/$x.tif
 }
 
@@ -322,7 +318,6 @@ proc dm_next_IDLE { p } {
   namespace eval ::Idlescreen [ list source $script ]
 
   set idle_window $r
-  puts $r
   ::Idlescreen::run $r
   place $r -relx 0.0 -rely 0.0 -width $viewable_width -height $viewable_height  
 }
@@ -438,7 +433,7 @@ proc dm_GAME { root } {
   set res [ pg_exec $conn "select * from g_data where id = $gameid and storeid = $Conf::storeid" ]
 
   if { [ pg_result $res -numTuples ] != 1 } {
-    puts "error loading game"
+    puts "error loading game from database"
     pg_disconnect $conn
     return -code ok
   } 
@@ -450,9 +445,7 @@ proc dm_GAME { root } {
   set Ginfo::length $gdata(length)
   set Ginfo::team_red $gdata(red_teamname)
   set Ginfo::team_green $gdata(green_teamname)
-  
-  puts "loading game $gameid $gdata(length)"
-  
+    
   namespace eval ::Ginfo "$gdata(params)"
   
   for { set x 0 } { $x < 40 } { incr x } {
@@ -466,7 +459,6 @@ proc dm_GAME { root } {
     set ::Ginfo::used($j) 1
 	  set ::Ginfo::name($j) $array(name)
 	  set ::Ginfo::id($j) $array(idnum)
-    puts "loaded player ::Ginfo::name($j)"
   }    
     
   pg_disconnect $conn
