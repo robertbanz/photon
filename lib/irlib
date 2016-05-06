@@ -46,10 +46,10 @@ proc ir_enterpod { team slot mode } {
   }
   
   if { $team == 0 } {
-    set rfcode [expr {$Photon::RED_RFSTART + $slot}]
+    set rfcode [expr {$Photon::RED_RFSTART + $slot - 1}]
     set ircode [expr {$Photon::REDIR + $slot}]
   } elseif { $team == 1 } {
-    set rfcode [expr {$Photon::GRN_RFSTART + $slot}]
+    set rfcode [expr {$Photon::GRN_RFSTART + $slot - 1}]
     set ircode [expr {$Photon::GRNIR + $slot}]
     if { $ircode == 0x80 } {
       set ircode 0x94
