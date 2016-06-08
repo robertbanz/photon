@@ -37,6 +37,23 @@
 
 namespace photon {
 
+struct CrDriverOptions {
+  unsigned int slot_clock_interrupt_pin;
+  unsigned int timer_enable_output_pin;
+  unsigned int key_output_pin;
+  unsigned int esync_output_pin;
+  unsigned int psync_output_pin;
+  unsigned int gsync_output_pin;
+  unsigned int local_mode_input_pin;
+  unsigned int gsync_input_pin;
+  unsigned int game_input_pin;
+  unsigned int slave_input_pin;
+  unsigned int fake_mode_pin;
+  HardwareSerial* radio_serial;
+  HardwareSerial* ir_serial;
+  HardwareSerial* debug_serial;
+};
+
 class TxQueue {
  public:
    TxQueue(unsigned int max) : max_(max) {}
@@ -69,31 +86,8 @@ class TxQueue {
            return;
          }
        }
-#if 0
-       bool is_there[255] = {false};
-       bool try_again = false;
-       std::vector<unsigned char> newqueue;
-       // De-dup the queue?
-       for (auto i : queue_) {
-         if (is_there[i] == false) {
-           is_there[i] = true;
-           newqueue.push_back(i);
-         } else {
-           Serial.print("Queue Overflow: removed a dup of ");
-           Serial.println(i);
-           try_again = true;
-         }
-       }
-       if (try_again) {
-         queue_ = newqueue;
-         queue_.push_back(in);
-       } else {
-         Serial.println("Queue Overflow: not adding ");
-       }
-#endif
-       return;
      }
-
+     // Go ahead and add it if it isn't a dup.
      queue_.push_back(in);
    }
  
@@ -112,7 +106,7 @@ class Faker {
    // If there's a faker for this slot, return it, else 0.
    unsigned char GetRxForSlot(unsigned int slot);
  private:
-   unsigned int GetPlayerForSlot(unsigned int slot);
+   int GetPlayerForSlot(unsigned int slot);
    unsigned char GetIdForSlot(unsigned int slot);
    unsigned char GetIrForPlayer(unsigned int i);
    bool is_fake_[40];
@@ -152,9 +146,7 @@ class GcInterface;
 
 class CrDriver {
  public:
-  CrDriver(HardwareSerial* radio_out, unsigned int sync_pin,
-           unsigned int key_pin, unsigned int tx_pin, unsigned int rx_pin,
-           GcInterface* interface);
+  CrDriver(const CrDriverOptions& options, GcInterface* interface);
   ~CrDriver();
   void Loop();
 
@@ -168,30 +160,47 @@ class CrDriver {
   void Transmit(unsigned char data) {
     transmit_queue_.Insert(data);
   }
-  
-  unsigned long Tune(unsigned long micros) {
-    unsigned long old = slot_micros_;
-    slot_micros_ = micros;
-    return old;
-  }
-  
+    
  private:
   // Called at the end of every time slice. 
-  void SlotInterrupt();
+  void SlotInterrupt(int diff);
   
   void DoSlot();
   void DoTx(unsigned int slot);
   void DoRx(unsigned int slot);
   void DoKeyUpDown(unsigned int slot);
+
+  void CheckModeChanges();
+
+  void EnterSlaveMode();
+  void EnterMasterMode();
+  void SlaveResync();
+  void FlushSerialInput();
+  bool GetLastByte(byte* out);
+  void SlaveModeLoop();
   
-  // Owned by caller.
-  HardwareSerial* radio_serial_out_;
+  // Serial line to use for rx
+  HardwareSerial* radio_serial_;
+  
+  HardwareSerial* debug_serial_;
+  
+  Signal* timer_enable_;
+  Signal* not_key_;
+  Signal* esync_;
+  Signal* psync_;
+  Signal* gsync_;
 
-  std::auto_ptr<Signal> sync_signal_;
-  std::auto_ptr<Signal> key_signal_;
-  std::auto_ptr<Signal> tx_signal_;
-  std::auto_ptr<Signal> rx_signal_; 
-
+  bool slave_mode_;
+  bool searching_;
+  int sync_count_;
+  int slave_syncs_missed_;
+  // If in slave mode, generates fake data for in pod tx slots.
+  // If not, generates fake received data in pod tx slots.
+  bool fake_mode_;
+  
+  // In local mode.
+  bool local_mode_;
+  
   // Current RF slot.
   unsigned int rf_slot_id_;
 
@@ -203,7 +212,9 @@ class CrDriver {
   
   // # of microseconds in a slot.
   unsigned long slot_micros_;
-
+  unsigned int slot_micros_fraction_numerator_;
+  unsigned int slot_micros_fraction_denominator_;
+  
   // Transmission queue.
   TxQueue transmit_queue_;
   
@@ -213,6 +224,10 @@ class CrDriver {
   // Current sequence id
   unsigned char sequence_num_;
   GcInterface* gc_interface_;
+  
+  // Options
+  const CrDriverOptions options_;
+  
   Faker faker_;
 };
 

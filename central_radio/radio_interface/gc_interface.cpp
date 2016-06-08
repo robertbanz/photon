@@ -160,21 +160,6 @@ void GcInterface::ParseAndDo(CrDriver* driver, const std::string& input,
       connection->SendOutput("503-Bad Write");
       return; // tood: print error
     }
-  } else if (command == "TUNE") {
-    char* result;
-    int data = strtol(arg.c_str(), &result, 10);
-    if (result != nullptr) {
-      unsigned long old = driver->Tune(data);
-      connection->SendOutput("100-TUNE");
-      Serial.print("Tune ");
-      Serial.print(old);
-      Serial.print("->");
-      Serial.println(data);
-      return;
-    } else {
-      connection->SendOutput("503-Bad Tune");
-      return; // tood: print error
-    }
   } else if (command == "READ" ||
              command == "ENABLE") {
     connection->SendOutput("100 OK (ignored)");
