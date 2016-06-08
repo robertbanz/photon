@@ -22,8 +22,6 @@ set usage ": pgdisplay \[options] filename ...\noptions:"
 try {
   array set params [::cmdline::getoptions argv $options $usage]
 } trap {CMDLINE USAGE} {msg o} {
-  # Trap the usage signal, print the message, and exit the application.
-  # Note: Other errors are not caught and passed through to higher levels!
   puts $msg
   exit 1
 }
@@ -72,7 +70,6 @@ if { $hd_mode } {
 }
 
 foreach x { downloadinprogress } {
-  puts "${imagepath}/$x.tif"
   image create photo ::postgame_$x -file ${imagepath}/${x}.tif
 }
 

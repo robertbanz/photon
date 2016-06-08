@@ -6,24 +6,6 @@ namespace eval Photon {
 # Revision 1.8  1999/02/21 19:43:07  banz
 # current working version (before big changes)
 #
-# Revision 1.7  1999/02/04 10:04:12  root
-# added answerback-debug menu option
-#
-# Revision 1.6  1998/12/15 05:25:38  banz
-# Need more ESYNC!  (yes, there are pods out there that bad...)
-#
-# Revision 1.5  1998/12/04 05:37:46  banz
-# *** empty log message ***
-#
-# Revision 1.4  1998/11/27 20:51:37  banz
-# extend e-sync time slightly
-#
-# Revision 1.3  1998/11/20 16:02:56  banz
-# added bailouts for "invalid receive" slots
-#
-# Revision 1.2  1998/11/08 22:13:16  banz
-# fixed RCS identifier
-#
 # Revision 1.1  1998/11/08 22:06:39  banz
 # Initial revision
 #
@@ -96,9 +78,11 @@ proc game_cr_event_handler { serialnum slot action data } {
 
       if { $slot != 0 } {
         set e [ catch {
-          namespace eval ::Photon $::Photon::slot_op($data) $slot $action $data } x ]
+          namespace eval ::Photon $::Photon::slot_op($data) $slot $action $data
+        } x ]
         if { $e != 0 } {
-          ::debuglog "error in slot_op eval: $::Photon::slot_op($data) $slot $action $data -- $x"
+          ::debuglog "error in slot_op eval: \
+                      $::Photon::slot_op($data) $slot $action $data -- $x"
           set cr_lock 0
           return --code ok
         }  
@@ -163,7 +147,9 @@ proc game_cr_handler { } {
       }
 
       set e [ catch {
-        namespace eval ::Photon game_cr_event_handler $serialnum $slot $action $data } x ]
+        namespace eval ::Photon game_cr_event_handler $serialnum $slot \
+        $action $data
+      } x ]
       if { $e != 0 } {
         ::debuglog "error in event handler $serialnum $slot $action $data - $x"
       }
@@ -213,18 +199,28 @@ proc init { } {
 
   menu .menubar.photon.sync -tearoff 1
   .menubar.photon add cascade -label Sync -menu .menubar.photon.sync
-  .menubar.photon.sync add radio -label PSYNC -variable Photon::currentsyncbin -value $Photon::PSYNC -command { Photon::setsync $Photon::PSYNC }
-  .menubar.photon.sync add radio -label GSYNC -variable Photon::currentsyncbin -value $Photon::GSYNC -command { Photon::setsync $Photon::GSYNC }
-  .menubar.photon.sync add radio -label ESYNC -variable Photon::currentsyncbin -value $Photon::ESYNC -command { Photon::setsync $Photon::ESYNC }
+  .menubar.photon.sync add radio -label PSYNC -variable Photon::currentsyncbin \
+      -value $Photon::PSYNC -command { Photon::setsync $Photon::PSYNC }
+  .menubar.photon.sync add radio -label GSYNC -variable Photon::currentsyncbin \
+      -value $Photon::GSYNC -command { Photon::setsync $Photon::GSYNC }
+  .menubar.photon.sync add radio -label ESYNC -variable Photon::currentsyncbin \
+      -value $Photon::ESYNC -command { Photon::setsync $Photon::ESYNC }
 
-  .menubar.photon add check -label cr_enable -variable Photon::crenable -command { Photon::setcrenable $Photon::crenable }
+  .menubar.photon add check -label cr_enable -variable Photon::crenable \
+      -command { Photon::setcrenable $Photon::crenable }
 
-  .menubar.photon add command -label test -command { Photon::begingame { 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 } { 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 } }
+  .menubar.photon add command -label test -command {
+    Photon::begingame { 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 } \
+    { 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 }
+  }
 
   .menubar.photon add check -label G_intdebug -variable Photon::gdebug
   
-  .menubar.photon add check -label "Performance" -command { namespace eval Photon:: { Photon::podperf_window $podperfon } } -variable Photon::podperfon
-  .menubar.photon add check -label "Answerback Mode" -variable Photon::answerback_debug
+  .menubar.photon add check -label "Performance" -command \
+      { namespace eval Photon:: { Photon::podperf_window $podperfon } } \
+      -variable Photon::podperfon
+  .menubar.photon add check -label "Answerback Mode" \
+      -variable Photon::answerback_debug
 
   for { set i 0 } { $i <= 0xff } { incr i } {
       set slot_op($i) sp_null
@@ -258,9 +254,11 @@ proc podperf_window { i } {
 
   set row 0
 
-  set list { idlu syncmissed wsyncrcvd serror ealarm missinrow invalidinrow missed invalid valid hitssent hitsackn  }
+  set list { idlu syncmissed wsyncrcvd serror ealarm missinrow invalidinrow \
+      missed invalid valid hitssent hitsackn  }
 
-  set titles { "ID" "RX: smiss" "wsync" "serror" "elrm" "TX: mir" "iir" "miss" "inval" "val" "HITS: sent" "ackn" }
+  set titles { "ID" "RX: smiss" "wsync" "serror" "elrm" "TX: mir" "iir" \
+      "miss" "inval" "val" "HITS: sent" "ackn" }
 
   label $r.headslot -text "slot"
   grid $r.headslot -row $row -column 0 -sticky nw
@@ -389,7 +387,7 @@ proc begingame { red_slots grn_slots } {
     set cr_lock 0     
   }
   
-  # Set up the strategyies for each message received
+  # Set up the strategies for each message received
   for { set i 0 } { $i <= 0xff } { incr i } {
     # pod ID codes
     if { ( ($i >= 0x5f) && ($i <= 0x7f) ) ||
@@ -523,7 +521,7 @@ proc gdebuglog { i } {
   }
 }
 
-    # given a radio slot, return a team and player # (indexed @0)
+# given a radio slot, return a team and player # (indexed @0)
 proc rs_to_gs { slot } {
   variable RED_RFSTART
   variable GRN_RFSTART
@@ -540,7 +538,7 @@ proc rs_to_gs { slot } {
                  ( $j < ( $GRN_RFSTART + 20 ) ) } {
         set rs_to_gs_table($j) [ expr { ( $j - $GRN_RFSTART ) + 20 } ]
       } else {
-          set rs_to_gs_table($j) -1
+        set rs_to_gs_table($j) -1
       }
     }     
     return $rs_to_gs_table($slot)
@@ -1007,5 +1005,3 @@ proc op_error { slot op data } {
 
 }
 #namespace
-
-#namespace import Photon::cr_handler
