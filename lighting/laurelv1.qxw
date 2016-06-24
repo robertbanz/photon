@@ -1,0 +1,1187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Workspace>
+<Workspace xmlns="http://www.qlcplus.org/Workspace" CurrentWindow="FunctionManager">
+ <Creator>
+  <Name>Q Light Controller Plus</Name>
+  <Version>4.10.4</Version>
+  <Author>Robert Banz</Author>
+ </Creator>
+ <Engine Autostart="32">
+  <InputOutputMap>
+   <Universe Name="Output 1" ID="0" Passthrough="False">
+    <Output Plugin="DMX USB" Line="0">
+     <PluginParameters UniverseChannels="14"/>
+    </Output>
+   </Universe>
+   <Universe Name="Input" ID="1" Passthrough="False">
+    <Input Plugin="ArtNet" Line="3" Profile="None"/>
+   </Universe>
+  </InputOutputMap>
+  <Fixture>
+   <Manufacturer>Generic</Manufacturer>
+   <Model>Generic</Model>
+   <Mode>1 Channel</Mode>
+   <ID>0</ID>
+   <Name>Flood/Wash #1</Name>
+   <Universe>0</Universe>
+   <Address>0</Address>
+   <Channels>1</Channels>
+  </Fixture>
+  <Fixture>
+   <Manufacturer>Generic</Manufacturer>
+   <Model>Generic</Model>
+   <Mode>1 Channel</Mode>
+   <ID>1</ID>
+   <Name>Flood/Wash #2</Name>
+   <Universe>0</Universe>
+   <Address>1</Address>
+   <Channels>1</Channels>
+  </Fixture>
+  <Fixture>
+   <Manufacturer>Generic</Manufacturer>
+   <Model>Generic</Model>
+   <Mode>1 Channel</Mode>
+   <ID>2</ID>
+   <Name>Flood/Wash #3</Name>
+   <Universe>0</Universe>
+   <Address>2</Address>
+   <Channels>1</Channels>
+  </Fixture>
+  <Fixture>
+   <Manufacturer>Generic</Manufacturer>
+   <Model>Generic</Model>
+   <Mode>1 Channel</Mode>
+   <ID>3</ID>
+   <Name>Flood/Wash #4</Name>
+   <Universe>0</Universe>
+   <Address>3</Address>
+   <Channels>1</Channels>
+  </Fixture>
+  <Fixture>
+   <Manufacturer>Generic</Manufacturer>
+   <Model>Generic</Model>
+   <Mode>1 Channel</Mode>
+   <ID>4</ID>
+   <Name>Flood/Wash #5</Name>
+   <Universe>0</Universe>
+   <Address>4</Address>
+   <Channels>1</Channels>
+  </Fixture>
+  <Fixture>
+   <Manufacturer>Generic</Manufacturer>
+   <Model>Generic</Model>
+   <Mode>1 Channel</Mode>
+   <ID>5</ID>
+   <Name>Flood/Wash #6</Name>
+   <Universe>0</Universe>
+   <Address>5</Address>
+   <Channels>1</Channels>
+  </Fixture>
+  <Fixture>
+   <Manufacturer>Generic</Manufacturer>
+   <Model>Generic</Model>
+   <Mode>1 Channel</Mode>
+   <ID>6</ID>
+   <Name>Flood/Wash #7</Name>
+   <Universe>0</Universe>
+   <Address>6</Address>
+   <Channels>1</Channels>
+  </Fixture>
+  <Fixture>
+   <Manufacturer>Generic</Manufacturer>
+   <Model>Generic</Model>
+   <Mode>1 Channel</Mode>
+   <ID>8</ID>
+   <Name>Molecular #1</Name>
+   <Universe>0</Universe>
+   <Address>8</Address>
+   <Channels>1</Channels>
+  </Fixture>
+  <Fixture>
+   <Manufacturer>Generic</Manufacturer>
+   <Model>Generic</Model>
+   <Mode>1 Channel</Mode>
+   <ID>9</ID>
+   <Name>Molecular #2</Name>
+   <Universe>0</Universe>
+   <Address>9</Address>
+   <Channels>1</Channels>
+  </Fixture>
+  <Fixture>
+   <Manufacturer>Generic</Manufacturer>
+   <Model>Generic</Model>
+   <Mode>1 Channel</Mode>
+   <ID>13</ID>
+   <Name>Flood/Wash #8</Name>
+   <Universe>0</Universe>
+   <Address>7</Address>
+   <Channels>1</Channels>
+  </Fixture>
+  <Fixture>
+   <Manufacturer>Generic</Manufacturer>
+   <Model>Generic</Model>
+   <Mode>1 Channel</Mode>
+   <ID>14</ID>
+   <Name>Recessed #1</Name>
+   <Universe>0</Universe>
+   <Address>10</Address>
+   <Channels>1</Channels>
+  </Fixture>
+  <Fixture>
+   <Manufacturer>Generic</Manufacturer>
+   <Model>Generic</Model>
+   <Mode>1 Channel</Mode>
+   <ID>15</ID>
+   <Name>Recessed #2</Name>
+   <Universe>0</Universe>
+   <Address>11</Address>
+   <Channels>1</Channels>
+  </Fixture>
+  <Fixture>
+   <Manufacturer>Generic</Manufacturer>
+   <Model>Generic</Model>
+   <Mode>1 Channel</Mode>
+   <ID>16</ID>
+   <Name>AT Head #1</Name>
+   <Universe>0</Universe>
+   <Address>12</Address>
+   <Channels>1</Channels>
+  </Fixture>
+  <Fixture>
+   <Manufacturer>Generic</Manufacturer>
+   <Model>Generic</Model>
+   <Mode>1 Channel</Mode>
+   <ID>17</ID>
+   <Name>AT Head #2</Name>
+   <Universe>0</Universe>
+   <Address>13</Address>
+   <Channels>1</Channels>
+  </Fixture>
+  <Function ID="0" Type="Script" Name="Track 1">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command>startfunction%3A8%20%2F%2F%20Begin%2FRampUp%2FPhase1%20%281m30s%29</Command>
+   <Command>wait%3A1m30s</Command>
+   <Command>stopfunction%3A8</Command>
+   <Command></Command>
+   <Command>startfunction%3A9%20%2F%2F%20Rumble%20%28110s%29</Command>
+   <Command>wait%3A60s</Command>
+   <Command>stopfunction%209</Command>
+   <Command></Command>
+   <Command>startfunction%3A28%20%2F%2F%20Intruder%20Alert%201%20%2815s%29</Command>
+   <Command>wait%3A15s</Command>
+   <Command>stopfunction%3A28</Command>
+   <Command></Command>
+   <Command>startfunction%3A9%20%2F%2F%20Rumble%20%28110s%29</Command>
+   <Command>wait%3A35s%09</Command>
+   <Command>stopfunction%3A9</Command>
+   <Command></Command>
+   <Command>startfunction%3A10%20%2F%2F%20Flash%20Gordon%20%28120s%29</Command>
+   <Command>wait%3A1m9s</Command>
+   <Command>stopfunction%3A10</Command>
+   <Command></Command>
+   <Command>startfunction%3A29%20%2F%2F%20Intruder%20Alert%202%20%2815s%29</Command>
+   <Command>wait%3A15s</Command>
+   <Command>stopfunction%3A29</Command>
+   <Command></Command>
+   <Command>startfunction%3A10%20%2F%2F%20Flash%20Gordon%20%28120s%29</Command>
+   <Command>wait%3A36s</Command>
+   <Command>stopfunction%3A10</Command>
+   <Command></Command>
+   <Command>startfunction%3A11%20%2F%2F%20Keboard%20%2856s%29</Command>
+   <Command>wait%3A56s</Command>
+   <Command>stopfunction%3A11</Command>
+   <Command></Command>
+   <Command>startfunction%3A12%20%2F%2F%20Ramp%20Down%2814s%29</Command>
+   <Command>wait%3A14s</Command>
+   <Command>stopfunction%3A12</Command>
+   <Command></Command>
+   <Command>startfunction%3A13%20%2F%2F%20Congrats%2FEnd</Command>
+   <Command>wait%3A5m</Command>
+  </Function>
+  <Function ID="1" Type="Script" Name="Track 2">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command>startfunction%3A8%20%2F%2F%20Begin%2FRampUp%2FPhase1%20%281m30s%29</Command>
+   <Command>wait%3A1m30s</Command>
+   <Command>stopfunction%3A8</Command>
+   <Command></Command>
+   <Command>startfunction%3A14%20%2F%2F%20Heart%20Beat%201%20%2882s%29</Command>
+   <Command>wait%3A60s</Command>
+   <Command>stopfunction%3A14</Command>
+   <Command></Command>
+   <Command>startfunction%3A28%20%2F%2F%20Intruder%20Alert%201%20%2815s%29</Command>
+   <Command>wait%3A15s</Command>
+   <Command>stopfunction%3A28</Command>
+   <Command></Command>
+   <Command>startfunction%3A14%20%2F%2F%20Heart%20Beat%201%20%2882s%29</Command>
+   <Command>wait%3A7s</Command>
+   <Command>stopfunction%3A14</Command>
+   <Command></Command>
+   <Command>startfunction%3A15%20%2F%2F%20Heart%20Beat%202%20%2870s%29</Command>
+   <Command>wait%3A1m10s</Command>
+   <Command>stopfunction%3A15</Command>
+   <Command></Command>
+   <Command>startfunction%3A16%20%2F%2F%20Heart%20Beat%203%20%2890s%29</Command>
+   <Command>wait%3A52s</Command>
+   <Command>stopfunction%3A16</Command>
+   <Command></Command>
+   <Command>startfunction%3A29%20%2F%2F%20Intruder%20Alert%202%20%2815s%29</Command>
+   <Command>wait%3A15s</Command>
+   <Command>stopfunction%3A29</Command>
+   <Command></Command>
+   <Command>startfunction%3A16%20%2F%2F%20Heart%20Beat%203%20%2890s%29</Command>
+   <Command>wait%3A23s</Command>
+   <Command>stopfunction%3A16</Command>
+   <Command></Command>
+   <Command></Command>
+   <Command>startfunction%3A17%20%2F%2F%20Heart%20Beat%204%20%2844s%29</Command>
+   <Command>wait%3A44s</Command>
+   <Command>stopfunction%3A17</Command>
+   <Command></Command>
+   <Command>startfunction%3A18%20%2F%2F%20HuffPuff%20%2814s%29</Command>
+   <Command>wait%3A14s</Command>
+   <Command>stopfunction%3A18</Command>
+   <Command></Command>
+   <Command>startfunction%3A13%20%2F%2F%20Congrats%2FEnd</Command>
+   <Command>wait%3A5m</Command>
+   <Command></Command>
+  </Function>
+  <Function ID="2" Type="Script" Name="Track 3">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command>startfunction%3A8%20%2F%2F%20Begin%2FRampUp%2FPhase1%20%281m30s%29</Command>
+   <Command>wait%3A1m30s</Command>
+   <Command>stopfunction%3A8</Command>
+   <Command></Command>
+   <Command>startfunction%3A9%20%2F%2F%20Rumble%20%28110s%29%09</Command>
+   <Command>wait%3A1m50s</Command>
+   <Command>stopfunction%3A9</Command>
+   <Command></Command>
+   <Command>startfunction%3A10%20%2F%2F%20Flash%20Gordon%20%28120s%29</Command>
+   <Command>wait%3A32s</Command>
+   <Command>stopfunction%3A10</Command>
+   <Command></Command>
+   <Command>startfunction%3A28%20%2F%2F%20Intruder%20Alert%201%20%2815s%29</Command>
+   <Command>wait%3A15s</Command>
+   <Command>stopfunction%3A28</Command>
+   <Command></Command>
+   <Command>startfunction%3A10%20%2F%2F%20Flash%20Gordon%20%28120s%29</Command>
+   <Command>wait%3A1m2s</Command>
+   <Command>stopfunction%3A10</Command>
+   <Command></Command>
+   <Command>startfunction%3A29%20%2F%2F%20Intruder%20Alert%202%20%2815s%29</Command>
+   <Command>wait%3A15s</Command>
+   <Command>stopfunction%3A29</Command>
+   <Command></Command>
+   <Command>startfunction%3A10%20%2F%2F%20Flash%20Gordon%20%28120s%29</Command>
+   <Command>wait%3A30s</Command>
+   <Command>stopfunction%3A10</Command>
+   <Command></Command>
+   <Command>startfunction%3A11%20%2F%2F%20Keboard%20%2856s%29</Command>
+   <Command>wait%3A56s</Command>
+   <Command>stopfunction%3A11</Command>
+   <Command></Command>
+   <Command>startfunction%3A12%20%2F%2F%20Ramp%20Down%2814s%29</Command>
+   <Command>wait%3A14s</Command>
+   <Command>stopfunction%3A12</Command>
+   <Command></Command>
+   <Command>startfunction%3A13%20%2F%2F%20Congrats%2FEnd</Command>
+   <Command>wait%3A5m</Command>
+  </Function>
+  <Function ID="3" Type="Script" Name="Track 4">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command>startfunction%3A8%20%2F%2F%20Begin%2FRampUp%2FPhase1%20%281m30s%29</Command>
+   <Command>wait%3A1m30s</Command>
+   <Command>stopfunction%3A8</Command>
+   <Command></Command>
+   <Command>startfunction%3A14%20%2F%2F%20Heart%20Beat%201%20%2882s%29</Command>
+   <Command>wait%3A1m22s</Command>
+   <Command>stopfunction%3A14</Command>
+   <Command></Command>
+   <Command>startfunction%3A15%20%2F%2F%20Heart%20Beat%202%20%2870s%29</Command>
+   <Command>wait%3A1m</Command>
+   <Command>stopfunction%3A15</Command>
+   <Command></Command>
+   <Command>startfunction%3A28%20%2F%2F%20Intruder%20Alert%201%20%2815s%29</Command>
+   <Command>wait%3A15s</Command>
+   <Command>stopfunction%3A28</Command>
+   <Command></Command>
+   <Command>startfunction%3A16%20%2F%2F%20Heart%20Beat%203%20%2890s%29</Command>
+   <Command>wait%3A22s</Command>
+   <Command>stopfunction%3A16</Command>
+   <Command></Command>
+   <Command>startfunction%3A29%20%2F%2F%20Intruder%20Alert%202%20%2815s%29</Command>
+   <Command>wait%3A15s</Command>
+   <Command>stopfunction%3A29</Command>
+   <Command></Command>
+   <Command>startfunction%3A16%20%2F%2F%20Heart%20Beat%203%20%2890s%29</Command>
+   <Command>wait%3A48s</Command>
+   <Command>stopfunction%3A16</Command>
+   <Command></Command>
+   <Command>startfunction%3A17%20%2F%2F%20Heart%20Beat%204%20%2844s%29</Command>
+   <Command>wait%3A44s</Command>
+   <Command>stopfunction%3A17</Command>
+   <Command></Command>
+   <Command>startfunction%3A18%20%2F%2F%20HuffPuff%20%2814s%29</Command>
+   <Command>wait%3A14s</Command>
+   <Command>stopfunction%3A18</Command>
+   <Command></Command>
+   <Command>startfunction%3A13%20%2F%2F%20Congrats%2FEnd</Command>
+   <Command>wait%3A5m</Command>
+   <Command></Command>
+  </Function>
+  <Function ID="4" Type="Script" Name="Track 5">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command>startfunction%3A8%20%2F%2F%20Begin%2FRampUp%2FPhase1%20%281m30s%29</Command>
+   <Command>wait%3A1m30s</Command>
+   <Command>stopfunction%3A8</Command>
+   <Command></Command>
+   <Command>startfunction%3A19%20%2F%2F%20aka%20Track%205%20%285m%29</Command>
+   <Command>wait%3A3m22s</Command>
+   <Command>stopfunction%3A19</Command>
+   <Command></Command>
+   <Command>startfunction%3A28%20%2F%2F%20Intruder%20Alert%201%20%2815s%29</Command>
+   <Command>wait%3A15s</Command>
+   <Command>stopfunction%3A28</Command>
+   <Command></Command>
+   <Command>startfunction%3A19%20%2F%2F%20aka%20Track%205%20%285m%29</Command>
+   <Command>wait%3A45s</Command>
+   <Command>stopfunction%3A19</Command>
+   <Command></Command>
+   <Command>startfunction%3A29%20%2F%2F%20Intruder%20Alert%202%20%2815s%29</Command>
+   <Command>wait%3A15s</Command>
+   <Command>stopfunction%3A29</Command>
+   <Command></Command>
+   <Command>startfunction%3A19%20%2F%2F%20aka%20Track%205%20%285m%29</Command>
+   <Command>wait%3A1m21s</Command>
+   <Command>stopfunction%3A19</Command>
+   <Command></Command>
+   <Command>startfunction%3A13%20%2F%2F%20Congrats%2FEnd</Command>
+   <Command>wait%3A5m</Command>
+   <Command></Command>
+  </Function>
+  <Function ID="5" Type="Script" Name="Track 6">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command>startfunction%3A8%20%2F%2F%20Begin%2FRampUp%2FPhase1%20%281m30s%29</Command>
+   <Command>wait%3A1m30s</Command>
+   <Command>stopfunction%3A8</Command>
+   <Command></Command>
+   <Command>startfunction%3A20%20%2F%2F%20drum%20track%20a%20%282m%29</Command>
+   <Command>wait%3A2m42s</Command>
+   <Command>stopfunction%3A20</Command>
+   <Command></Command>
+   <Command>startfunction%3A22%20%2F%2F%20drum%20track%20bridge%20%2827s%29</Command>
+   <Command>wait%3A14s</Command>
+   <Command>stopfunction%3A22</Command>
+   <Command></Command>
+   <Command>startfunction%3A21%20%2F%2F%20drum%20track%20b%20%2861s%29</Command>
+   <Command>wait%3A61s</Command>
+   <Command>stopfunction%3A21</Command>
+   <Command></Command>
+   <Command>startfunction%3A22%20%2F%2F%20drum%20track%20bridge%20%2827s%29</Command>
+   <Command>wait%3A27s</Command>
+   <Command>stopfunction%3A22</Command>
+   <Command></Command>
+   <Command>startfunction%3A21%20%2F%2F%20drum%20track%20b%20%2861s%29</Command>
+   <Command>wait%3A8s</Command>
+   <Command>stopfunction%3A21</Command>
+   <Command></Command>
+   <Command>startfunction%3A22%20%2F%2F%20drum%20track%20bridge%20%2827s%29</Command>
+   <Command>wait%3A28s</Command>
+   <Command>stopfunction%3A22</Command>
+   <Command></Command>
+   <Command>startfunction%3A13%20%2F%2F%20Congrats%2FEnd</Command>
+   <Command>wait%3A5m</Command>
+   <Command></Command>
+  </Function>
+  <Function ID="6" Type="Script" Name="Track 7">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command>startfunction%3A8%20%2F%2F%20Begin%2FRampUp%2FPhase1%20%281m30s%29</Command>
+   <Command>wait%3A1m30s</Command>
+   <Command>stopfunction%3A8</Command>
+   <Command></Command>
+   <Command>startfunction%3A23%20%2F%2F%20dt%20wind%20up</Command>
+   <Command>wait%3A18s</Command>
+   <Command>stopfunction%3A23</Command>
+   <Command></Command>
+   <Command>startfunction%3A24%20%2F%2F%20dance%20track%20a</Command>
+   <Command>wait%3A69s</Command>
+   <Command>stopfunction%3A24</Command>
+   <Command></Command>
+   <Command>startfunction%3A25%20%2F%2F%20theramin</Command>
+   <Command>wait%3A31s</Command>
+   <Command>stopfunction%3A25</Command>
+   <Command></Command>
+   <Command>startfunction%3A24%20%2F%2F%20dance%20track%20a</Command>
+   <Command>wait%3A48s</Command>
+   <Command>stopfunction%3A24</Command>
+   <Command></Command>
+   <Command>startfunction%3A25%20%2F%2F%20theramin</Command>
+   <Command>wait%3A31s</Command>
+   <Command>stopfunction%3A25</Command>
+   <Command></Command>
+   <Command>startfunction%3A24%20%2F%2F%20dance%20track%20a</Command>
+   <Command>wait%3A17s</Command>
+   <Command>stopfunction%3A24</Command>
+   <Command></Command>
+   <Command>startfunction%3A26%20%2F%2F%20dance%20track%20b</Command>
+   <Command>wait%3A88s</Command>
+   <Command>stopfunction%3A26</Command>
+   <Command></Command>
+   <Command>startfunction%3A13%20%2F%2F%20Congrats%2FEnd</Command>
+   <Command>wait%3A5m</Command>
+   <Command></Command>
+  </Function>
+  <Function ID="7" Type="Script" Name="Track 8">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command>startfunction%3A8%20%2F%2F%20Begin%2FRampUp%2FPhase1%20%281m30s%29</Command>
+   <Command>wait%3A1m30s</Command>
+   <Command>stopfunction%3A8</Command>
+   <Command></Command>
+   <Command>startfunction%3A19%20%2F%2F%20aka%20Track%205%20%285m%29</Command>
+   <Command>wait%3A5m</Command>
+   <Command>stopfunction%3A19</Command>
+   <Command></Command>
+   <Command>startfunction%3A13%20%2F%2F%20Congrats%2FEnd</Command>
+   <Command>wait%3A5m</Command>
+   <Command></Command>
+  </Function>
+  <Function ID="8" Type="Script" Name="Begin/RampUp/Phase1 (1m30s)" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command>startfunction%3A35%20%2F%2F%20HitStart</Command>
+   <Command>wait%3A12s</Command>
+   <Command></Command>
+   <Command>startfunction%3A37%20%2F%2F%20Welcome%20%20%400%20in%20track</Command>
+   <Command>wait%3A3s</Command>
+   <Command></Command>
+   <Command>stopfunction%3A35%20%2F%2F%20stop%20hit%20start%20flashers%20%20%20%403%20in%20track</Command>
+   <Command></Command>
+   <Command>wait%3A7s%20%20%20%20%2F%2F%20%4010in%20track</Command>
+   <Command></Command>
+   <Command>%2F%2F%20do%20something%20with%20the%20UFOs%3F</Command>
+   <Command></Command>
+   <Command>wait%3A8s</Command>
+   <Command></Command>
+   <Command>startfunction%3A43%20%2F%2F%20RampUp%20Ambient</Command>
+   <Command></Command>
+   <Command>%2F%2F%20fade%20in%20towers%20here.</Command>
+   <Command></Command>
+   <Command>wait%3A10s</Command>
+   <Command></Command>
+   <Command>stopfunction%3A43</Command>
+   <Command></Command>
+   <Command>startfunction%3A48%20%2F%2F%20Phase1%20Ambient</Command>
+   <Command></Command>
+   <Command>wait%3A500s</Command>
+   <Command></Command>
+   <Command>%2F%2F%20do%20something%20with%20alien%20towers</Command>
+   <Command></Command>
+  </Function>
+  <Function ID="9" Type="Script" Name="Rumble (110s)" Path="Tracks 1 &amp; 3">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="10" Type="Script" Name="Flash Gordon (120s)" Path="Tracks 1 &amp; 3">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="11" Type="Script" Name="Keboard (56s)" Path="Tracks 1 &amp; 3">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="12" Type="Script" Name="Ramp Down(14s)" Path="Tracks 1 &amp; 3">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="13" Type="Script" Name="Congrats/End" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="14" Type="Script" Name="Heart Beat 1 (82s)" Path="Tracks 2 &amp; 4">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="15" Type="Script" Name="Heart Beat 2 (70s)" Path="Tracks 2 &amp; 4">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="16" Type="Script" Name="Heart Beat 3 (90s)" Path="Tracks 2 &amp; 4">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="17" Type="Script" Name="Heart Beat 4 (44s)" Path="Tracks 2 &amp; 4">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="18" Type="Script" Name="HuffPuff (14s)" Path="Tracks 2 &amp; 4">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="19" Type="Script" Name="aka Track 5 (5m)" Path="Tracks 5 &amp; 8">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="20" Type="Script" Name="drum track a (2m)" Path="Tracks 6">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="21" Type="Script" Name="drum track b (61s)" Path="Tracks 6">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="22" Type="Script" Name="drum track bridge (27s)" Path="Tracks 6">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="23" Type="Script" Name="dt wind up" Path="Tracks 7">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="24" Type="Script" Name="dance track a" Path="Tracks 7">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="25" Type="Script" Name="theramin" Path="Tracks 7">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="26" Type="Script" Name="dance track b" Path="Tracks 7">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="27" Type="Script" Name="stevie nicks (10s)" Path="Tracks 7">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="28" Type="Script" Name="Intruder Alert 1 (15s)" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="29" Type="Script" Name="Intruder Alert 2 (15s)" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command></Command>
+  </Function>
+  <Function ID="30" Type="Scene" Name="Idle A" Path="Idle">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">0,255</FixtureVal>
+   <FixtureVal ID="1">0,150</FixtureVal>
+   <FixtureVal ID="2">0,255</FixtureVal>
+   <FixtureVal ID="3">0,150</FixtureVal>
+   <FixtureVal ID="4">0,255</FixtureVal>
+   <FixtureVal ID="5">0,150</FixtureVal>
+   <FixtureVal ID="6">0,255</FixtureVal>
+   <FixtureVal ID="8">0,255</FixtureVal>
+   <FixtureVal ID="9">0,150</FixtureVal>
+   <FixtureVal ID="13">0,150</FixtureVal>
+   <FixtureVal ID="14">0,255</FixtureVal>
+   <FixtureVal ID="15">0,150</FixtureVal>
+   <FixtureVal ID="16">0,255</FixtureVal>
+   <FixtureVal ID="17">0,150</FixtureVal>
+  </Function>
+  <Function ID="31" Type="Scene" Name="Idle B" Path="Idle">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">0,150</FixtureVal>
+   <FixtureVal ID="1">0,255</FixtureVal>
+   <FixtureVal ID="2">0,150</FixtureVal>
+   <FixtureVal ID="3">0,255</FixtureVal>
+   <FixtureVal ID="4">0,150</FixtureVal>
+   <FixtureVal ID="5">0,255</FixtureVal>
+   <FixtureVal ID="6">0,150</FixtureVal>
+   <FixtureVal ID="8">0,255</FixtureVal>
+   <FixtureVal ID="9">0,150</FixtureVal>
+   <FixtureVal ID="13">0,255</FixtureVal>
+   <FixtureVal ID="14">0,150</FixtureVal>
+   <FixtureVal ID="15">0,255</FixtureVal>
+   <FixtureVal ID="16">0,150</FixtureVal>
+   <FixtureVal ID="17">0,255</FixtureVal>
+  </Function>
+  <Function ID="32" Type="Chaser" Name="Idle">
+   <Speed FadeIn="4000" FadeOut="0" Duration="4000"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <SpeedModes FadeIn="Common" FadeOut="Default" Duration="Common"/>
+   <Step Number="0" FadeIn="0" Hold="0" FadeOut="0">30</Step>
+   <Step Number="1" FadeIn="0" Hold="0" FadeOut="0">31</Step>
+  </Function>
+  <Function ID="33" Type="Scene" Name="HitStart A" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">0,255</FixtureVal>
+   <FixtureVal ID="1">0,0</FixtureVal>
+   <FixtureVal ID="2">0,255</FixtureVal>
+   <FixtureVal ID="3">0,0</FixtureVal>
+   <FixtureVal ID="4">0,255</FixtureVal>
+   <FixtureVal ID="5">0,0</FixtureVal>
+   <FixtureVal ID="6">0,255</FixtureVal>
+   <FixtureVal ID="8">0,255</FixtureVal>
+   <FixtureVal ID="9">0,0</FixtureVal>
+   <FixtureVal ID="13">0,0</FixtureVal>
+   <FixtureVal ID="14">0,255</FixtureVal>
+   <FixtureVal ID="15">0,100</FixtureVal>
+   <FixtureVal ID="16">0,255</FixtureVal>
+   <FixtureVal ID="17">0,0</FixtureVal>
+  </Function>
+  <Function ID="34" Type="Scene" Name="HitStart B" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">0,0</FixtureVal>
+   <FixtureVal ID="1">0,255</FixtureVal>
+   <FixtureVal ID="2">0,0</FixtureVal>
+   <FixtureVal ID="3">0,255</FixtureVal>
+   <FixtureVal ID="4">0,0</FixtureVal>
+   <FixtureVal ID="5">0,255</FixtureVal>
+   <FixtureVal ID="6">0,0</FixtureVal>
+   <FixtureVal ID="8">0,255</FixtureVal>
+   <FixtureVal ID="9">0,0</FixtureVal>
+   <FixtureVal ID="13">0,255</FixtureVal>
+   <FixtureVal ID="14">0,100</FixtureVal>
+   <FixtureVal ID="15">0,255</FixtureVal>
+   <FixtureVal ID="16">0,0</FixtureVal>
+   <FixtureVal ID="17">0,255</FixtureVal>
+  </Function>
+  <Function ID="35" Type="Chaser" Name="HitStart" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="500"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <SpeedModes FadeIn="Default" FadeOut="Default" Duration="Common"/>
+   <Step Number="0" FadeIn="0" Hold="0" FadeOut="0">33</Step>
+   <Step Number="1" FadeIn="0" Hold="0" FadeOut="0">34</Step>
+  </Function>
+  <Function ID="36" Type="Scene" Name="Welcome" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">0,255</FixtureVal>
+   <FixtureVal ID="1">0,255</FixtureVal>
+   <FixtureVal ID="2">0,255</FixtureVal>
+   <FixtureVal ID="3">0,255</FixtureVal>
+   <FixtureVal ID="4">0,255</FixtureVal>
+   <FixtureVal ID="5">0,255</FixtureVal>
+   <FixtureVal ID="6">0,255</FixtureVal>
+   <FixtureVal ID="8">0,255</FixtureVal>
+   <FixtureVal ID="9">0,255</FixtureVal>
+   <FixtureVal ID="13">0,255</FixtureVal>
+   <FixtureVal ID="14">0,255</FixtureVal>
+   <FixtureVal ID="15">0,255</FixtureVal>
+   <FixtureVal ID="16">0,255</FixtureVal>
+   <FixtureVal ID="17">0,255</FixtureVal>
+  </Function>
+  <Function ID="37" Type="Chaser" Name="Welcome" Path="Common">
+   <Speed FadeIn="3000" FadeOut="0" Duration="13000"/>
+   <Direction>Forward</Direction>
+   <RunOrder>SingleShot</RunOrder>
+   <SpeedModes FadeIn="PerStep" FadeOut="Default" Duration="PerStep"/>
+   <Step Number="0" FadeIn="3000" Hold="10000" FadeOut="0">36</Step>
+   <Step Number="1" FadeIn="3000" Hold="20000" FadeOut="0">38</Step>
+  </Function>
+  <Function ID="38" Type="Scene" Name="Welcome Count" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">0,150</FixtureVal>
+   <FixtureVal ID="1">0,150</FixtureVal>
+   <FixtureVal ID="2">0,150</FixtureVal>
+   <FixtureVal ID="3">0,150</FixtureVal>
+   <FixtureVal ID="4">0,150</FixtureVal>
+   <FixtureVal ID="5">0,150</FixtureVal>
+   <FixtureVal ID="6">0,150</FixtureVal>
+   <FixtureVal ID="8">0,150</FixtureVal>
+   <FixtureVal ID="9">0,150</FixtureVal>
+   <FixtureVal ID="13">0,150</FixtureVal>
+   <FixtureVal ID="14">0,255</FixtureVal>
+   <FixtureVal ID="15">0,255</FixtureVal>
+   <FixtureVal ID="16">0,150</FixtureVal>
+   <FixtureVal ID="17">0,150</FixtureVal>
+  </Function>
+  <Function ID="39" Type="Scene" Name="RampUp A" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">0,255</FixtureVal>
+   <FixtureVal ID="1">0,50</FixtureVal>
+   <FixtureVal ID="2">0,50</FixtureVal>
+   <FixtureVal ID="3">0,50</FixtureVal>
+   <FixtureVal ID="4">0,255</FixtureVal>
+   <FixtureVal ID="5">0,50</FixtureVal>
+   <FixtureVal ID="6">0,50</FixtureVal>
+   <FixtureVal ID="8">0,100</FixtureVal>
+   <FixtureVal ID="9">0,100</FixtureVal>
+   <FixtureVal ID="13">0,50</FixtureVal>
+   <FixtureVal ID="14">0,200</FixtureVal>
+   <FixtureVal ID="15">0,200</FixtureVal>
+  </Function>
+  <Function ID="40" Type="Scene" Name="RampUp B" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">0,50</FixtureVal>
+   <FixtureVal ID="1">0,255</FixtureVal>
+   <FixtureVal ID="2">0,50</FixtureVal>
+   <FixtureVal ID="3">0,50</FixtureVal>
+   <FixtureVal ID="4">0,50</FixtureVal>
+   <FixtureVal ID="5">0,255</FixtureVal>
+   <FixtureVal ID="6">0,50</FixtureVal>
+   <FixtureVal ID="8">0,100</FixtureVal>
+   <FixtureVal ID="9">0,100</FixtureVal>
+   <FixtureVal ID="13">0,50</FixtureVal>
+   <FixtureVal ID="14">0,200</FixtureVal>
+   <FixtureVal ID="15">0,200</FixtureVal>
+  </Function>
+  <Function ID="41" Type="Scene" Name="RampUp C" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">0,50</FixtureVal>
+   <FixtureVal ID="1">0,50</FixtureVal>
+   <FixtureVal ID="2">0,255</FixtureVal>
+   <FixtureVal ID="3">0,50</FixtureVal>
+   <FixtureVal ID="4">0,50</FixtureVal>
+   <FixtureVal ID="5">0,50</FixtureVal>
+   <FixtureVal ID="6">0,255</FixtureVal>
+   <FixtureVal ID="8">0,100</FixtureVal>
+   <FixtureVal ID="9">0,100</FixtureVal>
+   <FixtureVal ID="13">0,50</FixtureVal>
+   <FixtureVal ID="14">0,200</FixtureVal>
+   <FixtureVal ID="15">0,200</FixtureVal>
+  </Function>
+  <Function ID="42" Type="Scene" Name="RampUp D" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">0,50</FixtureVal>
+   <FixtureVal ID="1">0,50</FixtureVal>
+   <FixtureVal ID="2">0,50</FixtureVal>
+   <FixtureVal ID="3">0,255</FixtureVal>
+   <FixtureVal ID="4">0,50</FixtureVal>
+   <FixtureVal ID="5">0,50</FixtureVal>
+   <FixtureVal ID="6">0,50</FixtureVal>
+   <FixtureVal ID="8">0,100</FixtureVal>
+   <FixtureVal ID="9">0,100</FixtureVal>
+   <FixtureVal ID="13">0,255</FixtureVal>
+   <FixtureVal ID="14">0,200</FixtureVal>
+   <FixtureVal ID="15">0,200</FixtureVal>
+  </Function>
+  <Function ID="43" Type="Chaser" Name="RampUp Ambient" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="500"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <SpeedModes FadeIn="Default" FadeOut="Default" Duration="PerStep"/>
+   <Step Number="0" FadeIn="0" Hold="500" FadeOut="0">39</Step>
+   <Step Number="1" FadeIn="0" Hold="500" FadeOut="0">40</Step>
+   <Step Number="2" FadeIn="0" Hold="500" FadeOut="0">41</Step>
+   <Step Number="3" FadeIn="0" Hold="500" FadeOut="0">42</Step>
+   <Step Number="4" FadeIn="0" Hold="400" FadeOut="0">39</Step>
+   <Step Number="5" FadeIn="0" Hold="400" FadeOut="0">40</Step>
+   <Step Number="6" FadeIn="0" Hold="400" FadeOut="0">41</Step>
+   <Step Number="7" FadeIn="0" Hold="400" FadeOut="0">42</Step>
+   <Step Number="8" FadeIn="0" Hold="300" FadeOut="0">39</Step>
+   <Step Number="9" FadeIn="0" Hold="300" FadeOut="0">40</Step>
+   <Step Number="10" FadeIn="0" Hold="300" FadeOut="0">41</Step>
+   <Step Number="11" FadeIn="0" Hold="300" FadeOut="0">42</Step>
+   <Step Number="12" FadeIn="0" Hold="200" FadeOut="0">39</Step>
+   <Step Number="13" FadeIn="0" Hold="200" FadeOut="0">40</Step>
+   <Step Number="14" FadeIn="0" Hold="200" FadeOut="0">41</Step>
+   <Step Number="15" FadeIn="0" Hold="200" FadeOut="0">42</Step>
+   <Step Number="16" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="17" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="18" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="19" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="20" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="21" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="22" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="23" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="24" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="25" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="26" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="27" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="28" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="29" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="30" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="31" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="32" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="33" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="34" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="35" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="36" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="37" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="38" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="39" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="40" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="41" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="42" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="43" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="44" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="45" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="46" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="47" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="48" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="49" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="50" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="51" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="52" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="53" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="54" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="55" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="56" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="57" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="58" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="59" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="60" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="61" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="62" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="63" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="64" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="65" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="66" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="67" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="68" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="69" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="70" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="71" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="72" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="73" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="74" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="75" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="76" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="77" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="78" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="79" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="80" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="81" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="82" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="83" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="84" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="85" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="86" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="87" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="88" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="89" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="90" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="91" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="92" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="93" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="94" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="95" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="96" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="97" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="98" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="99" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="100" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="101" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="102" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="103" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="104" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="105" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="106" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="107" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="108" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="109" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="110" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="111" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="112" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="113" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="114" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="115" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="116" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="117" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="118" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="119" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="120" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+   <Step Number="121" FadeIn="0" Hold="100" FadeOut="0">39</Step>
+   <Step Number="122" FadeIn="0" Hold="100" FadeOut="0">40</Step>
+   <Step Number="123" FadeIn="0" Hold="100" FadeOut="0">41</Step>
+   <Step Number="124" FadeIn="0" Hold="100" FadeOut="0">42</Step>
+  </Function>
+  <Function ID="44" Type="Scene" Name="Phase1 A" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">0,255</FixtureVal>
+   <FixtureVal ID="1">0,143</FixtureVal>
+   <FixtureVal ID="2">0,50</FixtureVal>
+   <FixtureVal ID="3">0,50</FixtureVal>
+   <FixtureVal ID="4">0,255</FixtureVal>
+   <FixtureVal ID="5">0,146</FixtureVal>
+   <FixtureVal ID="6">0,50</FixtureVal>
+   <FixtureVal ID="8">0,255</FixtureVal>
+   <FixtureVal ID="9">0,100</FixtureVal>
+   <FixtureVal ID="13">0,50</FixtureVal>
+   <FixtureVal ID="14">0,200</FixtureVal>
+   <FixtureVal ID="15">0,100</FixtureVal>
+  </Function>
+  <Function ID="45" Type="Scene" Name="Phase1 B" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">0,153</FixtureVal>
+   <FixtureVal ID="1">0,255</FixtureVal>
+   <FixtureVal ID="2">0,50</FixtureVal>
+   <FixtureVal ID="3">0,50</FixtureVal>
+   <FixtureVal ID="4">0,154</FixtureVal>
+   <FixtureVal ID="5">0,255</FixtureVal>
+   <FixtureVal ID="6">0,50</FixtureVal>
+   <FixtureVal ID="8">0,100</FixtureVal>
+   <FixtureVal ID="9">0,255</FixtureVal>
+   <FixtureVal ID="13">0,50</FixtureVal>
+   <FixtureVal ID="14">0,100</FixtureVal>
+   <FixtureVal ID="15">0,200</FixtureVal>
+  </Function>
+  <Function ID="46" Type="Scene" Name="Phase1 C" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">0,50</FixtureVal>
+   <FixtureVal ID="1">0,145</FixtureVal>
+   <FixtureVal ID="2">0,255</FixtureVal>
+   <FixtureVal ID="3">0,50</FixtureVal>
+   <FixtureVal ID="4">0,50</FixtureVal>
+   <FixtureVal ID="5">0,151</FixtureVal>
+   <FixtureVal ID="6">0,255</FixtureVal>
+   <FixtureVal ID="8">0,255</FixtureVal>
+   <FixtureVal ID="9">0,100</FixtureVal>
+   <FixtureVal ID="13">0,50</FixtureVal>
+   <FixtureVal ID="14">0,200</FixtureVal>
+   <FixtureVal ID="15">0,109</FixtureVal>
+  </Function>
+  <Function ID="47" Type="Scene" Name="Phase1 D" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">0,50</FixtureVal>
+   <FixtureVal ID="1">0,50</FixtureVal>
+   <FixtureVal ID="2">0,161</FixtureVal>
+   <FixtureVal ID="3">0,255</FixtureVal>
+   <FixtureVal ID="4">0,50</FixtureVal>
+   <FixtureVal ID="5">0,50</FixtureVal>
+   <FixtureVal ID="6">0,154</FixtureVal>
+   <FixtureVal ID="8">0,100</FixtureVal>
+   <FixtureVal ID="9">0,255</FixtureVal>
+   <FixtureVal ID="13">0,255</FixtureVal>
+   <FixtureVal ID="14">0,105</FixtureVal>
+   <FixtureVal ID="15">0,200</FixtureVal>
+  </Function>
+  <Function ID="48" Type="Chaser" Name="Phase1 Ambient" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="250"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Random</RunOrder>
+   <SpeedModes FadeIn="Default" FadeOut="Default" Duration="Common"/>
+   <Step Number="0" FadeIn="0" Hold="0" FadeOut="0">44</Step>
+   <Step Number="1" FadeIn="0" Hold="0" FadeOut="0">45</Step>
+   <Step Number="2" FadeIn="0" Hold="0" FadeOut="0">46</Step>
+   <Step Number="3" FadeIn="0" Hold="0" FadeOut="0">47</Step>
+  </Function>
+  <Monitor DisplayMode="1" ShowLabels="1">
+   <Font>Arial,12,-1,5,50,0,0,0,0,0</Font>
+   <ChannelStyle>0</ChannelStyle>
+   <ValueStyle>0</ValueStyle>
+   <Grid Width="5" Height="5" Units="0"/>
+   <FxItem ID="8" XPos="77.4194" YPos="1245.16"/>
+   <FxItem ID="6" XPos="2877.42" YPos="690.323"/>
+   <FxItem ID="5" XPos="2419.35" YPos="683.871"/>
+   <FxItem ID="4" XPos="1954.84" YPos="677.419"/>
+   <FxItem ID="3" XPos="1477.42" YPos="664.516"/>
+   <FxItem ID="2" XPos="967.742" YPos="664.516"/>
+   <FxItem ID="1" XPos="483.871" YPos="651.613"/>
+   <FxItem ID="17" XPos="477.419" YPos="0"/>
+   <FxItem ID="0" XPos="12.9032" YPos="645.161"/>
+   <FxItem ID="16" XPos="0" YPos="0"/>
+   <FxItem ID="15" XPos="535.484" YPos="1767.74"/>
+   <FxItem ID="14" XPos="96.7742" YPos="1774.19"/>
+   <FxItem ID="13" XPos="3335.15" YPos="700.638"/>
+   <FxItem ID="9" XPos="554.839" YPos="1219.35"/>
+  </Monitor>
+ </Engine>
+ <VirtualConsole>
+  <Frame Caption="">
+   <Appearance>
+    <FrameStyle>None</FrameStyle>
+    <ForegroundColor>Default</ForegroundColor>
+    <BackgroundColor>Default</BackgroundColor>
+    <BackgroundImage>None</BackgroundImage>
+    <Font>Default</Font>
+   </Appearance>
+   <Button Caption="Track 1" ID="1" Icon="">
+    <WindowState Visible="False" X="0" Y="50" Width="50" Height="50"/>
+    <Appearance>
+     <FrameStyle>None</FrameStyle>
+     <ForegroundColor>Default</ForegroundColor>
+     <BackgroundColor>Default</BackgroundColor>
+     <BackgroundImage>None</BackgroundImage>
+     <Font>Default</Font>
+    </Appearance>
+    <Function ID="0"/>
+    <Action>Toggle</Action>
+    <Intensity Adjust="False">100</Intensity>
+    <Input Universe="1" Channel="0"/>
+   </Button>
+   <Button Caption="Track 2" ID="2" Icon="">
+    <WindowState Visible="False" X="0" Y="100" Width="50" Height="50"/>
+    <Appearance>
+     <FrameStyle>None</FrameStyle>
+     <ForegroundColor>Default</ForegroundColor>
+     <BackgroundColor>Default</BackgroundColor>
+     <BackgroundImage>None</BackgroundImage>
+     <Font>Default</Font>
+    </Appearance>
+    <Function ID="1"/>
+    <Action>Toggle</Action>
+    <Intensity Adjust="False">100</Intensity>
+    <Input Universe="1" Channel="1"/>
+   </Button>
+   <Button Caption="Track 3" ID="3" Icon="">
+    <WindowState Visible="False" X="0" Y="150" Width="50" Height="50"/>
+    <Appearance>
+     <FrameStyle>None</FrameStyle>
+     <ForegroundColor>Default</ForegroundColor>
+     <BackgroundColor>Default</BackgroundColor>
+     <BackgroundImage>None</BackgroundImage>
+     <Font>Default</Font>
+    </Appearance>
+    <Function ID="2"/>
+    <Action>Toggle</Action>
+    <Intensity Adjust="False">100</Intensity>
+    <Input Universe="1" Channel="2"/>
+   </Button>
+   <Button Caption="Track 4" ID="4" Icon="">
+    <WindowState Visible="False" X="0" Y="200" Width="50" Height="50"/>
+    <Appearance>
+     <FrameStyle>None</FrameStyle>
+     <ForegroundColor>Default</ForegroundColor>
+     <BackgroundColor>Default</BackgroundColor>
+     <BackgroundImage>None</BackgroundImage>
+     <Font>Default</Font>
+    </Appearance>
+    <Function ID="3"/>
+    <Action>Toggle</Action>
+    <Intensity Adjust="False">100</Intensity>
+    <Input Universe="1" Channel="3"/>
+   </Button>
+   <Button Caption="Track 5" ID="5" Icon="">
+    <WindowState Visible="False" X="0" Y="250" Width="50" Height="50"/>
+    <Appearance>
+     <FrameStyle>None</FrameStyle>
+     <ForegroundColor>Default</ForegroundColor>
+     <BackgroundColor>Default</BackgroundColor>
+     <BackgroundImage>None</BackgroundImage>
+     <Font>Default</Font>
+    </Appearance>
+    <Function ID="4"/>
+    <Action>Toggle</Action>
+    <Intensity Adjust="False">100</Intensity>
+    <Input Universe="1" Channel="4"/>
+   </Button>
+   <Button Caption="Track 6" ID="6" Icon="">
+    <WindowState Visible="False" X="0" Y="300" Width="50" Height="50"/>
+    <Appearance>
+     <FrameStyle>None</FrameStyle>
+     <ForegroundColor>Default</ForegroundColor>
+     <BackgroundColor>Default</BackgroundColor>
+     <BackgroundImage>None</BackgroundImage>
+     <Font>Default</Font>
+    </Appearance>
+    <Function ID="5"/>
+    <Action>Toggle</Action>
+    <Intensity Adjust="False">100</Intensity>
+    <Input Universe="1" Channel="5"/>
+   </Button>
+   <Button Caption="Track 7" ID="7" Icon="">
+    <WindowState Visible="False" X="0" Y="350" Width="50" Height="50"/>
+    <Appearance>
+     <FrameStyle>None</FrameStyle>
+     <ForegroundColor>Default</ForegroundColor>
+     <BackgroundColor>Default</BackgroundColor>
+     <BackgroundImage>None</BackgroundImage>
+     <Font>Default</Font>
+    </Appearance>
+    <Function ID="6"/>
+    <Action>Toggle</Action>
+    <Intensity Adjust="False">100</Intensity>
+    <Input Universe="1" Channel="6"/>
+   </Button>
+   <Button Caption="Track 8" ID="8" Icon="">
+    <WindowState Visible="False" X="0" Y="400" Width="50" Height="50"/>
+    <Appearance>
+     <FrameStyle>None</FrameStyle>
+     <ForegroundColor>Default</ForegroundColor>
+     <BackgroundColor>Default</BackgroundColor>
+     <BackgroundImage>None</BackgroundImage>
+     <Font>Default</Font>
+    </Appearance>
+    <Function ID="7"/>
+    <Action>Toggle</Action>
+    <Intensity Adjust="False">100</Intensity>
+    <Input Universe="1" Channel="7"/>
+   </Button>
+   <Button Caption="Idle" ID="9" Icon="">
+    <WindowState Visible="False" X="0" Y="490" Width="50" Height="50"/>
+    <Appearance>
+     <FrameStyle>None</FrameStyle>
+     <ForegroundColor>Default</ForegroundColor>
+     <BackgroundColor>Default</BackgroundColor>
+     <BackgroundImage>None</BackgroundImage>
+     <Font>Default</Font>
+    </Appearance>
+    <Function ID="32"/>
+    <Action>Toggle</Action>
+    <Intensity Adjust="False">100</Intensity>
+    <Input Universe="1" Channel="8"/>
+   </Button>
+   <Button Caption="Button 10" ID="10" Icon="">
+    <WindowState Visible="False" X="0" Y="570" Width="50" Height="50"/>
+    <Appearance>
+     <FrameStyle>None</FrameStyle>
+     <ForegroundColor>Default</ForegroundColor>
+     <BackgroundColor>Default</BackgroundColor>
+     <BackgroundImage>None</BackgroundImage>
+     <Font>Default</Font>
+    </Appearance>
+    <Function ID="4294967295"/>
+    <Action>StopAll</Action>
+    <Intensity Adjust="False">100</Intensity>
+   </Button>
+  </Frame>
+  <Properties>
+   <Size Width="1024" Height="768"/>
+   <GrandMaster ChannelMode="Intensity" ValueMode="Reduce" SliderMode="Normal"/>
+  </Properties>
+ </VirtualConsole>
+ <SimpleDesk>
+  <Engine/>
+ </SimpleDesk>
+</Workspace>

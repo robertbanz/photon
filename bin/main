@@ -15,6 +15,8 @@ source /usr/local/bin/tkcon
 source $Conf::gamepath/photon_vals
 source $Conf::gamepath/photon_interfaces
 
+source $Conf::gamepath/lightmaster
+
 namespace import Photon::cr_handler
 
 # load in the sound-blaster code
@@ -53,7 +55,6 @@ pack .log.text -side left -fill both -expand true
 
 pack .status -side top
 pack .log -side top -expand true -fill both
-
 
 # simple debug & warning log functions
 proc debuglog { j } {
@@ -145,10 +146,12 @@ namespace eval ::Display {
 
 set disp_Socket [ socket -server ::Display::Accept $::Conf::disp_listenport ]
 
-
 # fade field audio to their appropriate values
 Mixer::fade vol $Conf::field_audio 10
 Mixer::fade rec $Conf::max_background_audio 10
+
+# Set lighting to idle
+::Lightmaster::start_idle
 
 proc openConsole { } {
   if { [ winfo exists .console ] } {
@@ -617,9 +620,12 @@ proc Idle_To_Pregame { } {
   namespace eval ::Display ServerPregameInit
 
   # Sound System
-
   LoadSoundTrack $Ginfo::trackname $Ginfo::length
   ::STrack::Begin $Ginfo::length
+  
+  # Start lighting experience
+  ::Lightmaster::start_game [ ::STrack::Lights ]
+  
   set STATE PREGAME
 }
 
@@ -691,6 +697,9 @@ proc Postgame_To_Idle { } {
   ::Photon::setsync $::Photon::PSYNC
   ::Photon::setcrenable 1
   set STATE IDLE
+  
+  # Reset lights
+  ::Lightmaster::start_idle
 }
 
     

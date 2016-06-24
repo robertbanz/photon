@@ -29,28 +29,67 @@
 
 namespace photon {
 
+static volatile unsigned int slot_counter = 0;
+
+static void DoSlotInterrupt() {
+  slot_counter++;
+}
+
 CrDriver::CrDriver(
-  HardwareSerial* radio_out, unsigned int sync_pin,
-  unsigned int key_pin, unsigned int tx_pin, unsigned int rx_pin,
-  GcInterface* gc_interface) :
-  radio_serial_out_(radio_out),
-  sync_signal_(new Signal(sync_pin)),
-  key_signal_(new Signal(key_pin)),
-  tx_signal_(new Signal(tx_pin)),
-  rx_signal_(new Signal(rx_pin)),
-  rf_slot_id_(0),
-  last_time_micros_(micros()),
-  target_micros_(last_time_micros_ + 1),
-  // According to maths, this should be:
-  // 16352.91179384201474726715 (close to 467/512)
-  slot_micros_(16350),
-  transmit_queue_(TxQueue(10)),
-  current_sync_(GetSyncByteFromName(kPsyncName)),
-  sequence_num_(0),
-  gc_interface_(gc_interface) {
+  const CrDriverOptions& options, GcInterface* interface) :
+    radio_serial_(options.radio_serial),
+    debug_serial_(options.debug_serial),
+    timer_enable_(new Signal(options.timer_enable_output_pin)),
+    not_key_(new Signal(options.key_output_pin)),
+    esync_(new Signal(options.esync_output_pin)),
+    psync_(new Signal(options.psync_output_pin)),
+    gsync_(new Signal(options.gsync_output_pin)),
+    rf_slot_id_(0),
+    transmit_queue_(TxQueue(10)),
+    current_sync_(GetSyncByteFromName(kPsyncName)),
+    sequence_num_(0),
+    gc_interface_(interface),
+    options_(options) {
     
   // CR runs at 1200,n,8,1
-  radio_serial_out_->begin(1200);
+  radio_serial_->begin(1200);
+  
+  pinMode(options_.local_mode_input_pin, INPUT_PULLUP);
+  pinMode(options_.gsync_input_pin, INPUT_PULLUP);
+  pinMode(options_.game_input_pin, INPUT_PULLUP);
+  pinMode(options_.slave_input_pin, INPUT_PULLUP);
+  pinMode(options_.slot_clock_interrupt_pin, INPUT);
+  pinMode(options_.fake_mode_pin, INPUT_PULLUP);
+  
+  timer_enable_->Off();
+  
+  attachInterrupt(digitalPinToInterrupt(options_.slot_clock_interrupt_pin),
+                  DoSlotInterrupt, RISING);
+                  
+  not_key_->On();
+  esync_->Off();
+  psync_->Off();
+  gsync_->Off();
+  
+  timer_enable_->On();
+  
+  if (digitalRead(options_.slave_input_pin)) {
+    EnterSlaveMode();
+  } else {
+    EnterMasterMode();
+  }
+  
+  if (digitalRead(options_.fake_mode_pin)) {
+    fake_mode_ = true;
+  } else {
+    fake_mode_ = false;
+  }
+
+  if (digitalRead(options_.local_mode_input_pin)) {
+    local_mode_ = true;
+  } else {
+    local_mode_ = false;
+  }
 }
 
 static inline unsigned int TimeDifference(
@@ -65,63 +104,78 @@ static inline unsigned int TimeDifference(
 }
 
 void CrDriver::Loop() {
-  unsigned long current_micros = micros();
-  unsigned long diff = TimeDifference(last_time_micros_, current_micros);
+  static unsigned int old_slot_counter = 0;
+  static unsigned long old_micros = micros();
+  
+  unsigned long new_micros = micros();
 
-  static unsigned long deviation = 0;
-  static unsigned long periods = 0;
+  int diff = slot_counter - old_slot_counter;
   
-  static unsigned long leap_counter = 0;
-  static unsigned long leap_us = 0;
-  
-  // adjust for drift.
-  if (leap_counter % 7 == 0) {
-    leap_us = 1;
-  } else {
-    leap_us = 0;
+  if (TimeDifference(old_micros, new_micros) > 100000) {
+    old_micros = new_micros;
+    CheckModeChanges();
+  }
+    
+  if (slave_mode_ && searching_) {
+    SlaveModeLoop();
+    return;
   }
   
-  if (diff < (slot_micros_ + leap_us)) {
+  if (diff == 0) {
+    // Nope.
     return;
   }
 
-  if (diff > (slot_micros_ * 2)) {
-    Serial.println("Serious Timer Overrun.");
+  old_slot_counter = slot_counter;
+ 
+  // Do stuff.
+  SlotInterrupt(diff);
+}
+
+void CrDriver::CheckModeChanges() {
+  // Check inputs for mode changes.
+  if (digitalRead(options_.slave_input_pin) && !slave_mode_) {
+    EnterSlaveMode();
+  } else if (!digitalRead(options_.slave_input_pin) && slave_mode_) {
+    // transition out of slave mode.
+    EnterMasterMode();
+  }
+  if (digitalRead(options_.fake_mode_pin) && !fake_mode_) {
+    debug_serial_->println("999-Enabling fake mode.");
+    faker_.Reset();
+    fake_mode_ = true;
+  } else if (!digitalRead(options_.fake_mode_pin) && fake_mode_) {
+    debug_serial_->println("999-Disable fake mode.");
+    fake_mode_ = false;
   }
   
-  deviation += (diff - slot_micros_);
-  periods++;
-  
-  // Do stuff.
-  SlotInterrupt();
-
-  ++leap_counter;
-    
-  last_time_micros_ += slot_micros_ + leap_us;
-  
-  if (rf_slot_id_ == 1) {
-    Serial.print("Mean Dev: ");
-    Serial.print(deviation / periods);
-    Serial.println(" us");
-    deviation = 0;
-    periods = 0;
+  if (digitalRead(options_.local_mode_input_pin) && !local_mode_) {
+    debug_serial_->println("999-Enabling local mode.");
+    local_mode_ = true;
+  } else if (!digitalRead(options_.local_mode_input_pin) && local_mode_) {
+    debug_serial_->println("999-Enabling remote mode.");
+    local_mode_ = false;
   }
 }
 
-void CrDriver::SlotInterrupt() {
-  if (rf_slot_id_ == kNumSlots) {
-    rf_slot_id_ = 0;
+void CrDriver::SlotInterrupt(int diff) {
+  if (diff != 1) {
+    debug_serial_->print("999-skipped ");
+    debug_serial_->println(diff);
+  }
+  rf_slot_id_ += diff;
+  if (rf_slot_id_ >= kNumSlots) {
+    rf_slot_id_ %= kNumSlots;
     sequence_num_++;
   }
   DoSlot();
-  ++rf_slot_id_;
 }
 
 void CrDriver::DoSlot() {
   if (rf_slot_id_ == 0) {
-    sync_signal_->On();
+    esync_->On();
   } else if (rf_slot_id_ == 1) {
-    sync_signal_->Off();
+    esync_->Off();
   }
   
   DoTx(rf_slot_id_);
@@ -130,72 +184,150 @@ void CrDriver::DoSlot() {
 }
 
 void CrDriver::DoKeyUpDown(unsigned int slot) {
-  if (slot == 1 || slot == 30) {
-    key_signal_->On();
-  } else if (slot == 24 || slot == 53) {
-    key_signal_->Off();
+  if (!slave_mode_) {
+    if (slot == 1 || slot == 30) {
+      not_key_->On();
+    } else if (slot == 24 || slot == 53) {
+      not_key_->Off();
+    }
   }
 }
 
-void CrDriver::DoRx(unsigned int slot) {
+void CrDriver::FlushSerialInput() {
   static byte buffer[255];
+  int available;
+  if ((available = radio_serial_->available()) > 0) {
+    radio_serial_->readBytes(buffer, available);
+  }
+}
+
+bool CrDriver::GetLastByte(byte* out) {
+  byte buffer[255];
+  int available = radio_serial_->available();
+  if (available > 0) {
+    radio_serial_->readBytes(buffer, available);
+    *out = buffer[available-1];
+    return true;
+  }
+  return false;
+}
+
+void CrDriver::DoRx(unsigned int slot) {
   static GcData data;
   data.data = 0x00;
   data.slot = slot;
   data.sequence = sequence_num_;
   data.type = GcData::RX;
 
-  // Always do a read.
-  int available = radio_serial_out_->available();
+  bool gotbyte = GetLastByte(&data.data);
   
-  // Get the last byte in the buffer.
-  if (available > 0) {
-    radio_serial_out_->readBytes(buffer, available);
-    data.data = buffer[available-1];  
-  }
-  
-  if (available > 1) {
-    Serial.println("rx WTF.");
-  }
-  
-  // Fake it if we need to.
-  if (IsRealRxSlot(slot) && current_sync_ == kGsync) {
-    unsigned char fake = faker_.GetRxForSlot(slot);
-    if (fake != 0x00) {
-      data.data = fake;
+  if (slave_mode_ && slot == 3) {
+    if (data.data == kPsync || data.data == kGsync || data.data == kEsync) {
+      slave_syncs_missed_ = 0;
+    } else {
+      slave_syncs_missed_++;
+      if (slave_syncs_missed_ > 5) {
+        debug_serial_->println("999-Missing sync, searching...");
+        SlaveResync();
+      }
     }
   }
-
-  if (data.data != 0x00) {
+  
+  if (!gotbyte && fake_mode_ && !slave_mode_ && (current_sync_ == kGsync)) {
+    data.data = faker_.GetRxForSlot(slot);
+    if (data.data != 0x00) {
+      gotbyte = true;
+    }
+  }
+  
+  if (gotbyte) {
     gc_interface_->SendOutput(data);
   }
 }
 
 void CrDriver::DoTx(unsigned int slot) {
-  if (!IsTxSlot(slot)) {
-    return;
-  }
   GcData data;
   data.type = GcData::TX;
   data.slot = slot;
   data.sequence = sequence_num_;
-  if (slot == 0) {
-    // transmit current sync.
-    radio_serial_out_->write(current_sync_);
-    data.data = current_sync_;
-    gc_interface_->SendOutput(data);
-  } else {
-    // transmit from queue.
-    if (!transmit_queue_.Empty()) {
-      unsigned char out = transmit_queue_.Pop();
-      data.data = out;
-      radio_serial_out_->write(out);
-      tx_signal_->On();
+
+  if (slave_mode_) {
+    if (fake_mode_) {
+      if ((slot >= kRedRfStart && slot < (kRedRfStart + 20)) ||
+          (slot >= kGreenRfStart && slot < (kGreenRfStart + 20))) {
+        data.data = faker_.GetRxForSlot(slot);
+        if (data.data != 0x00) {
+          radio_serial_->write(data.data);
+          gc_interface_->SendOutput(data);
+        }
+      }
+    }
+  } else {    
+    if (!IsTxSlot(slot)) {
+      return;
+    }
+    if (slot == 0) {
+      if (local_mode_) {
+        // send what's in digital read.
+        data.data = kPsync;
+        if (digitalRead(options_.gsync_input_pin)) {
+          data.data = kGsync;
+        } 
+      } else {
+        data.data = current_sync_;
+      }
+      radio_serial_->write(data.data);
       gc_interface_->SendOutput(data);
     } else {
-      tx_signal_->Off();
+      // transmit from queue.
+      if (!transmit_queue_.Empty()) {
+        data.data = transmit_queue_.Pop();
+        radio_serial_->write(data.data);
+        gc_interface_->SendOutput(data);
+      }
     }
   }
+}
+
+void CrDriver::EnterSlaveMode() {
+  debug_serial_->println("999-Entering slave mode.");
+  // Disable the timer.
+  not_key_->On();
+  SlaveResync();
+}
+
+void CrDriver::SlaveResync() {
+  sync_count_ = 0;
+  timer_enable_->Off();
+  searching_ = true;
+  slave_mode_ = true;
+  FlushSerialInput();
+}
+
+void CrDriver::SlaveModeLoop() {
+  byte data;
+  if (GetLastByte(&data)) {
+    if (data == kPsync || data == kGsync || data == kGsync) {
+      sync_count_++;
+      if (sync_count_ == 3) {
+        delay(8);  // delay almost half a slot before enabling our clock,
+                   // otherwise we'll be too close.
+        timer_enable_->On();
+        searching_ = false;
+        rf_slot_id_ = 3;
+        slave_syncs_missed_ = 0;
+        debug_serial_->println("999-Found sync!");
+      }
+    }
+  }
+  CheckModeChanges();
+}
+
+void CrDriver::EnterMasterMode() {
+  debug_serial_->println("999-Entering master mode.");
+  slave_mode_ = false;
+  searching_ = false;
+  timer_enable_->On();
 }
 
 Faker::Faker() {
@@ -210,7 +342,7 @@ Faker::Faker() {
 }
 
 void Faker::Reset() {
-  srandom(micros());
+  randomSeed(analogRead(0));
   for (unsigned int i = 0; i < sizeof(is_fake_); i++) {
     has_base_[i] = false;
   }  
@@ -218,6 +350,9 @@ void Faker::Reset() {
 
 unsigned char Faker::GetRxForSlot(unsigned int slot) {
   int i = GetPlayerForSlot(slot);
+  if (i == -1) {
+    return 0x00;
+  }
   if (!is_fake_[i]) {
     return 0x00;
   }
@@ -227,7 +362,7 @@ unsigned char Faker::GetRxForSlot(unsigned int slot) {
   } else {
     ourbase = kGreenBase;
   }
-  int myrand = random() % 100;
+  int myrand = random(100);
   if (myrand == 98) {
     has_base_[i] = true;
   } else if (myrand == 97) {
@@ -249,11 +384,15 @@ unsigned char Faker::GetRxForSlot(unsigned int slot) {
   }
 }
 
-unsigned int Faker::GetPlayerForSlot(unsigned int slot) {
-  if (slot >= kGreenRfStart) {
-    return (slot - kGreenRfStart) + 20;
+int Faker::GetPlayerForSlot(unsigned int slot) {
+  int possible_red = slot - kRedRfStart;
+  int possible_green = slot - kGreenRfStart;
+  if (possible_green >= 0 && possible_green < 20) {
+    return possible_green + 20;
+  } else if (possible_red >= 0 && possible_red < 20) {
+    return possible_red;
   } else {
-    return (slot - kRedRfStart);
+    return -1;
   }
 }
 

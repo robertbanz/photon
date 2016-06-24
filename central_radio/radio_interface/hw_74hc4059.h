@@ -1,15 +1,29 @@
-class HW_74HC4059 {
+
+static TimerInterface* interrupt_holder = nullptr;
+
+static void DoInterrupt() {
+  if (interrupt_holder != nullptr) {
+    interrupt_holder->DoTimerOp();
+  }
+}
+
+class HW_74HC4059 : class TimerInterface {
  public:
   // Uses 20 I/O pins, starting at io_start
   // First three wired to "Ka,b,c"
   // Next 16 wired to J1-J16
   // Last wired to Latch Enable
-  HW_74HC4059(unsigned int io_start) :
-      io_start_(io_start) {
+  HW_74HC4059(unsigned int io_start, unsigned int interrupt) :
+      io_start_(io_start),
+      interrupt_(interrupt),
+      counter_(0),
+      old_counter_(0) {
     for(int i = io_start_; i < io_start + 20; ++i) {
       pinMode(i, OUTPUT);
       digitalWrite(i, LOW);
     }
+    pinMode(interrupt_, INPUT);
+    attachInterrupt(digitalPinToInterrupt(2), )
   };
   void DisableTimer() {
     SetMode(0x00);
@@ -35,7 +49,17 @@ class HW_74HC4059 {
     WriteNibbles(io_start_ + jam_base, d1, d4);
     WriteNibbles(io_start_ + jam_base + 8, d3, d2);
   }
+  void InLoop() override {
+    if (counter_ != old_counter_) {
+      // TODO: check overruns
+      DoTimerOp();
+      old_counter_ = counter_;
+    }
+  }
  private:
+  void DoInterruptOp() {
+    ++counter_;
+  } 
   const unsigned char modes[6] =      { 7, 6, 5, 4, 3, 0};
   const unsigned char multiplier[6] = { 2, 4, 5, 8, 10, 0};
   const unsigned char remainder[6] =  { 1, 3, 4, 7, 9, 0 };
@@ -46,10 +70,12 @@ class HW_74HC4059 {
   const int jam_base = 3;
   const int le_base = 19;
   
-  int io_start_;
-  
+  unsigned int io_start_;
+  unsigned int interrupt_;
   unsigned char current_mode_;
   
+  volatile unsigned long counter_;
+  unsigned long old_counter_;
   void SetMode(unsigned char mode) {
 	  current_mode_ = mode;
     digitalWrite(io_start_ + mode_base + 0, current_mode_ & 0x01 ? HIGH : LOW);

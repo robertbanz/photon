@@ -34,32 +34,33 @@
 static photon::CrDriver* crdriver = nullptr;
 static photon::GcInterface* gcinterface = nullptr;
 
-// change this?
+// Skanky Arduino Ethernet Config.
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-
-// IP Address
 byte ip[] = { 192, 168, 3, 78 };
 
-EthernetServer server = EthernetServer(23);
-
 void setup() {
-  Serial.begin(250000);
-
-  Ethernet.begin(mac, ip);
-  server.begin();
-
-  gcinterface = new photon::GcInterface(nullptr, &server);
-  // put your setup code here, to run once:
-  crdriver = new photon::CrDriver(&Serial1,
-                                  13, // sync,
-                                  12, // key,
-                                  11, // rx,
-                                  10,
-                                  gcinterface);  // tx
+  photon::CrDriverOptions options;
+  options.slot_clock_interrupt_pin = 2;
+  options.timer_enable_output_pin = 3;
+  options.key_output_pin = 4;
+  options.esync_output_pin = 5;
+  options.psync_output_pin = 6;
+  options.gsync_output_pin = 7;
+  options.local_mode_input_pin = 8;
+  options.gsync_input_pin = 9;
+  options.game_input_pin = 10;
+  options.slave_input_pin = 11;
+  options.fake_mode_pin = 12;
+  options.radio_serial = &Serial3;
+  options.debug_serial = &Serial;
+  
+  Serial.begin(115200);  // Set to the serial rate you want to use.
+  
+  gcinterface = new photon::GcInterface(&Serial, nullptr);
+  crdriver = new photon::CrDriver(options, gcinterface);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
   crdriver->Loop();
   gcinterface->CheckInputs(crdriver);
 }
