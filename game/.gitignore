@@ -8,3 +8,4 @@
 .lesshst
 .ssh/**
 .gitconfig
+tmp/
