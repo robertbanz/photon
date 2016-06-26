@@ -8,8 +8,8 @@
 .lesshst
 .ssh/**
 .gitconfig
+tmp/
 .ICEauthority
 .cache/**
 .local/**
 .tkcon_history
-
