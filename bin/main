@@ -386,12 +386,11 @@ proc EtSocketHandler { sock } {
 
     # (Miscellaneous Responses)
     #   503 Command not recognized
-    ::debuglog "et: $line"
+    ::debuglog "command from et: $line"
     set j [ split $line " " ]
     set b 0
     set command [ lindex $j 0 ]
-    ::debuglog "$j"
-    set commands { STATUS START FLICK }
+    set commands { STATUS START FLICK SENDIR STOPIR }
   
     foreach x $commands {
       if { $x == $command } {
@@ -498,6 +497,14 @@ proc EtSocketHandler_START { sock com } {
     puts $sock "502 Transfer Error"
     flush $sock
   }
+}
+
+proc EtSocketHandler_SENDIR { sock com } {
+  cr_puts $com
+}
+
+proc EtSocketHandler_STOPIR { sock com } {
+  cr_puts $com
 }
 
 # system states:
