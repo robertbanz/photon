@@ -53,7 +53,7 @@ void setup() {
   options.fake_mode_pin = 12;
   options.radio_serial = &Serial3;
   options.debug_serial = &Serial;
-  
+  options.ir_serial = &Serial2;
   Serial.begin(115200);  // Set to the serial rate you want to use.
   
   gcinterface = new photon::GcInterface(&Serial, nullptr);

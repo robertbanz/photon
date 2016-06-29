@@ -49,7 +49,8 @@ CrDriver::CrDriver(
     current_sync_(GetSyncByteFromName(kPsyncName)),
     sequence_num_(0),
     gc_interface_(interface),
-    options_(options) {
+    options_(options),
+    ir_position_(0) {
     
   // CR runs at 1200,n,8,1
   radio_serial_->begin(1200);
@@ -90,6 +91,8 @@ CrDriver::CrDriver(
   } else {
     local_mode_ = false;
   }
+  
+  options_.ir_serial->begin(1200);
 }
 
 static inline unsigned int TimeDifference(
@@ -169,6 +172,7 @@ void CrDriver::SlotInterrupt(int diff) {
     sequence_num_++;
   }
   DoSlot();
+  DoIr();
 }
 
 void CrDriver::DoSlot() {
@@ -181,6 +185,14 @@ void CrDriver::DoSlot() {
   DoTx(rf_slot_id_);
   DoRx(rf_slot_id_);
   DoKeyUpDown(rf_slot_id_);
+}
+
+void CrDriver::DoIr() {
+  if (ir_out_data_.empty()) {
+    return;
+  }
+  options_.ir_serial->write(ir_out_data_[ir_position_]);
+  ir_position_ = (ir_position_ + 1) % ir_out_data_.size();
 }
 
 void CrDriver::DoKeyUpDown(unsigned int slot) {
