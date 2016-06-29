@@ -8,24 +8,28 @@ set kEtBarker 0x9d
 set kEtNotBarker 0x62
 
 proc ir_setup { device } {
-  variable fd
+  if { "$device" ne "GAME" } {  
+    variable fd
   
-  if { "$fd" ne "" } {
-    return -code error "Ir Device Already Initialized"
-  }
+    if { "$fd" ne "" } {
+      return -code error "Ir Device Already Initialized"
+    }
 
-  set rc [ catch {open $device RDWR} fd ]
-  if { $rc != 0 } {
-    return -code error "Cannot open Ir Device $device"
-  }
+    set rc [ catch {open $device RDWR} fd ]
+    if { $rc != 0 } {
+      return -code error "Cannot open Ir Device $device"
+    }
   
-  fconfigure $fd -buffering none
-  fconfigure $fd -blocking 0
-  fconfigure $fd -encoding binary
-  fconfigure $fd -eofchar {}
-  fconfigure $fd -translation binary
-  fconfigure $fd -mode 1200,n,8,1
-  
+    fconfigure $fd -buffering none
+    fconfigure $fd -blocking 0
+    fconfigure $fd -encoding binary
+    fconfigure $fd -eofchar {}
+    fconfigure $fd -translation binary
+    fconfigure $fd -mode 1200,n,8,1
+  } else {
+    variable fd
+    set fd "GAME"
+  }  
   return -code ok
 }
 
@@ -71,20 +75,30 @@ proc ir_enterpod { team slot mode } {
 }
 
 proc ir_out { bytes } {
-  variable outqueue
-  variable position
-  ir_stop
-  set position 0
-  set outqueue $bytes
-  set schedule [after 16 {::IrLib::ir_event}]
+  variable fd
+  if { "$fd" eq "GAME" } {
+    game_ir_out $bytes
+  } else {
+    variable outqueue
+    variable position
+    ir_stop
+    set position 0
+    set outqueue $bytes
+    set schedule [after 16 {::IrLib::ir_event}]
+  }
 }
 
 proc ir_stop { } {
-  if { [ info exists ::IrLib::schedule ] } {
-    upvar 0 ::IrLib::schedule stuff
-    after cancel $stuff
+  variable fd
+  if { "$fd" eq "GAME" } {
+    game_ir_stop
+  } else {
+    if { [ info exists ::IrLib::schedule ] } {
+      upvar 0 ::IrLib::schedule stuff
+      after cancel $stuff
+    }
+    return -code ok
   }
-  return -code ok
 }
 
 proc ir_event { } {
@@ -95,6 +109,28 @@ proc ir_event { } {
   set rc [catch [puts -nonewline $fd [lindex $outqueue $position]]]
   set position [expr {($position + 1) % [llength $outqueue]}]
   set schedule [after 16 {::IrLib::ir_event}] 
+}
+
+proc game_ir_out { bytes } {
+  if {[ catch "socket $::Conf::server_name $::Conf::et_listenport" gamefd ]} {
+    return -code error "Error connecting to game computer"
+  }
+  fconfigure $gamefd -buffering line
+  set command_out "SENDIR"
+  foreach {char} $bytes {
+    append command_out " " [scan $char %c]
+  }
+  puts $gamefd $command_out
+  close $gamefd
+}
+
+proc game_ir_stop { } {
+  if {[ catch "socket $::Conf::server_name $::Conf::et_listenport" gamefd ]} {
+    return -code error "Error connecting to game computer"
+  }
+  fconfigure $gamefd -buffering line
+  puts $gamefd "STOPIR"
+  close $gamefd
 }
 
 }
