@@ -27,6 +27,7 @@
 
 #include <string>
 #include <locale>
+#include <vector>
 
 #include "photon.h"
 
@@ -131,6 +132,29 @@ void GcInterface::CheckInputs(CrDriver* driver) {
   }
 }
 
+std::vector<unsigned char> parse_bytes(std::string& data) {
+  std::vector<unsigned char> out;
+  auto position = data.c_str();
+  char* result;
+  while(*position != '\0') {
+    result = nullptr;
+    int data = strtol(position, &result, 10);
+    if (result == nullptr || result == position) {
+      // bad argument.
+      out.clear();
+      break;
+    }
+    if (data < 0 || data > 255) {
+      // also, bad argument
+      out.clear();
+      break;
+    }
+    out.push_back(data);
+    position = result;
+  }
+  return out;
+}
+
 void GcInterface::ParseAndDo(CrDriver* driver, const std::string& input,
                              GcConnection* connection) {
   // Pull out command name.
@@ -158,12 +182,26 @@ void GcInterface::ParseAndDo(CrDriver* driver, const std::string& input,
       return;
     } else {
       connection->SendOutput("503-Bad Write");
-      return; // tood: print error
+      return; // todo: print error
     }
   } else if (command == "READ" ||
              command == "ENABLE") {
     connection->SendOutput("100 OK (ignored)");
     return;
+  } else if (command == "SENDIR") {
+    std::vector<unsigned char> data = parse_bytes(arg);
+    if (data.empty()) {
+      connection->SendOutput("503-Bad SENDIR");
+    } else {
+      connection->SendOutput("100-SENDIR");
+      driver->SendIr(data);
+    }
+  } else if (command == "STOPIR") {
+    connection->SendOutput("100 IR STOPPED");
+    driver->StopIr();
+  } else {
+    connection->SendOutput(
+        "503-Do not understand your strange ways and customs");
   }
 }
 

@@ -28,6 +28,7 @@
 
 #include <memory>
 #include <queue>
+#include <vector>
 
 #include "gc_interface.h"
 #include "photon.h"
@@ -160,12 +161,24 @@ class CrDriver {
   void Transmit(unsigned char data) {
     transmit_queue_.Insert(data);
   }
-    
+  
+  void SendIr(std::vector<unsigned char> data) {
+    ir_out_data_.clear();
+    ir_position_ = 0;
+    ir_out_data_ = data;
+  }
+  
+  void StopIr() {
+    ir_out_data_.clear();
+    ir_position_ = 0;
+  }
+  
  private:
   // Called at the end of every time slice. 
   void SlotInterrupt(int diff);
   
   void DoSlot();
+  void DoIr();
   void DoTx(unsigned int slot);
   void DoRx(unsigned int slot);
   void DoKeyUpDown(unsigned int slot);
@@ -227,6 +240,10 @@ class CrDriver {
   
   // Options
   const CrDriverOptions options_;
+  
+  // IR thingy.
+  std::vector<unsigned char> ir_out_data_;
+  unsigned int ir_position_;
   
   Faker faker_;
 };

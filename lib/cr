@@ -38,6 +38,12 @@ proc cr_write { byte } {
   cr_sflush $cr_sock
 }
 
+proc cr_puts { data } {
+  variable cr_sock
+  cr_sputs $cr_sock $data
+  cr_sflush $cr_sock
+}
+
 proc cr_enable { on } {
   variable cr_sock
 
