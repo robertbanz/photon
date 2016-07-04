@@ -556,7 +556,7 @@ proc LoadSoundTrack { trackname length } {
       '$trackname' and ( length = $length or length = 0 )" ]
 
   if { [ pg_result $res -numTuples ] != 1 } {
-    warninglog "Cannot find track named $trackname"
+    warninglog "Picking random track... ($trackname)"
     set trackname ""
   } else {
     pg_result $res -tupleArray 0 tdata
@@ -576,9 +576,9 @@ proc LoadSoundTrack { trackname length } {
         pg_disconnect $conn
         return [ LoadSoundTrack "CD Track 1" $length ]
     }
-    # pick one at random
 
-    set num [ expr int(rand() * $nmatches) ]
+    # pick one at random
+    set num [Pick_Track_With_Weight $res]
 
     pg_result $res -tupleArray $num tdata
 
@@ -592,6 +592,23 @@ proc LoadSoundTrack { trackname length } {
   namespace eval ::STrack "source $Conf::gamepath/sound/$tdata(type)"
   namespace eval ::STrack $tdata(params)
   pg_disconnect $conn
+}
+
+proc Pick_Track_With_Weight { pgresult } {
+  for {set x 0} {$x < [pg_result $pgresult -numTuples]} {incr x} {
+    set weight 10
+    pg_result $pgresult -tupleArray $x tdata
+    puts [array get tdata]
+    if {[info exists tdata(weight)] && $tdata(weight) ne ""} {
+      set weight $tdata(weight)
+    }
+    for {set c 0} {$c < $weight} {incr c} {
+      lappend picklist $x
+    }
+  }
+  puts $picklist
+  # pick a random element in the list
+  return [lindex $picklist [expr {int(rand()*[llength $picklist])}]]
 }
 
 proc Idle_To_Pregame { } {
