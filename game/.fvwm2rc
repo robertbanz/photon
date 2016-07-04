@@ -78,7 +78,6 @@ Mouse 3	TSIF	A	RaiseLower
 ######################## Initialization Functions ############################
 AddToFunc InitFunction 	  "I" exec xsetroot -solid black
 +			  "I" exec /usr/photon/bin/run_main_sw
-+                         "I" exec /usr/local/bin/xclock -update 1 -digital
 +                         "I" exec /usr/local/bin/start-pulseaudio-x11
 
 
