@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE FixtureDefinition>
+<FixtureDefinition xmlns="http://www.qlcplus.org/FixtureDefinition">
+ <Creator>
+  <Name>Q Light Controller Plus</Name>
+  <Version>4.10.4</Version>
+  <Author>Robert Banz</Author>
+ </Creator>
+ <Manufacturer>Stage Right</Manufacturer>
+ <Model>Stage Beam</Model>
+ <Type>Moving Head</Type>
+ <Channel Name="Pan">
+  <Group Byte="0">Pan</Group>
+ </Channel>
+ <Channel Name="Pan Fine">
+  <Group Byte="1">Pan</Group>
+ </Channel>
+ <Channel Name="Tilt">
+  <Group Byte="0">Tilt</Group>
+ </Channel>
+ <Channel Name="Tilt Fine">
+  <Group Byte="1">Tilt</Group>
+ </Channel>
+ <Channel Name="Motor Speed">
+  <Group Byte="0">Speed</Group>
+ </Channel>
+ <Channel Name="Dimmer">
+  <Group Byte="0">Intensity</Group>
+ </Channel>
+ <Channel Name="Shutter">
+  <Group Byte="0">Shutter</Group>
+  <Capability Min="0" Max="4">Shutter Closed</Capability>
+  <Capability Min="5" Max="250">Strobe Rate</Capability>
+  <Capability Min="251" Max="255">Shutter Open</Capability>
+ </Channel>
+ <Channel Name="Color Wheel">
+  <Group Byte="0">Colour</Group>
+  <Capability Min="0" Max="9" Color="#ffffff">White</Capability>
+  <Capability Min="10" Max="19" Color="#ffa200">Orange</Capability>
+  <Capability Min="20" Max="29">Cyan</Capability>
+  <Capability Min="30" Max="39">Purple</Capability>
+  <Capability Min="40" Max="49">Yellow</Capability>
+  <Capability Min="50" Max="59">Green</Capability>
+  <Capability Min="60" Max="69">Blue</Capability>
+  <Capability Min="70" Max="79">Red</Capability>
+  <Capability Min="80" Max="89">Red / Blue</Capability>
+  <Capability Min="90" Max="99">Blue / Green</Capability>
+  <Capability Min="100" Max="109">Green / Yellow</Capability>
+  <Capability Min="110" Max="119">Yellow / Purple</Capability>
+  <Capability Min="120" Max="129">Purple / Cyan</Capability>
+  <Capability Min="130" Max="139" Color="#fff2f1">Cyan / Orange</Capability>
+ </Channel>
+ <Channel Name="Gobo Wheel">
+  <Group Byte="0">Gobo</Group>
+  <Capability Min="0" Max="9">Open</Capability>
+  <Capability Min="10" Max="15">Gobo 2 (Target)</Capability>
+  <Capability Min="16" Max="23">Gobo 3 (Tunnel)</Capability>
+  <Capability Min="24" Max="31">Gobo 4 (Dot Tunnel)</Capability>
+  <Capability Min="32" Max="39">Gobo 5 (Alien Writing)</Capability>
+  <Capability Min="40" Max="47">Gobo 6 (Random Dots)</Capability>
+  <Capability Min="48" Max="55">Gobo 7 (Swishes)</Capability>
+  <Capability Min="56" Max="63">Gobo 8 (Triangles)</Capability>
+  <Capability Min="64" Max="71"></Capability>
+  <Capability Min="72" Max="79">Gobo 2 (Target) Shake</Capability>
+  <Capability Min="80" Max="87">Gobo 3 (Tunnel) Shake</Capability>
+  <Capability Min="88" Max="95">Gobo 4 (Dot Tunnel) Shake</Capability>
+  <Capability Min="96" Max="103">Gobo 5 (Alien Writing) Shake</Capability>
+  <Capability Min="104" Max="111">Gobo 6 (Random Dots) Shake</Capability>
+  <Capability Min="112" Max="120">Gobo 8 (Triangles) Shake</Capability>
+ </Channel>
+ <Channel Name="Automatic A">
+  <Group Byte="0">Maintenance</Group>
+  <Capability Min="0" Max="7">No Function</Capability>
+  <Capability Min="8" Max="47">Automatic Color Change</Capability>
+  <Capability Min="48" Max="87">Automatic Gobo Change</Capability>
+  <Capability Min="88" Max="127">Automatic Color &amp; Gobo Fast Change</Capability>
+  <Capability Min="128" Max="167">Automatic Color &amp; Gobo Slow Change</Capability>
+  <Capability Min="168" Max="207">Automatic Color &amp; Gobo Change with Fast Strobing</Capability>
+  <Capability Min="208" Max="247">Automatic Color &amp; Gobo Change with Slow Strobing</Capability>
+  <Capability Min="248" Max="255">Sound Controlled Color &amp; Gobo Change</Capability>
+ </Channel>
+ <Channel Name="Automatic B">
+  <Group Byte="0">Maintenance</Group>
+  <Capability Min="0" Max="7">No Function</Capability>
+  <Capability Min="8" Max="32">Auto Movement Pan 540</Capability>
+  <Capability Min="33" Max="58">Auto Movement Pan 180</Capability>
+  <Capability Min="59" Max="84">Auto Movement Tilt 180</Capability>
+  <Capability Min="85" Max="110">Auto Movement Tilt 90</Capability>
+  <Capability Min="111" Max="136">Auto Movement Pan 360 Tilt 180</Capability>
+  <Capability Min="137" Max="162">Auto Movement Pan 180 Tilt 90</Capability>
+  <Capability Min="163" Max="188">Auto Movement Pan 540 Til 180 Slow</Capability>
+  <Capability Min="189" Max="214">Auto Movement Pan 180 Tilt 90 Slow</Capability>
+  <Capability Min="215" Max="240">Auto Movement Pan 80 and Tilt 90 Fast</Capability>
+  <Capability Min="241" Max="255">Sound Controlled Automatic Pan &amp; Tilt Movement</Capability>
+ </Channel>
+ <Channel Name="Reset">
+  <Group Byte="0">Maintenance</Group>
+  <Capability Min="0" Max="250">No Function</Capability>
+  <Capability Min="251" Max="255">Reset</Capability>
+ </Channel>
+ <Mode Name="12 Channel">
+  <Physical>
+   <Bulb Type="LED" Lumens="0" ColourTemperature="0"/>
+   <Dimensions Weight="0" Width="0" Height="0" Depth="0"/>
+   <Lens Name="Other" DegreesMin="0" DegreesMax="0"/>
+   <Focus Type="Fixed" PanMax="540" TiltMax="190"/>
+   <Technical PowerConsumption="0" DmxConnector="3-pin"/>
+  </Physical>
+  <Channel Number="0">Pan</Channel>
+  <Channel Number="1">Pan Fine</Channel>
+  <Channel Number="2">Tilt</Channel>
+  <Channel Number="3">Tilt Fine</Channel>
+  <Channel Number="4">Motor Speed</Channel>
+  <Channel Number="5">Dimmer</Channel>
+  <Channel Number="6">Shutter</Channel>
+  <Channel Number="7">Color Wheel</Channel>
+  <Channel Number="8">Gobo Wheel</Channel>
+  <Channel Number="9">Automatic A</Channel>
+  <Channel Number="10">Automatic B</Channel>
+  <Channel Number="11">Reset</Channel>
+ </Mode>
+</FixtureDefinition>
