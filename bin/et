@@ -80,8 +80,18 @@ for { set x 0 } { $x < 40 } { incr x } {
     set codename_update($x) 0
 }
 
+# simple debug & warning log functions
+proc debuglog { j } {
+  puts "debug: $j"
+}
+
+proc warninglog { j } {
+  puts "warning: $j"
+  set Message "warning: $j"
+}
+
 proc setGameMode { mode } {
-  set conn [ pg_connect -conninfo [list dbname = $Conf::dbname host = $Conf::dbhost ] ]
+  set conn [ db_connect ]
     
   pg_select $conn "select name, descr, code, params from g_modes where \
       storeid = 0 and name = '$mode'" array {
@@ -117,8 +127,8 @@ proc InitGame { } {
       set used($i) 0
     }
 
-    set redteamname "RED TEAM"
-    set greenteamname "GREEN TEAM"
+    set redteamname "ALPHA  RED"
+    set greenteamname "ALPHA  GRN"
     set trackname "RANDOM"
   }
   
@@ -222,10 +232,10 @@ set std_functionname {
     "goto_StartGame"
     ""
     ""
-    "nothing1"
+    "currentF6"
     "irTestMenu"
     "goto_ViewCurrentGame"
-    "nothing2"
+    "currentF9"
     "goto_FlickSync"
     ""
     "goto_ClearGame"
@@ -236,11 +246,13 @@ ButtonMenu $std_functionlist $std_functionname
 bind all <Control-g> { Barcode_Scan %W }
 bind all <Control-G> { Barcode_Scan %W }
 
-proc nothing1 { } {
+proc currentF6 { } {
+  event generate . <KP_Insert>
   return -code ok
 }
 
-proc nothing2 { } {
+proc currentF9 { } {
+  event generate . <KP_Delete>
   return -code ok
 }
 
@@ -271,8 +283,6 @@ proc Barcode_Get { widget scancode } {
   if { ! [ info exists Barcode_InFunctionLock ] } {
     set Barcode_InFunctionLock 0
   }
-
-#    puts $scancode
 
   if { ( $scancode != "Control_L" ) && ( $scancode != "Return" ) &&
        ( $scancode >= "0" ) && ( $scancode <= "9" ) } {
@@ -310,7 +320,7 @@ proc LoadGame { gameid } {
 
   InitGame
 
-  set conn [ pg_connect -conninfo [list dbname = $Conf::dbname host = $Conf::dbhost ] ]
+  set conn [ db_connect ]
 
   if { [ info exists old_game ] } {
     # if the previous game we were editing is in the
@@ -321,7 +331,7 @@ proc LoadGame { gameid } {
 
   set Ginfo::gameid $gameid
 
-  set res [ pg_exec $conn "select * from g_data where id = $gameid \
+  set res [ my_pg_exec $conn "select * from g_data where id = $gameid \
       and storeid = $Conf::storeid" ]
 
   if { [ pg_result $res -numTuples ] != 1 } {
@@ -334,11 +344,6 @@ proc LoadGame { gameid } {
       and storeid = $Conf::storeid"  
 
   pg_result $res -tupleArray 0 gdata
-
-##    if { $gdata(state) != "RUNNABLE" } {
-# pg_disconnect $conn
-#
-#    }
 
   setGameMode $gdata(mode)
   set Ginfo::trackname $gdata(trackname)
@@ -357,7 +362,7 @@ proc LoadGame { gameid } {
 
   # load player information
 
-  my_pg_select $conn "select team, slot, name, idnum from g_players \
+  pg_select $conn "select team, slot, name, idnum from g_players \
       where id = $gameid and storeid = $Conf::storeid and used " array {
     set adder [ expr { $array(team) * 20 } ]
     set j [ expr { $array(slot) + $adder } ]
@@ -406,7 +411,7 @@ proc BeginGame { } {
   global Message
   
   # connect, and place game information in database
-  set conn [ pg_connect -conninfo [list dbname = $Conf::dbname host = $Conf::dbhost ] ]
+  set conn [ db_connect ]
   
   if { $Ginfo::gameid == -1 } {
     # get next game ID from sequence
@@ -504,7 +509,7 @@ proc BeginGame { } {
     vwait finalcode
   
     if { $finalcode >= 500 } {
-      pg_exec $conn "update g_data set state='ETING' where storeid = \
+      my_pg_exec $conn "update g_data set state='ETING' where storeid = \
           $Conf::storeid and id = $Ginfo::gameid"
     }
   
@@ -732,10 +737,10 @@ proc PreEnter { toplevel } {
   set head(id) "Game ID"
   set head(mode) "Game Mode"
   set head(length) "Game Length"
-  set head(red_teamname) "RED TEAM"
-  set head(green_teamname) "GREEN TEAM"
+  set head(red_teamname) "ALPHA RED"
+  set head(green_teamname) "ALPHA GREEN"
 
-  set conn [ pg_connect -conninfo [list dbname = $Conf::dbname host = $Conf::dbhost ] ]
+  set conn [ db_connect ]
   
   set j 0
 
@@ -899,10 +904,8 @@ proc EditGame { toplevel } {
         bind $toplevel.$color.$i.$x <Up> { Edit_UpArrow %W }
         bind $toplevel.$color.$i.$x <KP_Up> { Edit_UpArrow %W }
         bind $toplevel.$color.$i.$x <KP_Insert> { Edit_Insert %W }
-        bind $toplevel.$color.$i.$x <F6> { Edit_Insert %W }      
         bind $toplevel.$color.$i.$x <Insert> { Edit_Insert %W }
         bind $toplevel.$color.$i.$x <Delete> { Edit_Delete %W }
-        bind $toplevel.$color.$i.$x <F8> { Edit_Delete %W }        
         bind $toplevel.$color.$i.$x <KP_Delete> { Edit_Delete %W }
         bind $toplevel.$color.$i.$x <Home> { Edit_Home %W }
         bind $toplevel.$color.$i.$x <KP_Home> { Edit_Home %W }        
@@ -910,8 +913,10 @@ proc EditGame { toplevel } {
 
       bind Entry <Insert> { }
       bind Entry <KP_Insert> { }
+      bind Entry <F6> { }
       bind Entry <Delete> { }
       bind Entry <KP_Delete> { }
+      bind Entry <F9> { }
       bind Entry <Control-G> { }
       bind Entry <Control-g> { }
 
@@ -1359,7 +1364,6 @@ proc EditEnable { idwidget namewidget color number } {
     
     bind $idwidget <Escape> "grab release $idwidget\nfocus $oldfocus"
   
-  # bind $namewidget <Return> "grab release $namewidget\nfocus $oldfocus\nEdit_DownArrow $namewidget"
     bind $namewidget <Escape> "grab release $namewidget\nfocus $oldfocus"
   
     grab $idwidget
@@ -1368,8 +1372,8 @@ proc EditEnable { idwidget namewidget color number } {
   
     bind $idwidget <Return> { }
     bind $idwidget <Escape> { }
-  # bind $namewidget <Return> { }
-  # bind $namewidget <Escape> { }
+    bind $namewidget <Return> { }
+    bind $namewidget <Escape> { }
 
     set Ginfo::name($number) ""
     set Ginfo::id($number) ""
@@ -1404,10 +1408,10 @@ proc EnterPod { team slot mode } {
   set j [ toplevel .enterpod ]
   set j .enterpod
 
-#    bind all <Control-g> "bind $j <Return> \"\"\n Barcode_Scan %W\n bind $j <Return> { set cont 1 }"
+#  bind all <Control-g> "bind $j <Return> \"\"\n Barcode_Scan %W\n bind $j <Return> { set cont 1 }"
 
-  bind $j <Control-G> [ list Barcode_Scan . %K ]
-  bind $j <Control-g> [ list Barcode_Scan . %K ]
+#  bind $j <Control-G> [ list Barcode_Scan . %K ]
+#  bind $j <Control-g> [ list Barcode_Scan . %K ]
 
   wm title $j ""
   wm resizable $j 0 0
@@ -1430,21 +1434,21 @@ proc EnterPod { team slot mode } {
   bind $j <KP_Enter> { set cont 1 }
   bind $j <Escape> { set cont -1 }
 
-  while { $cont == 0 } {
-    tkwait variable cont
-  }
+#  while { $cont == 0 } {
+#    tkwait variable cont
+#  }
   
-  if { $cont == -1 } {
-    grab release $j
-    focus $old
-    destroy .enterpod
-    bind $j <Return> { }
-    bind $j <KP_Enter> { }
-    bind $j <Escape> { }
-    return
-  }
+#  if { $cont == -1 } {
+#    grab release $j
+#    focus $old
+#    destroy .enterpod
+#    bind $j <Return> { }
+#    bind $j <KP_Enter> { }
+#    bind $j <Escape> { }
+#    return
+#  }
 
-  bind $j <Escape> { }
+#  bind $j <Escape> { }
 
   ::IrLib::ir_enterpod $team [ expr { $slot - ( $team * 20 ) } ] $mode
 
@@ -1654,11 +1658,11 @@ proc goto_StartGame { } {
 }
 
 proc get_TrackNames { } {
-  set conn [ pg_connect -conninfo [list dbname = $Conf::dbname host = $Conf::dbhost ] ]
+  set conn [ db_connect ]
 
   set l { }
   pg_select $conn "select distinct name from g_tracks \
-      where type != 'cd'" array {
+      where type != 'cd' ORDER BY name" array {
       lappend l "$array(name)"
   }
   pg_disconnect $conn
@@ -1668,7 +1672,7 @@ proc get_TrackNames { } {
 
 proc get_GameModes { } {
   global game_descr
-  set conn [ pg_connect -conninfo [list dbname = $Conf::dbname host = $Conf::dbhost ] ]
+  set conn [ db_connect ]
 
   set l { }
 

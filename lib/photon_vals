@@ -44,7 +44,7 @@ namespace eval Photon {
   set RED_RFSTART 5
   set GRN_RFSTART 31
 
-  set RF_TX { 25 26 27 28 29 51 52 53 54 55 }
+  set RF_TX { 25 26 27 28 29 55 56 57 58 59 }
 
   set RF_SLOT_MAX 66
   
