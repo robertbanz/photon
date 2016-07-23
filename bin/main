@@ -8,8 +8,12 @@ namespace eval Conf {
   source /usr/photon/etc/game.conf
 }
 
+package require Tclx
+
 package require Pgtcl
 source /usr/local/bin/tkcon
+
+source $Conf::gamepath/helpers
 
 # load the central radio code
 source $Conf::gamepath/photon_vals
@@ -162,7 +166,7 @@ proc openConsole { } {
     
 proc setGameMode { mode } {
 
-  set conn [ pg_connect $Conf::dbname -host $Conf::dbhost ]
+  set conn [ db_connect ]
     
   pg_select $conn "select name, descr, code, params from g_modes where \
       storeid = 0 and name = '$mode'" array {
@@ -190,10 +194,7 @@ proc setGameMode { mode } {
     namespace eval ::Game::Params $Game::setparams
   }
 
-  puts $::Game::Params::beginscore
-
   pg_disconnect $conn
-
 }
 
 proc runGame { } {
@@ -210,7 +211,7 @@ proc runGame { } {
   for { set i 0 } { $i < 20 } { incr i } {  
     if { $::Ginfo::used($i) } {
         lappend red_used $i
-    }
+    } 
     if { $::Ginfo::used([expr $i + 20]) } {
         lappend grn_used $i
     }
@@ -362,7 +363,7 @@ proc EtSocketAccept { newSock addr port } {
 proc EtSocketHandler { sock } {
   if [ eof $sock ] {
     catch { close $sock }
-    ::debuglog "et connection apparently closed"
+    ::debuglog "et connection $sock closed"
     return
   }
 
@@ -395,15 +396,13 @@ proc EtSocketHandler { sock } {
     foreach x $commands {
       if { $x == $command } {
         EtSocketHandler_$command $sock $j
-        flush $sock
         set b 1
         break
       }
     }
   
     if { $x != $command } {
-      puts $sock "503 Unknown Command"
-      flush $sock
+      net_write $sock "503 Unknown Command"
     }
   }
 }
@@ -415,7 +414,7 @@ proc EtSocketHandler_FLICK { sock com } {
   variable flickHoldTime
 
   if { $STATE != "GAME" } {
-    puts $sock "504 NO GAME IN SESSION"
+    net_write $sock "504 NO GAME IN SESSION"
     return -code ok
   }
 
@@ -427,21 +426,18 @@ proc EtSocketHandler_FLICK { sock com } {
   
     while { $flickHoldTime < 6 } {
         incr flickHoldTime
-        puts $sock "204-FLICKING P-SYNC $flickHoldTime"
-        flush $sock
+        net_write $sock "204-FLICKING P-SYNC $flickHoldTime"
         vwait GT_time
     }
 
     if { $::Photon::currentsync == "PSYNC" } {
         ::Photon::setsync $::Photon::GSYNC
-        puts $sock "205 FLICK BACK TO G-SYNC"
-        flush $sock
+        net_write $sock "205 FLICK BACK TO G-SYNC"
     } else {
-        puts $sock "504 P-SYNC UNEXPECTEDLY LOST"
-        flush $sock
+        net_write $sock "504 P-SYNC UNEXPECTEDLY LOST"
     }
   } else {
-    puts $sock "504 NO G-SYNC"
+    net_write $sock "504 NO G-SYNC"
     return -code ok
   }
   return -code ok
@@ -452,13 +448,13 @@ proc EtSocketHandler_STATUS { sock com } {
   global GT_time
   set command [ lindex $com 0 ]
   if { $STATE == "PREGAME" } {
-    puts $sock "100-STATE: $STATE"
-    puts $sock "100 TIME: $GT_time"
+    net_write_nf $sock "100-STATE: $STATE"
+    net_write $sock "100 TIME: $GT_time"
   } elseif { $STATE == "GAME" } {
-    puts $sock "100-STATE: $STATE"
-    puts $sock "100 TIME: $GT_time"
+    net_write_nf $sock "100-STATE: $STATE"
+    net_write $sock "100 TIME: $GT_time"
   } else {
-    puts $sock "100 STATE: $STATE"
+    net_write $sock "100 STATE: $STATE"
   }       
 }
 
@@ -474,28 +470,25 @@ proc EtSocketHandler_START { sock com } {
   }
 
   if { $STATE == "PREGAME" } {
-    puts $sock "501 BUSY $GT_time"
+    net_write $sock "501 BUSY $GT_time"
     return -code ok
   } elseif { $STATE == "GAME" } {
-    puts $sock "501 BUSY $GT_time"
+    net_write $sock "501 BUSY $GT_time"
     return -code ok
   } elseif { $STATE != "IDLE" } {
-    puts $sock "501 BUSY $GT_time"
+    net_write $sock "501 BUSY $GT_time"
     return -code ok
   }
 
   if { [ ET_LoadGame $gameid ] != 0 } {
     Idle_To_Pregame
     while { $STATE == "PREGAME" } {
-      puts $sock "100-STARTING IN $GT_time"
-      flush $sock
+      net_write $sock "100-STARTING IN $GT_time"
       vwait GT_time
     }
-    puts $sock "100 OK"
-    flush $sock
+    net_write $sock "100 OK"
   } else {
-    puts $sock "502 Transfer Error"
-    flush $sock
+    net_write $sock "502 Transfer Error (game not loadable)"
   }
 }
 
@@ -548,11 +541,11 @@ proc GT_update { } {
 
 proc LoadSoundTrack { trackname length } {
 
-  set conn [ pg_connect $Conf::dbname -host $Conf::dbhost ]
+  set conn [ db_connect ]
 
   # select the asked-for track from the database...
 
-  set res [ pg_exec $conn "select * from g_tracks where name = \
+  set res [ my_pg_exec $conn "select * from g_tracks where name = \
       '$trackname' and ( length = $length or length = 0 )" ]
 
   if { [ pg_result $res -numTuples ] != 1 } {
@@ -569,7 +562,7 @@ proc LoadSoundTrack { trackname length } {
   pg_result $res -clear
 
   if { $trackname == "" } {
-    set res [ pg_exec $conn "select * from g_tracks where length = $length" ]
+    set res [ my_pg_exec $conn "select * from g_tracks where length = $length" ]
     set nmatches [ pg_result $res -numTuples ]
     if { $nmatches == 0 } {
         warninglog "Can't find *any* matching lengths... using CD Track 1"
@@ -629,9 +622,14 @@ proc Idle_To_Pregame { } {
 
   set STATE TRANSITION
 
-  # right now this is pretty empty...
 
   ::Photon::setsync $::Photon::PSYNC
+
+  LoadSoundTrack $Ginfo::trackname $Ginfo::length
+
+  # Start lighting experience
+  # (this may block, so we don't "start" anything else until then.
+  ::Lightmaster::start_game [ ::STrack::Lights ]
 
   set GT_time 30
   set GT_lastseconds [clock seconds]
@@ -644,12 +642,8 @@ proc Idle_To_Pregame { } {
   namespace eval ::Display ServerPregameInit
 
   # Sound System
-  LoadSoundTrack $Ginfo::trackname $Ginfo::length
   ::STrack::Begin $Ginfo::length
-  
-  # Start lighting experience
-  ::Lightmaster::start_game [ ::STrack::Lights ]
-  
+    
   set STATE PREGAME
 }
 
@@ -732,11 +726,11 @@ proc ET_LoadGame { gameid } {
   global team_red
   global team_green
 
-  set conn [ pg_connect $Conf::dbname -host $Conf::dbhost ]
+  set conn [ db_connect ]
   
   set Ginfo::gameid $gameid
 
-  set res [ pg_exec $conn "select * from g_data where id = $gameid and \
+  set res [ my_pg_exec $conn "select * from g_data where id = $gameid and \
       storeid = $Conf::storeid" ]
 
   if { [ pg_result $res -numTuples ] != 1 } {
@@ -792,7 +786,7 @@ proc saveGame { } {
 
   global Action_l
 
-  set conn [ pg_connect $Conf::dbname -host $Conf::dbhost ]
+  set conn [ db_connect ]
 
   foreach t { 0 1 } { 
     for { set x 0 } { $x < 20 } { incr x } {
@@ -812,7 +806,7 @@ proc saveGame { } {
           append savelist "set $var\($y\) \"$val($y)\"; "
         }
 
-        pg_exec $conn "update g_players set pod=$podnumber, \
+        my_pg_exec $conn "update g_players set pod=$podnumber, \
             score=$::Game::score($y), modeparams = '$savelist' \
             where id = $Ginfo::gameid and storeid = $Conf::storeid and \
             team = $t and slot = $x"
@@ -825,7 +819,7 @@ proc saveGame { } {
     set timestamp [ lindex $l 0 ]
     set actionstring [ lrange $l 1 end ]
 
-    set res [ pg_exec $conn "insert into g_events \
+    set res [ my_pg_exec $conn "insert into g_events \
         ( id, storeid, timestamp, event ) values ( $Ginfo::gameid, \
         $Conf::storeid, $timestamp, '$actionstring' )" ]
     pg_result $res -clear
@@ -837,7 +831,7 @@ proc saveGame { } {
       rantime = '$rantime', red_teamscore = $Game::teamscore(red), \
       green_teamscore = $Game::teamscore(green) where id = $Ginfo::gameid \
       and storeid = $Conf::storeid"
-  set res [ pg_exec $conn $statement ]
+  set res [ my_pg_exec $conn $statement ]
   
   if {[pg_result $res -status] != "PGRES_COMMAND_OK"} {
     puts "[pg_result $res -error] executing '$statement'"
@@ -851,7 +845,7 @@ proc saveGame { } {
 
 proc savePods { } {
 
-  set comm [ pg_connect $Conf::dbname -host $Conf::dbhost ]
+  set comm [ db_connect ]
   
   set colorstart(r) $::Photon::RED_RFSTART
   set colorstart(g) $::Photon::GRN_RFSTART
@@ -861,7 +855,7 @@ proc savePods { } {
 
       if { ( $::Ginfo::used([Photon::rs_to_gs $i]) == 1 ) && 
            ( $::Photon::pp::id($i) != -1 ) } {
-        set res [ pg_exec $comm "insert into g_pods ( storeid, color, id, \
+        set res [ my_pg_exec $comm "insert into g_pods ( storeid, color, id, \
             pod, syncmissed, wsyncrcvd, serror, ealarm, missed, invalid, valid, \
             hitsent, hitsackn, slot, polls, mir ) values ( $Conf::storeid, \
             '$x', $Ginfo::gameid, $::Photon::pp::idlu($i), \

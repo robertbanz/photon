@@ -9,18 +9,19 @@ proc start_idle {} {
   ::warninglog "Lightmaster -> IDLE"
   set idle_channel 9
   reset_state
-  toggle_channel $idle_channel
+  after 500 [ list ::Lightmaster::toggle_channel $idle_channel ]
 }
 
 proc start_game { track } {
   ::warninglog "Lightmaster -> $track"
   reset_state
-  toggle_channel $track
+  after 500 [ list ::Lightmaster::toggle_channel $track ]
 }
 
 proc toggle_channel { channel } {
   set command "/usr/local/bin/ola_set_dmx"
   set lightcommand [list exec $command "-u" "0" "-d" [channel_string $channel]]
+  ::debuglog $lightcommand
   if [ catch $lightcommand err ] {
     ::warninglog "$err running $lightcommand"
   }
@@ -29,10 +30,15 @@ proc toggle_channel { channel } {
 proc channel_string { channel } {
   set off 0
   set on 255
-  for { set ch 1 } { $ch < $channel } { incr ch } {
-    append output $off ","
+  set maxchannel 10
+  for { set ch 1 } { $ch <= $maxchannel } { incr ch } {
+    if { $ch == $channel } {
+      append output $on ","
+    } else {
+      append output $off ","
+    }
   }
-  append output $on
+  append output $off
   return $output
 }
 

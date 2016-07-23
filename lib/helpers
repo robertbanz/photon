@@ -1,14 +1,14 @@
 proc db_connect { } {
-  return [pg_connect -conninfo 
-      [list dbname = $Conf::dbname host = $Conf::dbhost]]
+  return [pg_connect $Conf::dbname -host $Conf::dbhost]
 }
 
 proc my_pg_exec { conn statement } {
   set result [ pg_exec $conn $statement ]
-  if {[pg_result $result -status] != "PGRES_COMMAND_OK"} {
-    puts "[pg_result $result -error] executing $statement"
+  if {[pg_result $result -status] != "PGRES_COMMAND_OK" &&
+      [pg_result $result -status] != "PGRES_TUPLES_OK"} {
+    ::debuglog "[pg_result $result -error] executing $statement"
   }
-  return result
+  return $result
 }
 
 proc int_as_bool { myint } {
@@ -17,3 +17,26 @@ proc int_as_bool { myint } {
   }
   return "true"
 }
+
+proc net_write_nf { sock message } {
+  if { [catch { puts $sock $message } rc ] } {
+    ::warninglog "Error writing to $sock: $rc"
+    catch { close $sock }
+  }
+  return -code ok  
+}
+
+proc net_flush { sock } {
+  if { [catch { flush $sock } rc ] } {
+    ::warninglog "Error flushing $sock: $rc"
+    catch { close $sock }
+  }
+  return -code ok
+}
+
+proc net_write { sock message } {
+  net_write_nf $sock $message
+  net_flush $sock
+  return -code ok
+}
+

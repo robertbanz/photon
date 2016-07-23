@@ -142,7 +142,7 @@ proc CloseSock { sock } {
     set streaming_sockets [ lreplace $streaming_sockets $j $j ]
   }
   catch { close $sock }
-  ::debuglog "display connection apparently closed"
+  ::debuglog "display connection $sock closed"
   return -code ok
 }
 
