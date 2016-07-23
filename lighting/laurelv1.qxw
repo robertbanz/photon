@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Workspace>
-<Workspace xmlns="http://www.qlcplus.org/Workspace" CurrentWindow="SimpleDesk">
+<Workspace xmlns="http://www.qlcplus.org/Workspace" CurrentWindow="VirtualConsole">
  <Creator>
   <Name>Q Light Controller Plus</Name>
   <Version>4.10.4</Version>
   <Author>Robert Banz</Author>
  </Creator>
- <Engine Autostart="32">
+ <Engine Autostart="128">
   <InputOutputMap>
    <Universe Name="Output 1" ID="0" Passthrough="False">
     <Output Plugin="DMX USB" Line="0">
@@ -14,7 +14,9 @@
     </Output>
    </Universe>
    <Universe Name="Input" ID="1" Passthrough="False">
-    <Input Plugin="ArtNet" Line="3" Profile="None"/>
+    <Input Plugin="ArtNet" Line="3" Profile="None">
+     <PluginParameters inputUni="0"/>
+    </Input>
    </Universe>
   </InputOutputMap>
   <Fixture>
@@ -227,6 +229,11 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="1" Type="Script" Name="Track 2">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -284,6 +291,11 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="2" Type="Script" Name="Track 3">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -306,7 +318,7 @@
    <Command>stopfunction%3A28</Command>
    <Command></Command>
    <Command>startfunction%3A10%20%2F%2F%20Flash%20Gordon%20%28120s%29</Command>
-   <Command>wait%3A1m2s</Command>
+   <Command>wait%3A47s</Command>
    <Command>stopfunction%3A10</Command>
    <Command></Command>
    <Command>startfunction%3A29%20%2F%2F%20Intruder%20Alert%202%20%2815s%29</Command>
@@ -314,7 +326,7 @@
    <Command>stopfunction%3A29</Command>
    <Command></Command>
    <Command>startfunction%3A10%20%2F%2F%20Flash%20Gordon%20%28120s%29</Command>
-   <Command>wait%3A30s</Command>
+   <Command>wait%3A11s</Command>
    <Command>stopfunction%3A10</Command>
    <Command></Command>
    <Command>startfunction%3A11%20%2F%2F%20Keboard%20%2856s%29</Command>
@@ -327,6 +339,11 @@
    <Command></Command>
    <Command>startfunction%3A13%20%2F%2F%20Congrats%2FEnd</Command>
    <Command>wait%3A5m</Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -387,6 +404,11 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="4" Type="Script" Name="Track 5">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -397,7 +419,7 @@
    <Command>stopfunction%3A8</Command>
    <Command></Command>
    <Command>startfunction%3A19%20%2F%2F%20aka%20Track%205%20%285m%29</Command>
-   <Command>wait%3A3m22s</Command>
+   <Command>wait%3A2m22s</Command>
    <Command>stopfunction%3A19</Command>
    <Command></Command>
    <Command>startfunction%3A28%20%2F%2F%20Intruder%20Alert%201%20%2815s%29</Command>
@@ -418,6 +440,11 @@
    <Command></Command>
    <Command>startfunction%3A13%20%2F%2F%20Congrats%2FEnd</Command>
    <Command>wait%3A5m</Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -471,6 +498,11 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="6" Type="Script" Name="Track 7">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -485,7 +517,10 @@
    <Command>stopfunction%3A23</Command>
    <Command></Command>
    <Command>startfunction%3A24%20%2F%2F%20dance%20track%20a</Command>
-   <Command>wait%3A69s</Command>
+   <Command>wait%3A39s</Command>
+   <Command></Command>
+   <Command>startfunction%3A27%20%2F%2F%20stevie%20nicks%20%2810s%29</Command>
+   <Command>wait%3A30s</Command>
    <Command>stopfunction%3A24</Command>
    <Command></Command>
    <Command>startfunction%3A25%20%2F%2F%20theramin</Command>
@@ -493,7 +528,10 @@
    <Command>stopfunction%3A25</Command>
    <Command></Command>
    <Command>startfunction%3A24%20%2F%2F%20dance%20track%20a</Command>
-   <Command>wait%3A48s</Command>
+   <Command>wait%3A17s</Command>
+   <Command></Command>
+   <Command>startfunction%3A27%20%2F%2F%20stevie%20nicks%20%2810s%29</Command>
+   <Command>wait%3A31s</Command>
    <Command>stopfunction%3A24</Command>
    <Command></Command>
    <Command>startfunction%3A25%20%2F%2F%20theramin</Command>
@@ -510,6 +548,11 @@
    <Command></Command>
    <Command>startfunction%3A13%20%2F%2F%20Congrats%2FEnd</Command>
    <Command>wait%3A5m</Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -543,11 +586,18 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="8" Type="Script" Name="Begin/RampUp/Phase1 (1m30s)" Path="Common">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
    <Direction>Forward</Direction>
    <RunOrder>Loop</RunOrder>
+   <Command>startfunction%3A127%20%2F%2F%20FX%20Off</Command>
+   <Command></Command>
    <Command>startfunction%3A35%20%2F%2F%20HitStart</Command>
    <Command>wait%3A12s</Command>
    <Command></Command>
@@ -564,7 +614,7 @@
    <Command></Command>
    <Command>startfunction%3A43%20%2F%2F%20RampUp%20Ambient</Command>
    <Command></Command>
-   <Command>%2F%2F%20fade%20in%20towers%20here.</Command>
+   <Command>startfunction%3A130%20%2F%2F%20Tower%20RampUp</Command>
    <Command></Command>
    <Command>wait%3A10s</Command>
    <Command></Command>
@@ -574,7 +624,10 @@
    <Command></Command>
    <Command>wait%3A500s</Command>
    <Command></Command>
-   <Command>%2F%2F%20do%20something%20with%20alien%20towers</Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -599,6 +652,11 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="10" Type="Script" Name="Flash Gordon (120s)" Path="Tracks 1 &amp; 3">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -607,6 +665,11 @@
    <Command>startfunction%3A59%20%2F%2F%20Flash%20Chase</Command>
    <Command>startfunction%3A63%20%2F%2F%20Flash%20Pulse</Command>
    <Command>wait%3A200s</Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -628,6 +691,11 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="12" Type="Script" Name="Ramp Down(14s)" Path="Tracks 1 &amp; 3">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -640,13 +708,24 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="13" Type="Script" Name="Congrats/End" Path="Common">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
    <Direction>Forward</Direction>
    <RunOrder>Loop</RunOrder>
    <Command>startfunction%3A71%20%2F%2F%20Congrats</Command>
+   <Command>startfunction%3A127%20%2F%2F%20FX%20Off</Command>
    <Command>wait%3A100s</Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -665,6 +744,11 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="15" Type="Script" Name="Heart Beat 2 (70s)" Path="Tracks 2 &amp; 4">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -672,6 +756,11 @@
    <RunOrder>Loop</RunOrder>
    <Command>startfunction%3A76%20%2F%2F%20HeartBeat%202</Command>
    <Command>wait%3A200s</Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -688,6 +777,11 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="17" Type="Script" Name="Heart Beat 4 (44s)" Path="Tracks 2 &amp; 4">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -695,6 +789,11 @@
    <RunOrder>Loop</RunOrder>
    <Command>startfunction%3A78%20%2F%2F%20HeartBeat%204</Command>
    <Command>wait%3A200s</Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -710,6 +809,11 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="19" Type="Script" Name="aka Track 5 (5m)" Path="Tracks 5 &amp; 8">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -721,6 +825,11 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="20" Type="Script" Name="drum track a (2m)" Path="Tracks 6">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -728,7 +837,14 @@
    <RunOrder>Loop</RunOrder>
    <Command>startfunction%3A100%20%2F%2F%20drum-A-CF</Command>
    <Command>startfunction%3A97%20%2F%2F%20drum-A-wash</Command>
+   <Command>startfunction%3A127%20%2F%2F%20FX%20Off</Command>
+   <Command></Command>
    <Command>wait%3A300s</Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -740,7 +856,13 @@
    <RunOrder>Loop</RunOrder>
    <Command>startfunction%3A112%20%2F%2F%20drum-B-CF</Command>
    <Command>startfunction%3A111%20%2F%2F%20drum-B-wash</Command>
+   <Command>startfunction%3A127%20%2F%2F%20FX%20Off</Command>
    <Command>wait%3A200s</Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -750,8 +872,14 @@
    <Direction>Forward</Direction>
    <RunOrder>Loop</RunOrder>
    <Command>startfunction%3A101%20%2F%2F%20drum-bridge-chase</Command>
+   <Command>startfunction%3A126%20%2F%2F%20Drum%20Track%20Bridge%20FX</Command>
    <Command>startfunction%3A110%20%2F%2F%20drum-bridge-bg</Command>
    <Command>wait%3A100s</Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -761,7 +889,9 @@
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
    <Direction>Forward</Direction>
    <RunOrder>Loop</RunOrder>
-   <Command></Command>
+   <Command>startfunction%3A132%20%2F%2F%20DT%20WIndup</Command>
+   <Command>startfunction%3A133%20%2F%2F%20DT%20Windup%20Motion</Command>
+   <Command>wait%3A30s</Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -775,27 +905,19 @@
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
    <Direction>Forward</Direction>
    <RunOrder>Loop</RunOrder>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
+   <Command>startfunction%3A139%20%2F%2F%20DT%20A</Command>
+   <Command>startfunction%3A140%20%2F%2F%20DT%20A%20Towers</Command>
+   <Command>wait%3A300s</Command>
    <Command></Command>
   </Function>
   <Function ID="25" Type="Script" Name="theramin" Path="Tracks 7">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
    <Direction>Forward</Direction>
    <RunOrder>Loop</RunOrder>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
+   <Command>startfunction%3A143%20%2F%2F%20DT%20Theramin%20BG</Command>
+   <Command>startfunction%3A144%20%2F%2F%20DT%20Theramin%20FX</Command>
+   <Command>startfunction%3A145%20%2F%2F%20DT%20Theramin%20FX%20Movement</Command>
+   <Command>wait%3A100s</Command>
    <Command></Command>
    <Command></Command>
   </Function>
@@ -803,13 +925,9 @@
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
    <Direction>Forward</Direction>
    <RunOrder>Loop</RunOrder>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
+   <Command>startfunction%3A141%20%2F%2F%20DT%20B</Command>
+   <Command>startfunction%3A142%20%2F%2F%20DT%20B%20Towers</Command>
+   <Command>wait%3A200s</Command>
    <Command></Command>
    <Command></Command>
   </Function>
@@ -817,13 +935,8 @@
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
    <Direction>Forward</Direction>
    <RunOrder>Loop</RunOrder>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
-   <Command></Command>
+   <Command>startfunction%3A146%20%2F%2F%20DT%20stevienicks</Command>
+   <Command>wait%3A10s</Command>
    <Command></Command>
    <Command></Command>
   </Function>
@@ -848,16 +961,31 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="29" Type="Script" Name="Intruder Alert 2 (15s)" Path="Common">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
    <Direction>Forward</Direction>
    <RunOrder>Loop</RunOrder>
    <Command>startfunction%3A82%20%2F%2F%20Intruder%20Start</Command>
+   <Command>startfunction%3A123%20%2F%2F%20Intruder%20Spin%20Slow</Command>
+   <Command>startfunction%3A124%20%2F%2F%20Intruder%202%20EFX%20Light%20Alert</Command>
+   <Command></Command>
    <Command>wait%3A8s</Command>
    <Command>stopfunction%3A82</Command>
+   <Command>stopfunction%3A123</Command>
+   <Command>stopfunction%3A124</Command>
+   <Command></Command>
+   <Command>startfunction%3A125%20%2F%2F%20Intruder%202%20EFX%20Light%20Attack</Command>
    <Command>startfunction%3A83%20%2F%2F%20Intruder%20Dark</Command>
+   <Command>startfunction%3A122%20%2F%2F%20Intruder%20Spin</Command>
+   <Command></Command>
    <Command>wait%3A20s</Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -866,35 +994,35 @@
   <Function ID="30" Type="Scene" Name="Idle A" Path="Idle">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
    <FixtureVal ID="0">0,255</FixtureVal>
-   <FixtureVal ID="1">0,150</FixtureVal>
+   <FixtureVal ID="1">0,100</FixtureVal>
    <FixtureVal ID="2">0,255</FixtureVal>
-   <FixtureVal ID="3">0,150</FixtureVal>
+   <FixtureVal ID="3">0,100</FixtureVal>
    <FixtureVal ID="4">0,255</FixtureVal>
-   <FixtureVal ID="5">0,150</FixtureVal>
+   <FixtureVal ID="5">0,100</FixtureVal>
    <FixtureVal ID="6">0,255</FixtureVal>
    <FixtureVal ID="8">0,255</FixtureVal>
-   <FixtureVal ID="9">0,150</FixtureVal>
-   <FixtureVal ID="13">0,150</FixtureVal>
+   <FixtureVal ID="9">0,100</FixtureVal>
+   <FixtureVal ID="13">0,100</FixtureVal>
    <FixtureVal ID="14">0,255</FixtureVal>
-   <FixtureVal ID="15">0,150</FixtureVal>
+   <FixtureVal ID="15">0,100</FixtureVal>
    <FixtureVal ID="16">0,255</FixtureVal>
-   <FixtureVal ID="17">0,150</FixtureVal>
+   <FixtureVal ID="17">0,75</FixtureVal>
   </Function>
   <Function ID="31" Type="Scene" Name="Idle B" Path="Idle">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">0,150</FixtureVal>
+   <FixtureVal ID="0">0,100</FixtureVal>
    <FixtureVal ID="1">0,255</FixtureVal>
-   <FixtureVal ID="2">0,150</FixtureVal>
+   <FixtureVal ID="2">0,100</FixtureVal>
    <FixtureVal ID="3">0,255</FixtureVal>
-   <FixtureVal ID="4">0,150</FixtureVal>
+   <FixtureVal ID="4">0,100</FixtureVal>
    <FixtureVal ID="5">0,255</FixtureVal>
-   <FixtureVal ID="6">0,150</FixtureVal>
+   <FixtureVal ID="6">0,100</FixtureVal>
    <FixtureVal ID="8">0,255</FixtureVal>
-   <FixtureVal ID="9">0,150</FixtureVal>
+   <FixtureVal ID="9">0,100</FixtureVal>
    <FixtureVal ID="13">0,255</FixtureVal>
-   <FixtureVal ID="14">0,150</FixtureVal>
+   <FixtureVal ID="14">0,100</FixtureVal>
    <FixtureVal ID="15">0,255</FixtureVal>
-   <FixtureVal ID="16">0,150</FixtureVal>
+   <FixtureVal ID="16">0,75</FixtureVal>
    <FixtureVal ID="17">0,255</FixtureVal>
   </Function>
   <Function ID="32" Type="Chaser" Name="Idle">
@@ -1964,13 +2092,13 @@
   </Function>
   <Function ID="113" Type="Scene" Name="Intruder 1 FX A" Path="Common">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="7">4,0,5,255,6,0,7,73,8,12,9,0,10,0,11,0</FixtureVal>
-   <FixtureVal ID="10">4,0,5,255,6,0,7,51,8,14,9,0,10,0,11,0</FixtureVal>
+   <FixtureVal ID="7">4,0,5,255,6,255,7,66,8,12,9,0,10,0,11,0</FixtureVal>
+   <FixtureVal ID="10">4,0,5,255,6,255,7,66,8,14,9,0,10,0,11,0</FixtureVal>
   </Function>
   <Function ID="114" Type="Scene" Name="Intruder 1 FX B" Path="Common">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="7">4,0,5,255,6,0,7,2,8,12,9,0,10,0,11,0</FixtureVal>
-   <FixtureVal ID="10">4,0,5,255,6,0,7,4,8,14,9,0,10,0,11,0</FixtureVal>
+   <FixtureVal ID="7">4,0,5,255,6,255,7,73,8,12,9,0,10,0,11,0</FixtureVal>
+   <FixtureVal ID="10">4,0,5,255,6,255,7,53,8,14,9,0,10,0,11,0</FixtureVal>
   </Function>
   <Function ID="115" Type="EFX" Name="Intruder 1 Alert">
    <Fixture>
@@ -2008,7 +2136,7 @@
     <Phase>0</Phase>
    </Axis>
   </Function>
-  <Function ID="116" Type="Chaser" Name="Intruder 1 FX">
+  <Function ID="116" Type="Chaser" Name="Intruder 1 FX" Path="Common">
    <Speed FadeIn="0" FadeOut="0" Duration="250"/>
    <Direction>Forward</Direction>
    <RunOrder>Loop</RunOrder>
@@ -2018,8 +2146,8 @@
   </Function>
   <Function ID="117" Type="Scene" Name="Intruder 1 Attack" Path="Common">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="7">5,255,6,189,7,4,8,106</FixtureVal>
-   <FixtureVal ID="10">5,255,6,189,7,1,8,108</FixtureVal>
+   <FixtureVal ID="7">5,255,6,189,7,4,8,106,9,0,10,0,11,0</FixtureVal>
+   <FixtureVal ID="10">5,255,6,189,7,1,8,108,9,0,10,0,11,0</FixtureVal>
   </Function>
   <Function ID="118" Type="EFX" Name="Intruder 1 Attack">
    <Fixture>
@@ -2057,33 +2185,321 @@
     <Phase>0</Phase>
    </Axis>
   </Function>
-  <Function ID="119" Type="Script" Name="New Script 119">
+  <Function ID="119" Type="Scene" Name="DT Windup Background" Path="Track 7">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">0,100</FixtureVal>
+   <FixtureVal ID="1">0,100</FixtureVal>
+   <FixtureVal ID="2">0,100</FixtureVal>
+   <FixtureVal ID="3">0,100</FixtureVal>
+   <FixtureVal ID="4">0,100</FixtureVal>
+   <FixtureVal ID="5">0,100</FixtureVal>
+   <FixtureVal ID="6">0,0</FixtureVal>
+   <FixtureVal ID="7">4,0,5,255,6,0,7,0,8,0,9,0,10,0,11,0</FixtureVal>
+   <FixtureVal ID="8">0,100</FixtureVal>
+   <FixtureVal ID="9">0,100</FixtureVal>
+   <FixtureVal ID="10">0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9,0,10,0,11,0</FixtureVal>
+   <FixtureVal ID="13">0,0</FixtureVal>
+   <FixtureVal ID="14">0,100</FixtureVal>
+   <FixtureVal ID="15">0,100</FixtureVal>
+   <FixtureVal ID="16">0,100</FixtureVal>
+   <FixtureVal ID="17">0,100</FixtureVal>
+  </Function>
+  <Function ID="120" Type="Scene" Name="Intruder Spin A" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="7">0,255,1,0,2,68,3,0</FixtureVal>
+   <FixtureVal ID="10">0,0,1,0,2,68,3,0</FixtureVal>
+  </Function>
+  <Function ID="121" Type="Scene" Name="Intruder Spin B" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="7">0,0,1,0,2,68,3,0</FixtureVal>
+   <FixtureVal ID="10">0,255,1,0,2,68,3,0</FixtureVal>
+  </Function>
+  <Function ID="122" Type="Chaser" Name="Intruder Spin" Path="Common">
+   <Speed FadeIn="1000" FadeOut="0" Duration="1500"/>
    <Direction>Forward</Direction>
    <RunOrder>Loop</RunOrder>
-   <Command></Command>
+   <SpeedModes FadeIn="Common" FadeOut="Default" Duration="Common"/>
+   <Step Number="0" FadeIn="0" Hold="0" FadeOut="0">120</Step>
+   <Step Number="1" FadeIn="0" Hold="0" FadeOut="0">121</Step>
+  </Function>
+  <Function ID="123" Type="Chaser" Name="Intruder Spin Slow" Path="Common">
+   <Speed FadeIn="5000" FadeOut="0" Duration="5000"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <SpeedModes FadeIn="Common" FadeOut="Default" Duration="Common"/>
+   <Step Number="0" FadeIn="0" Hold="0" FadeOut="0">120</Step>
+   <Step Number="1" FadeIn="0" Hold="0" FadeOut="0">121</Step>
+  </Function>
+  <Function ID="124" Type="Scene" Name="Intruder 2 EFX Light Alert" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="7">5,255,6,255,7,73,8,12,9,0,10,0,11,0</FixtureVal>
+   <FixtureVal ID="10">5,255,6,255,7,53,8,11,9,0,10,0,11,0</FixtureVal>
+  </Function>
+  <Function ID="125" Type="Scene" Name="Intruder 2 EFX Light Attack" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="7">5,255,6,255,7,4,8,74,9,0,10,0,11,0</FixtureVal>
+   <FixtureVal ID="10">5,255,6,255,7,2,8,76,9,0,10,0,11,0</FixtureVal>
+  </Function>
+  <Function ID="126" Type="Scene" Name="Drum Track Bridge FX" Path="Tracks 6">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="7">0,0,1,0,2,0,3,0,4,0,5,255,6,0,7,0,8,0,9,255,10,255,11,0</FixtureVal>
+   <FixtureVal ID="10">0,0,1,0,2,0,3,0,4,0,5,255,6,0,7,0,8,0,9,255,10,255,11,0</FixtureVal>
+  </Function>
+  <Function ID="127" Type="Scene" Name="FX Off" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="7">0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9,0,10,0,11,0</FixtureVal>
+   <FixtureVal ID="10">0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9,0,10,0,11,0</FixtureVal>
+  </Function>
+  <Function ID="128" Type="Collection" Name="Idle Collection">
+   <Step Number="0">32</Step>
+   <Step Number="1">131</Step>
+  </Function>
+  <Function ID="129" Type="Scene" Name="Tower Ramp Up" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="16">0,255</FixtureVal>
+   <FixtureVal ID="17">0,255</FixtureVal>
+  </Function>
+  <Function ID="130" Type="Chaser" Name="Tower RampUp" Path="Common">
+   <Speed FadeIn="30000" FadeOut="0" Duration="230000"/>
+   <Direction>Forward</Direction>
+   <RunOrder>SingleShot</RunOrder>
+   <SpeedModes FadeIn="Common" FadeOut="Default" Duration="Common"/>
+   <Step Number="0" FadeIn="30000" Hold="0" FadeOut="0">129</Step>
+  </Function>
+  <Function ID="131" Type="Chaser" Name="Idle FX Chaser">
+   <Speed FadeIn="0" FadeOut="0" Duration="30000"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <SpeedModes FadeIn="Default" FadeOut="Default" Duration="PerStep"/>
+   <Step Number="0" FadeIn="0" Hold="60000" FadeOut="0">127</Step>
+   <Step Number="1" FadeIn="0" Hold="120000" FadeOut="0">126</Step>
+  </Function>
+  <Function ID="132" Type="Chaser" Name="DT WIndup" Path="Track 7">
+   <Speed FadeIn="5" FadeOut="0" Duration="100005"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <SpeedModes FadeIn="Common" FadeOut="Default" Duration="Common"/>
+   <Step Number="0" FadeIn="5" Hold="0" FadeOut="0">119</Step>
+  </Function>
+  <Function ID="133" Type="EFX" Name="DT Windup Motion">
+   <Fixture>
+    <ID>10</ID>
+    <Head>0</Head>
+    <Mode>0</Mode>
+    <Direction>Forward</Direction>
+    <StartOffset>0</StartOffset>
+   </Fixture>
+   <Fixture>
+    <ID>7</ID>
+    <Head>0</Head>
+    <Mode>0</Mode>
+    <Direction>Backward</Direction>
+    <StartOffset>0</StartOffset>
+   </Fixture>
+   <PropagationMode>Parallel</PropagationMode>
+   <Speed FadeIn="0" FadeOut="0" Duration="10090"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Algorithm>Circle</Algorithm>
+   <Width>60</Width>
+   <Height>60</Height>
+   <Rotation>0</Rotation>
+   <StartOffset>0</StartOffset>
+   <IsRelative>0</IsRelative>
+   <Axis Name="X">
+    <Offset>127</Offset>
+    <Frequency>2</Frequency>
+    <Phase>90</Phase>
+   </Axis>
+   <Axis Name="Y">
+    <Offset>127</Offset>
+    <Frequency>3</Frequency>
+    <Phase>0</Phase>
+   </Axis>
+  </Function>
+  <Function ID="134" Type="Scene" Name="Dt AT/MOL A" Path="Track 7">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="8">0,255</FixtureVal>
+   <FixtureVal ID="9">0,255</FixtureVal>
+   <FixtureVal ID="16">0,255</FixtureVal>
+   <FixtureVal ID="17">0,255</FixtureVal>
+  </Function>
+  <Function ID="135" Type="Scene" Name="Dt AT/MOL B" Path="Track 7">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="8">0,75</FixtureVal>
+   <FixtureVal ID="9">0,75</FixtureVal>
+   <FixtureVal ID="16">0,75</FixtureVal>
+   <FixtureVal ID="17">0,75</FixtureVal>
+  </Function>
+  <Function ID="136" Type="Scene" Name="DT Wash A" Path="Track 7">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">0,255</FixtureVal>
+   <FixtureVal ID="1">0,255</FixtureVal>
+   <FixtureVal ID="2">0,75</FixtureVal>
+   <FixtureVal ID="3">0,75</FixtureVal>
+   <FixtureVal ID="4">0,255</FixtureVal>
+   <FixtureVal ID="5">0,255</FixtureVal>
+   <FixtureVal ID="6">0,75</FixtureVal>
+   <FixtureVal ID="13">0,255</FixtureVal>
+   <FixtureVal ID="14">0,75</FixtureVal>
+   <FixtureVal ID="15">0,125</FixtureVal>
+  </Function>
+  <Function ID="137" Type="Scene" Name="DT Wash B" Path="Track 7">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">0,75</FixtureVal>
+   <FixtureVal ID="1">0,75</FixtureVal>
+   <FixtureVal ID="2">0,255</FixtureVal>
+   <FixtureVal ID="3">0,255</FixtureVal>
+   <FixtureVal ID="4">0,255</FixtureVal>
+   <FixtureVal ID="5">0,255</FixtureVal>
+   <FixtureVal ID="6">0,255</FixtureVal>
+   <FixtureVal ID="13">0,75</FixtureVal>
+   <FixtureVal ID="14">0,255</FixtureVal>
+   <FixtureVal ID="15">0,75</FixtureVal>
+  </Function>
+  <Function ID="138" Type="Scene" Name="DT Wash C" Path="Track 7">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">0,255</FixtureVal>
+   <FixtureVal ID="1">0,255</FixtureVal>
+   <FixtureVal ID="2">0,255</FixtureVal>
+   <FixtureVal ID="3">0,255</FixtureVal>
+   <FixtureVal ID="4">0,255</FixtureVal>
+   <FixtureVal ID="5">0,75</FixtureVal>
+   <FixtureVal ID="6">0,75</FixtureVal>
+   <FixtureVal ID="13">0,125</FixtureVal>
+   <FixtureVal ID="14">0,75</FixtureVal>
+   <FixtureVal ID="15">0,255</FixtureVal>
+  </Function>
+  <Function ID="139" Type="Chaser" Name="DT A" Path="Track 7">
+   <Speed FadeIn="0" FadeOut="0" Duration="500"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <SpeedModes FadeIn="Default" FadeOut="Default" Duration="PerStep"/>
+   <Step Number="0" FadeIn="0" Hold="125" FadeOut="0">136</Step>
+   <Step Number="1" FadeIn="0" Hold="125" FadeOut="0">137</Step>
+   <Step Number="2" FadeIn="0" Hold="750" FadeOut="0">138</Step>
+   <Step Number="3" FadeIn="0" Hold="125" FadeOut="0">137</Step>
+   <Step Number="4" FadeIn="0" Hold="125" FadeOut="0">138</Step>
+   <Step Number="5" FadeIn="0" Hold="750" FadeOut="0">136</Step>
+   <Step Number="6" FadeIn="0" Hold="125" FadeOut="0">138</Step>
+   <Step Number="7" FadeIn="0" Hold="125" FadeOut="0">136</Step>
+   <Step Number="8" FadeIn="0" Hold="750" FadeOut="0">137</Step>
+  </Function>
+  <Function ID="140" Type="Chaser" Name="DT A Towers" Path="Track 7">
+   <Speed FadeIn="2000" FadeOut="0" Duration="2000"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <SpeedModes FadeIn="Common" FadeOut="Default" Duration="Common"/>
+   <Step Number="0" FadeIn="0" Hold="0" FadeOut="0">134</Step>
+   <Step Number="1" FadeIn="0" Hold="0" FadeOut="0">135</Step>
+  </Function>
+  <Function ID="141" Type="Chaser" Name="DT B" Path="Track 7">
+   <Speed FadeIn="750" FadeOut="0" Duration="750"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <SpeedModes FadeIn="Common" FadeOut="Default" Duration="Common"/>
+   <Step Number="0" FadeIn="0" Hold="125" FadeOut="0">136</Step>
+   <Step Number="1" FadeIn="0" Hold="125" FadeOut="0">137</Step>
+   <Step Number="2" FadeIn="0" Hold="750" FadeOut="0">138</Step>
+   <Step Number="3" FadeIn="0" Hold="125" FadeOut="0">137</Step>
+   <Step Number="4" FadeIn="0" Hold="125" FadeOut="0">138</Step>
+   <Step Number="5" FadeIn="0" Hold="750" FadeOut="0">136</Step>
+   <Step Number="6" FadeIn="0" Hold="125" FadeOut="0">138</Step>
+   <Step Number="7" FadeIn="0" Hold="125" FadeOut="0">136</Step>
+   <Step Number="8" FadeIn="0" Hold="750" FadeOut="0">137</Step>
+  </Function>
+  <Function ID="142" Type="Chaser" Name="DT B Towers" Path="Track 7">
+   <Speed FadeIn="1000" FadeOut="0" Duration="1250"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <SpeedModes FadeIn="Common" FadeOut="Default" Duration="Common"/>
+   <Step Number="0" FadeIn="0" Hold="0" FadeOut="0">134</Step>
+   <Step Number="1" FadeIn="0" Hold="0" FadeOut="0">135</Step>
+  </Function>
+  <Function ID="143" Type="Scene" Name="DT Theramin BG" Path="Track 7">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="0">0,130</FixtureVal>
+   <FixtureVal ID="1">0,130</FixtureVal>
+   <FixtureVal ID="2">0,130</FixtureVal>
+   <FixtureVal ID="3">0,130</FixtureVal>
+   <FixtureVal ID="4">0,130</FixtureVal>
+   <FixtureVal ID="5">0,130</FixtureVal>
+   <FixtureVal ID="6">0,130</FixtureVal>
+   <FixtureVal ID="8">0,180</FixtureVal>
+   <FixtureVal ID="9">0,180</FixtureVal>
+   <FixtureVal ID="13">0,130</FixtureVal>
+   <FixtureVal ID="14">0,125</FixtureVal>
+   <FixtureVal ID="15">0,125</FixtureVal>
+   <FixtureVal ID="16">0,180</FixtureVal>
+   <FixtureVal ID="17">0,180</FixtureVal>
+  </Function>
+  <Function ID="144" Type="Scene" Name="DT Theramin FX" Path="Track 7">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="7">5,255,6,255,7,23,8,36,9,0,10,0,11,0</FixtureVal>
+   <FixtureVal ID="10">5,255,6,255,7,46,8,37,9,0,10,0,11,0</FixtureVal>
+  </Function>
+  <Function ID="145" Type="EFX" Name="DT Theramin FX Movement">
+   <Fixture>
+    <ID>10</ID>
+    <Head>0</Head>
+    <Mode>0</Mode>
+    <Direction>Forward</Direction>
+    <StartOffset>0</StartOffset>
+   </Fixture>
+   <Fixture>
+    <ID>7</ID>
+    <Head>0</Head>
+    <Mode>0</Mode>
+    <Direction>Backward</Direction>
+    <StartOffset>0</StartOffset>
+   </Fixture>
+   <PropagationMode>Parallel</PropagationMode>
+   <Speed FadeIn="0" FadeOut="0" Duration="4000"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Algorithm>Diamond</Algorithm>
+   <Width>127</Width>
+   <Height>127</Height>
+   <Rotation>0</Rotation>
+   <StartOffset>0</StartOffset>
+   <IsRelative>0</IsRelative>
+   <Axis Name="X">
+    <Offset>127</Offset>
+    <Frequency>2</Frequency>
+    <Phase>90</Phase>
+   </Axis>
+   <Axis Name="Y">
+    <Offset>127</Offset>
+    <Frequency>3</Frequency>
+    <Phase>0</Phase>
+   </Axis>
+  </Function>
+  <Function ID="146" Type="Scene" Name="DT stevienicks" Path="Track 7">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <FixtureVal ID="7">4,0,5,255,6,153,7,0,8,12,9,0,10,0,11,0</FixtureVal>
+   <FixtureVal ID="10">4,0,5,255,6,153,7,0,8,12,9,0,10,0,11,0</FixtureVal>
   </Function>
   <Monitor DisplayMode="1" ShowLabels="1">
    <Font>Arial,12,-1,5,50,0,0,0,0,0</Font>
    <ChannelStyle>0</ChannelStyle>
    <ValueStyle>1</ValueStyle>
    <Grid Width="5" Height="5" Units="0"/>
-   <FxItem ID="3" XPos="1477.42" YPos="664.516"/>
-   <FxItem ID="16" XPos="0" YPos="0"/>
-   <FxItem ID="2" XPos="967.742" YPos="664.516"/>
    <FxItem ID="13" XPos="3335.15" YPos="700.638"/>
    <FxItem ID="15" XPos="535.484" YPos="1767.74"/>
    <FxItem ID="14" XPos="96.7742" YPos="1774.19"/>
-   <FxItem ID="9" XPos="554.839" YPos="1219.35"/>
-   <FxItem ID="8" XPos="77.4194" YPos="1245.16"/>
-   <FxItem ID="10" XPos="170" YPos="2590"/>
+   <FxItem ID="1" XPos="483.871" YPos="651.613"/>
+   <FxItem ID="0" XPos="12.9032" YPos="645.161"/>
+   <FxItem ID="17" XPos="477.419" YPos="0"/>
+   <FxItem ID="16" XPos="0" YPos="0"/>
+   <FxItem ID="3" XPos="1477.42" YPos="664.516"/>
+   <FxItem ID="2" XPos="967.742" YPos="664.516"/>
    <FxItem ID="5" XPos="2419.35" YPos="683.871"/>
    <FxItem ID="4" XPos="1954.84" YPos="677.419"/>
    <FxItem ID="7" XPos="915.663" YPos="2602.41"/>
    <FxItem ID="6" XPos="2877.42" YPos="690.323"/>
-   <FxItem ID="1" XPos="483.871" YPos="651.613"/>
-   <FxItem ID="17" XPos="477.419" YPos="0"/>
-   <FxItem ID="0" XPos="12.9032" YPos="645.161"/>
+   <FxItem ID="9" XPos="554.839" YPos="1219.35"/>
+   <FxItem ID="8" XPos="77.4194" YPos="1245.16"/>
+   <FxItem ID="10" XPos="170" YPos="2590"/>
   </Monitor>
  </Engine>
  <VirtualConsole>
@@ -2096,7 +2512,7 @@
     <Font>Default</Font>
    </Appearance>
    <Button Caption="Track 1" ID="1" Icon="">
-    <WindowState Visible="False" X="0" Y="50" Width="50" Height="50"/>
+    <WindowState Visible="True" X="0" Y="50" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
@@ -2110,7 +2526,7 @@
     <Input Universe="1" Channel="0"/>
    </Button>
    <Button Caption="Track 2" ID="2" Icon="">
-    <WindowState Visible="False" X="0" Y="100" Width="50" Height="50"/>
+    <WindowState Visible="True" X="0" Y="100" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
@@ -2124,7 +2540,7 @@
     <Input Universe="1" Channel="1"/>
    </Button>
    <Button Caption="Track 3" ID="3" Icon="">
-    <WindowState Visible="False" X="0" Y="150" Width="50" Height="50"/>
+    <WindowState Visible="True" X="0" Y="150" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
@@ -2138,7 +2554,7 @@
     <Input Universe="1" Channel="2"/>
    </Button>
    <Button Caption="Track 4" ID="4" Icon="">
-    <WindowState Visible="False" X="0" Y="200" Width="50" Height="50"/>
+    <WindowState Visible="True" X="0" Y="200" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
@@ -2152,7 +2568,7 @@
     <Input Universe="1" Channel="3"/>
    </Button>
    <Button Caption="Track 5" ID="5" Icon="">
-    <WindowState Visible="False" X="0" Y="250" Width="50" Height="50"/>
+    <WindowState Visible="True" X="0" Y="250" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
@@ -2166,7 +2582,7 @@
     <Input Universe="1" Channel="4"/>
    </Button>
    <Button Caption="Track 6" ID="6" Icon="">
-    <WindowState Visible="False" X="0" Y="300" Width="50" Height="50"/>
+    <WindowState Visible="True" X="0" Y="300" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
@@ -2180,7 +2596,7 @@
     <Input Universe="1" Channel="5"/>
    </Button>
    <Button Caption="Track 7" ID="7" Icon="">
-    <WindowState Visible="False" X="0" Y="350" Width="50" Height="50"/>
+    <WindowState Visible="True" X="0" Y="350" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
@@ -2194,7 +2610,7 @@
     <Input Universe="1" Channel="6"/>
    </Button>
    <Button Caption="Track 8" ID="8" Icon="">
-    <WindowState Visible="False" X="0" Y="400" Width="50" Height="50"/>
+    <WindowState Visible="True" X="0" Y="400" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
@@ -2208,7 +2624,7 @@
     <Input Universe="1" Channel="7"/>
    </Button>
    <Button Caption="Idle" ID="9" Icon="">
-    <WindowState Visible="False" X="0" Y="490" Width="50" Height="50"/>
+    <WindowState Visible="True" X="0" Y="490" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
@@ -2216,13 +2632,13 @@
      <BackgroundImage>None</BackgroundImage>
      <Font>Default</Font>
     </Appearance>
-    <Function ID="32"/>
+    <Function ID="128"/>
     <Action>Toggle</Action>
     <Intensity Adjust="False">100</Intensity>
     <Input Universe="1" Channel="8"/>
    </Button>
    <Button Caption="Button 10" ID="10" Icon="">
-    <WindowState Visible="False" X="0" Y="570" Width="50" Height="50"/>
+    <WindowState Visible="True" X="0" Y="570" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
