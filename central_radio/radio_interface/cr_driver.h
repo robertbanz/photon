@@ -26,6 +26,7 @@
 #ifndef _CRDRIVER_H
 #define _CRDRIVER_H
 
+#include <algorithm>
 #include <memory>
 #include <queue>
 #include <vector>
@@ -57,7 +58,8 @@ struct CrDriverOptions {
 
 class TxQueue {
  public:
-   TxQueue(unsigned int max) : max_(max) {}
+   TxQueue(HardwareSerial* debug_serial, unsigned int max)
+      : debug_serial_(debug_serial), max_(max) {}
    ~TxQueue() {}
  
    void Clear() {
@@ -83,16 +85,33 @@ class TxQueue {
        // Check to see if he's in the queue already.
        for (auto i : queue_) {
          if (i == in) {
-           Serial.println("Queue Overflow: not adding duplicate");
+           debug_serial_->println("999-Queue Full: not adding duplicate");
            return;
          }
        }
+       // De-dup the queue.
+       size_t previous = queue_.size();
+       std::sort(queue_.begin(), queue_.end());
+       queue_.erase(std::unique(queue_.begin(), queue_.end()), queue_.end());
+       // Shuffle it so it doesn't favor putting down any one team first.
+       std::random_shuffle(queue_.begin(), queue_.end());
+       if (queue_.size() != previous) {
+         debug_serial_->print("999-DeDup'd txqueue from ");
+         debug_serial_->print(previous);
+         debug_serial_->print(" to ");
+         debug_serial_->println(queue_.size());
+       }
      }
-     // Go ahead and add it if it isn't a dup.
-     queue_.push_back(in);
+     // Go ahead and add it if it isn't a dup, and we're not 2x max
+     if (queue_.size() < (2 * max_)) {
+       queue_.push_back(in);
+     } else {
+       debug_serial_->println("999-Queue Overfull");
+     }
    }
  
  private:
+   HardwareSerial* debug_serial_;
    const unsigned int max_;
    std::vector<unsigned char> queue_;   
 
