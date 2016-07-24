@@ -58,8 +58,9 @@ struct CrDriverOptions {
 
 class TxQueue {
  public:
-   TxQueue(HardwareSerial* debug_serial, unsigned int max)
-      : debug_serial_(debug_serial), max_(max) {}
+   TxQueue(HardwareSerial* debug_serial, unsigned int dedup_max,
+       unsigned int max)
+      : debug_serial_(debug_serial), dedup_max_(dedup_max), max_(max) {}
    ~TxQueue() {}
  
    void Clear() {
@@ -81,7 +82,7 @@ class TxQueue {
    }
  
    void Insert(unsigned char in) {
-     if (queue_.size() > max_) {
+     if (queue_.size() > dedup_max_) {
        // Check to see if he's in the queue already.
        for (auto i : queue_) {
          if (i == in) {
@@ -102,8 +103,8 @@ class TxQueue {
          debug_serial_->println(queue_.size());
        }
      }
-     // Go ahead and add it if it isn't a dup, and we're not 2x max
-     if (queue_.size() < (2 * max_)) {
+     // Go ahead and add it if it isn't a dup, and we're not at max
+     if (queue_.size() < (max_)) {
        queue_.push_back(in);
      } else {
        debug_serial_->println("999-Queue Overfull");
@@ -112,6 +113,7 @@ class TxQueue {
  
  private:
    HardwareSerial* debug_serial_;
+   const unsigned int dedup_max_;
    const unsigned int max_;
    std::vector<unsigned char> queue_;   
 
