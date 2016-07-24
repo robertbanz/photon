@@ -32,27 +32,26 @@ proc game_cr_event_handler { serialnum slot action data } {
         incr ::Photon::pp::pollcount    
         # mark slots that we didn't receive anything in
         # during this poll
-        foreach type { rx tx } {
-          upvar 0 radiodata_${type} rdata
-          upvar 0 radiodata_${type}_sn rdatasn
-          upvar 0 radiodata_${type}_x rdatax
+        for { set i 0 } { $i < 67 } { incr i } {
+          if { $radiodata_rx_sn($i) != $::Photon::lastpollsn } {
+            incr ::Photon::pp::missed($i)
+            incr ::Photon::pp::missinrow($i)
     
-          for { set i 0 } { $i < 67 } { incr i } {
-            if { $rdatasn($i) != $::Photon::lastpollsn } {
-              if { $type == "rx" } {
-                incr ::Photon::pp::missed($i)
-                incr ::Photon::pp::missinrow($i)
-              }
-      
-              if { $rdatax($i) != "NX" } {
-                set rdata($i) 0
-                set rdatax($i) "NX"
-                set rdatasn($i) $::Photon::lastpollsn
-              }     
-            }       
+            if { $radiodata_rx_x($i) != ".." } {
+              set radiodata_rx($i) 0
+              set radiodata_rx_x($i) ".."
+              set radiodata_rx_sn($i) $::Photon::lastpollsn
+            }
+          }       
+          if { $radiodata_tx_sn($i) != $::Photon::lastpollsn } {
+            if { $radiodata_tx_x($i) != ".." } {
+              set radiodata_tx($i) 0
+              set radiodata_tx_x($i) ".."
+              set radiodata_tx_sn($i) $::Photon::lastpollsn
+            }
           }
         }
-      
+        
         # update lastpollsn, and check for skippage
         if { $::Photon::lastpollsn == -1 } {
           set ::Photon::lastpollsn $serialnum
@@ -68,13 +67,15 @@ proc game_cr_event_handler { serialnum slot action data } {
         }
       }
 
-      upvar 0 radiodata_${action} rdata
-      upvar 0 radiodata_${action}_sn rdatasn
-      upvar 0 radiodata_${action}_x rdatax
-
-      set rdata($slot) $data
-      set rdatax($slot) [ format "%02x" $data ]
-      set rdatasn($slot) $serialnum
+      if { "$action" == "rx" } {
+        set radiodata_rx($slot) $data
+        set radiodata_rx_x($slot) [ format "%02x" $data ]
+        set radiodata_rx_sn($slot) $serialnum
+      } elseif { "$action" == "tx" } {
+        set radiodata_tx($slot) $data
+        set radiodata_tx_x($slot) [ format "%02x" $data ]
+        set radiodata_tx_sn($slot) $serialnum
+      }
 
       if { $slot != 0 } {
         set e [ catch {
@@ -95,7 +96,6 @@ proc game_cr_handler { } {
   namespace eval ::Photon::cr {
     variable lastslotid
     variable lastpollsn
-  
   
     variable radiodata_rx
     variable radiodata_rx_x
@@ -182,6 +182,7 @@ proc init { } {
       set radiodata_tx_sn($i) 0
       set radiodata_tx_x($i) "--"
     }
+    set radio_watchlist { radiodata_rx_x radiodata_tx_x }
   }
 
   setcrenable 1
@@ -408,9 +409,7 @@ proc setcrenable { what } {
 
 proc endgame { } {
   setsync $::Photon::ESYNC
-  # after 3 seconds turn off the cr_handler,
-  # after 8 seconds turn off the radio
-  
+
   after 3000 { uplevel 0 { proc ::Photon::cr_handler { } { cr_read } } }
   after 15000 { ::Photon::setsync $::Photon::PSYNC }  
 }

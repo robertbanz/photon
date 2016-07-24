@@ -24,7 +24,7 @@
 set rcsid { $Id: display,v 1.6 1999/01/31 17:11:32 banz Exp $ }
 
 set streaming_sockets { }
-set valid_subs { GAME STATUS }
+set valid_subs { GAME STATUS RADIO }
 set array_watchlist { }
 set scalar_watchlist { }
 
@@ -38,7 +38,8 @@ proc Accept { newSock addr port } {
   fconfigure $newSock -blocking 0
   fconfigure $newSock -buffering line
 
-  fileevent $newSock readable [ list namespace eval ::Display [ list ServerRead $newSock ] ]
+  fileevent $newSock readable [ list namespace eval ::Display \
+      [ list ServerRead $newSock ] ]
 
   set writable_$newSock 1
   set subscriptions_$newSock { }
@@ -65,6 +66,10 @@ proc ServerPregameInit { } {
   foreach x $scalar_watchlist {
     namespace eval ::Game [ list trace vdelete $x w ::Display::ServerTrace ]
   }
+  foreach x $::Photon::cr::radio_watchlist {
+    namespace eval ::cr \
+        [ list trace vdelete $x w ::Display::ServerTrace ]
+  }
 
   set array_watchlist $::Game::array_display_watchlist
   set scalar_watchlist $::Game::scalar_display_watchlist
@@ -75,7 +80,10 @@ proc ServerPregameInit { } {
   foreach x $scalar_watchlist {
     namespace eval ::Game [ list trace variable $x w ::Display::ServerTrace ]
   }
-
+  foreach x $::Photon::cr::radio_watchlist {
+    namespace eval ::Photon::cr \
+        [ list trace variable $x w ::Display::ServerTrace ]
+  }
 }
 
 
@@ -88,7 +96,8 @@ proc ServerTrace { name name2 op } {
   set status_traces { STATE GT_time }  
   if { [ lsearch $status_traces $name ] != -1 } {
     if { $::STATE != "TRANSITION" } {
-      ::Display::ServerStreamWrite STATUS "901-$::STATE $::GT_time $Ginfo::gameid"
+      ::Display::ServerStreamWrite STATUS \
+          "901-$::STATE $::GT_time $Ginfo::gameid"
     }
     return -code ok
   }
@@ -97,10 +106,13 @@ proc ServerTrace { name name2 op } {
   if { [ lsearch $::Display::array_watchlist $myvar ] != -1 } {
     upvar 0 ::Game::$myvar stuff
     ::Display::ServerStreamWrite GAME "902-$myvar $name2 $stuff($name2)"
-  } elseif { [ lsearch $scalar_watchlist $myvar ] != -1 } {
+  } elseif { [ lsearch $::Display::scalar_watchlist $myvar ] != -1 } {
     upvar 0 ::Game::$myvar stuff
     ::Display::ServerStreamWrite GAME "903-$myvar $stuff"
-  }
+  } elseif { [ lsearch $::Photon::cr::radio_watchlist $myvar ] != -1 } {
+    upvar 0 ::Photon::cr::$myvar stuff
+    ::Display::ServerStreamWrite RADIO "902-$myvar $name2 $stuff($name2)"
+  } 
   return -code ok
 }
 
@@ -237,6 +249,14 @@ proc ServerDumpGameInfo { sock } {
     upvar 0 ::Game::$myvar stuff
     sputs $sock "903-$myvar $stuff"
   }
+
+  foreach myvar $::Photon::cr::radio_watchlist {
+    upvar 0 ::Photon::cr::$myvar stuff
+    foreach index [ array names stuff ] {
+      sputs $sock "902-$myvar $index $stuff($index)"
+    }
+  }
+    
   return -code ok
 }
 
@@ -247,7 +267,9 @@ proc ServerHandler_MODE { sock line } {
 
   if { $mode == "POLL" } { 
     if { [ lsearch -exact $streaming_sockets $sock ] != -1 } {
-      set streaming_sockets [ lreplace $streaming_sockets [ lsearch -exact $streaming_sockets $sock ] [ lsearch -exact $streaming_sockets $sock ] ]
+      set streaming_sockets [ lreplace $streaming_sockets \
+          [ lsearch -exact $streaming_sockets $sock ] \
+          [ lsearch -exact $streaming_sockets $sock ] ]
       set count [ llength $streaming_sockets ]
       sputs $sock "100 OK ($count streaming)"
       sflush $sock
@@ -295,7 +317,7 @@ proc ServerHandler_SUB { sock line } {
       sflush $sock
     }
   } else {
-    sputs $sock "502 ONLY ACCEPTS STATUS OR GAME"
+    sputs $sock "502 ONLY ACCEPTS STATUS, GAME OR RADIO"
     sflush $sock
   }
 }
@@ -315,7 +337,8 @@ proc ServerHandler_UNSUB { sock line } {
 
   if { [ lsearch -exact $valid_subs $mode ] != -1 } {
     if { [ lsearch -exact $bob $mode ] != -1 } {
-      set bob [ lreplace $bob [ lsearch -exact $bob $mode ] [ lsearch -exact $bob $mode ] ]
+      set bob [ lreplace $bob [ lsearch -exact $bob $mode ] \
+          [ lsearch -exact $bob $mode ] ]
       sputs $sock "101 UNSUBSCRIBED TO $mode"
       sflush $sock
     } else {
@@ -328,6 +351,8 @@ proc ServerHandler_UNSUB { sock line } {
   }
 }
 
+# This just creates an empty namespace where the variables from the server
+# will be mirrored.
 namespace eval Server {
 
 }

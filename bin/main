@@ -14,17 +14,12 @@ package require Pgtcl
 source /usr/local/bin/tkcon
 
 source $Conf::gamepath/helpers
-
-# load the central radio code
 source $Conf::gamepath/photon_vals
 source $Conf::gamepath/photon_interfaces
-
 source $Conf::gamepath/lightmaster
+source $Conf::gamepath/mixer.tcl
 
 namespace import Photon::cr_handler
-
-# load in the sound-blaster code
-source $Conf::gamepath/mixer.tcl
 
 # load the X app defaults file
 if [ file exists $Conf::appdefaults ] {
@@ -232,7 +227,6 @@ proc runGame { } {
 
   namespace eval ::Photon "begingame { $red_used } { $grn_used }"
 }
-
 
 proc endGame { } {
   namespace eval ::Game "End"    
@@ -870,10 +864,6 @@ proc savePods { } {
     }
   }
   pg_disconnect $comm
-}
-
-proc SqlTime { time } {
-  return [ clock format $time -format "%Y-%m-%d %T" ]
 }
 
 proc audioControl { } {
