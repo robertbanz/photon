@@ -74,7 +74,8 @@ proc HitHandler { gs data } {
     upvar 0 Params::otherteam_godown godown
   } else {
     if { $Params::etmode != 3 } {
-      debuglog 2 "possible bad code: same team received in pub or league ($gs, $tgtgs)"
+      debuglog 2 "possible bad code: same team received in \
+          pub or league ($gs, $tgtgs)"
     }
     if { $Params::can_hit_own_team == 0 } {
       return -code ok
@@ -101,7 +102,8 @@ proc HitHandler { gs data } {
       set score($tgtgs) [ expr { $score($tgtgs) + $gethitscore } ]
       set h1gethitcount($tgtgs) 0
     } else {
-      set diff [ expr { int(( $Params::beginscore - $score($tgtgs) ) / $Params::handicap1_modifier ) } ]
+      set diff [ expr { int(( $Params::beginscore - $score($tgtgs) ) \
+          / $Params::handicap1_modifier ) } ]
       incr h1gethitcount($tgtgs)
     
       if { $h1gethitcount($tgtgs) > $diff } {
@@ -146,7 +148,6 @@ proc TargetHandler { gs data } {
     # do this so we "ignore" possible bad codes!
     if { $Params::targetscore != 0 } {
       if { $data == $Photon::TARGET } { 
-#   debuglog 2 "slot $gs hit the target"  
         incr targetcount($gs)
         set score($gs) [ expr { $score($gs) + $Params::targetscore } ]  
         UpdateTeamScores
@@ -157,7 +158,6 @@ proc TargetHandler { gs data } {
   
     if { $Params::basescore != 0 } {
       if { $data == $base1 } {
-#   debuglog 2 "slot $gs hit base"
         incr basecount($gs)
         if { $basecount($gs) == 1 } {
           set score($gs) [ expr { $score($gs) + $Params::basescore } ]
@@ -169,7 +169,6 @@ proc TargetHandler { gs data } {
   
     if { $Params::base2score != 0 } {  
       if { $data == $base2 } {
-#   debuglog 2 "slot $gs hit baseII"
         incr basecount($gs)
         if { $basecount($gs) == 1 } {
           set score($gs) [ expr { $score($gs) + $Params::base2score } ]
@@ -181,7 +180,6 @@ proc TargetHandler { gs data } {
 
     if { $Params::towerscore != 0 } {
       if { $data == $tower } {
-#   debuglog 2 "slot $gs hit the tower"
         incr towercount($gs)
         set score($gs) [ expr { $score($gs) + $Params::towerscore } ]
         UpdateTeamScores
@@ -201,7 +199,11 @@ proc Init { type } {
   variable player_savelist
   set modename $type
 
-  set paramslist { beginscore handicap targetscore base2score basescore etmode teams maxperteam towerscore length otherteam_hit otherteam_gethit otherteam_godown ourteam_hit ourteam_gethit ourteam_godown hitownplayer hitownplayer_godown can_hit_own_team handicap1_modifier autoghost }
+  set paramslist { beginscore handicap targetscore base2score basescore \
+      etmode teams maxperteam towerscore length otherteam_hit \
+      otherteam_gethit otherteam_godown ourteam_hit \
+      ourteam_gethit ourteam_godown hitownplayer \
+      hitownplayer_godown can_hit_own_team handicap1_modifier autoghost }
   
   namespace eval Params {
     if { $::Game::modename == "public" } {
@@ -259,7 +261,8 @@ proc Init { type } {
 
     eval "$::Game::setparams"
   }
-  set array_display_watchlist { score basecount targetcount towercount teamscore }
+  set array_display_watchlist { score basecount targetcount \
+      towercount teamscore }
   set scalar_display_watchlist { }
   set player_savelist { basecount targetcount towercount }
 }
@@ -279,7 +282,8 @@ proc UpdateTeamScores { } {
       set teamscore($x) $i
     }
     if { $Params::autoghost } {
-      set teamscore($x) [ expr { $teamscore($x) + $Params::beginscore * $ghosts($x) } ]
+      set teamscore($x) [ expr { $teamscore($x) + \
+          $Params::beginscore * $ghosts($x) } ]
     }
   }
 }
@@ -326,10 +330,12 @@ proc Begin { red_used grn_used } {
   }
 
   if { [ llength $usedlist(green) ] > [ llength $usedlist(red) ] } {
-    set ghosts(red) [ expr [ llength $usedlist(green) ] - [ llength $usedlist(red) ] ]
+    set ghosts(red) [ expr [ llength $usedlist(green) ] - \
+        [ llength $usedlist(red) ] ]
     set ghosts(green) 0
   } elseif { [ llength $usedlist(green) ] < [ llength $usedlist(red) ] } {
-    set ghosts(green) [ expr [ llength $usedlist(red) ] - [ llength $usedlist(green) ] ]
+    set ghosts(green) [ expr [ llength $usedlist(red) ] - \
+        [ llength $usedlist(green) ] ]
     set ghosts(red) 0
   } else {
     set ghosts(red) 0

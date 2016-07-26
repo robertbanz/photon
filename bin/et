@@ -47,13 +47,10 @@ namespace eval Conf {
   source /usr/photon/etc/game.conf
 }
 
-#load $Conf::libpath/ph_et.so
-
 source $Conf::gamepath/helpers
 source $Conf::gamepath/photon_vals
 source $Conf::gamepath/photon_interfaces
 source $Conf::gamepath/irlib
-
 
 if [ file exists $Conf::etdefaults ] {
   if [ catch { option readfile $Conf::etdefaults startup } err ] {
@@ -162,8 +159,6 @@ namespace eval ::Ginfo {
 
 ::IrLib::ir_setup $Conf::ettty
 
-#menu .menubar
-#. config -menu .menubar
 . config -background black 
 
 set Message "initializing..."
@@ -385,7 +380,7 @@ proc FlickSync { } {
   } else {
     fconfigure $s -buffering line
     set Message "Sending FLICK command to Game Computer..."
-    puts $s "FLICK"
+    net_write $x "FLICK"
 
     global finalcode
     set finalcode 0
@@ -419,7 +414,7 @@ proc BeginGame { } {
     set ntups [ pg_result $res -numTuples ]
 
     if { $ntups != 1 } {
-      puts "error creating next game"
+      set Message "Error creating next game in database."
       set begingamelock 0
       pg_disconnect $conn
       return
@@ -499,7 +494,7 @@ proc BeginGame { } {
         storeid = $Conf::storeid and id = $Ginfo::gameid"
 
     set Message "Sending start command to Game Computer..."
-    puts $s "START $Ginfo::gameid"
+    net_write $s "START $Ginfo::gameid"
 
     global finalcode
     set finalcode 0
@@ -580,11 +575,6 @@ proc ET_client_start { s } {
       set finalcode $code
     }
   }
-}
-
-
-proc SqlTime { time } {
-  return [ clock format $time -format "%Y-%m-%d %T" ]
 }
 
 proc EditGameParameters { toplevel } {
@@ -737,8 +727,8 @@ proc PreEnter { toplevel } {
   set head(id) "Game ID"
   set head(mode) "Game Mode"
   set head(length) "Game Length"
-  set head(red_teamname) "ALPHA RED"
-  set head(green_teamname) "ALPHA GREEN"
+  set head(red_teamname) "Red Team"
+  set head(green_teamname) "Green Team"
 
   set conn [ db_connect ]
   
@@ -1179,7 +1169,7 @@ proc AutoLoad_Name { slot } {
   if { $::Ginfo::name($slot) == "" } { 
     set Message "Querying database for codename"
     # connect, and place game information in database
-    set conn [ pg_connect -conninfo [list dbname = $Conf::dbname host = $Conf::dbhost ] ]
+    set conn [ db_connect ]
 
     # get next game ID from sequence
 

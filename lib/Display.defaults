@@ -41,6 +41,7 @@
 *dmGAME*hbh*background:         #111133
 *dmGAME*hbh*foreground:         #ffffff
 
+
 *dmPREGAME.l1*text:			Stuff Part 1
 *dmGAME.status.terminated.text:		Maneuver Complete
 

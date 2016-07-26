@@ -25,10 +25,7 @@ proc game_display_setup { p { static 0 } } {
   variable sort_green
   variable score_root
   variable hd_mode
-  
-#    frame $p -width $viewable_width -height $viewable_height
-    
-#    frame $p.score -width [ winfo reqwidth $p ]
+
   if { $hd_mode } {
     frame $p.score.red -width [ expr { [ winfo reqwidth $p ] / 2 } * .80 ]
     frame $p.score.green -width [ expr { [ winfo reqwidth $p ] / 2 } * .80 ]
@@ -40,8 +37,10 @@ proc game_display_setup { p { static 0 } } {
   label $p.score.red.teamname -text $::Ginfo::team_red
   label $p.score.green.teamname -text $::Ginfo::team_green
 
-  place $p.score.red.teamname -relx 0.0 -rely 0.0 -relwidth 1.0 -height [ winfo reqheight $p.score.red.teamname ] -anchor nw
-  place $p.score.green.teamname -relx 0.0 -rely 0.0 -relwidth 1.0 -height [ winfo reqheight $p.score.green.teamname ] -anchor nw
+  place $p.score.red.teamname -relx 0.0 -rely 0.0 -relwidth 1.0 \
+      -height [ winfo reqheight $p.score.red.teamname ] -anchor nw
+  place $p.score.green.teamname -relx 0.0 -rely 0.0 -relwidth 1.0 \
+      -height [ winfo reqheight $p.score.green.teamname ] -anchor nw
   
   
   set count_green 0
@@ -80,21 +79,30 @@ proc game_display_setup { p { static 0 } } {
       
       frame $p.score.$x.pl$i -width [ winfo reqwidth $p.score.$x ]
 
-      label $p.score.$x.pl$i.base -bitmap @$Conf::gamepath/images/basechicklet.xbm -pady 0 -padx 0 -borderwidth 0
-      label $p.score.$x.pl$i.name -textvariable name_${x}($i) -justify left -pady 0 -padx 0 -borderwidth 0
-      label $p.score.$x.pl$i.score -textvariable score_${x}($i) -justify right -pady 0 -pady 0 -borderwidth 0
+      label $p.score.$x.pl$i.base \
+          -bitmap @$Conf::gamepath/images/basechicklet.xbm -pady 0 \
+          -padx 0 -borderwidth 0
+      label $p.score.$x.pl$i.name -textvariable name_${x}($i) \
+          -justify left -pady 0 -padx 0 -borderwidth 0
+      label $p.score.$x.pl$i.score -textvariable score_${x}($i) \
+          -justify right -pady 0 -pady 0 -borderwidth 0
 
-      $p.score.$x.pl$i configure -height [ winfo reqheight $p.score.$x.pl$i.name ]
+      $p.score.$x.pl$i configure -height \
+          [ winfo reqheight $p.score.$x.pl$i.name ]
 
-      place $p.score.$x.pl$i -in $p.score.$x.$sibling -relx 0.0 -rely 1.0  -anchor nw -bordermode outside -width [ winfo reqwidth $p.score.$x.pl$i ] -height [ winfo reqheight $p.score.$x.pl$i.name ]
+      place $p.score.$x.pl$i -in $p.score.$x.$sibling -relx 0.0 -rely 1.0 \
+          -anchor nw -bordermode outside \
+          -width [ winfo reqwidth $p.score.$x.pl$i ] \
+          -height [ winfo reqheight $p.score.$x.pl$i.name ]
 
-#     place $p.score.$x.pl$i.base -in $p.score.$x.pl$i -relx 0.025 -rely 0.0 -relheight 1.0 -anchor nw      
+      place $p.score.$x.pl$i.name -in $p.score.$x.pl$i -relx 0.100 -rely 0.0 \
+          -relheight 1.0 -anchor nw -bordermode outside
+      place $p.score.$x.pl$i.base -in $p.score.$x.pl$i.name -x -5 -rely 0.0 \
+          -relheight 1.0 -width [ winfo reqheight $p.score.$x.pl$i.base ] \
+          -anchor ne -bordermode outside
 
-
-      place $p.score.$x.pl$i.name -in $p.score.$x.pl$i -relx 0.100 -rely 0.0 -relheight 1.0 -anchor nw -bordermode outside
-      place $p.score.$x.pl$i.base -in $p.score.$x.pl$i.name -x -5 -rely 0.0 -relheight 1.0 -width [ winfo reqheight $p.score.$x.pl$i.base ] -anchor ne -bordermode outside
-
-      place $p.score.$x.pl$i.score -in $p.score.$x.pl$i -relx .975 -rely 0.0 -relheight 1.0 -anchor ne
+      place $p.score.$x.pl$i.score -in $p.score.$x.pl$i -relx .975 -rely 0.0 \
+          -relheight 1.0 -anchor ne
 
       set sibling pl$i
       
@@ -111,14 +119,21 @@ proc game_display_setup { p { static 0 } } {
     # add a team score
 
     frame $p.score.$x.teamscore -width [ winfo reqwidth $p.score.$x ]
-    label $p.score.$x.teamscore.score -textvariable ::Display::Server::teamscore($x) -justify right
-    $p.score.$x.teamscore configure -height [ winfo reqheight $p.score.$x.teamscore.score ]
+    label $p.score.$x.teamscore.score \
+        -textvariable ::Display::Server::teamscore($x) -justify right
+    $p.score.$x.teamscore configure \
+        -height [ winfo reqheight $p.score.$x.teamscore.score ]
   
-    place $p.score.$x.teamscore -in $p.score.$x -relx 1.0 -rely 1.0 -anchor se -bordermode outside -width [ winfo reqwidth $p.score.$x.teamscore ] -height [ winfo reqheight $p.score.$x.teamscore.score ]
+    place $p.score.$x.teamscore -in $p.score.$x -relx 1.0 -rely 1.0 \
+        -anchor se -bordermode outside \
+        -width [ winfo reqwidth $p.score.$x.teamscore ] \
+        -height [ winfo reqheight $p.score.$x.teamscore.score ]
   
-    place $p.score.$x.teamscore.score -in $p.score.$x.teamscore -relx .975 -rely 0.0 -relheight 1.0 -anchor ne
+    place $p.score.$x.teamscore.score -in $p.score.$x.teamscore \
+        -relx .975 -rely 0.0 -relheight 1.0 -anchor ne
 
-    set sizecount [ expr { $sizecount + ( [ winfo reqheight $p.score.$x.teamscore ] * 2 ) } ]
+    set sizecount [ expr { $sizecount + \
+        ( [ winfo reqheight $p.score.$x.teamscore ] * 2 ) } ]
   
     if { $sizecount > $maxheight } { 
         set maxheight $sizecount

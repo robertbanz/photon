@@ -45,6 +45,9 @@
 *dmGAME*hbh*background:         #111133
 *dmGAME*hbh*foreground:         #ffffff
 
+*dmGAME*hbh*radio*background:   #050510
+*dmGAME*hbh*radio*Font: -*-courier-r-*-*-17-*-*-*-*-*-*
+
 *dmPREGAME.l1*text:			Stuff Part 1
 *dmGAME.status.terminated.text:		Maneuver Complete
 
