@@ -45,7 +45,7 @@ CrDriver::CrDriver(
     psync_(new Signal(options.psync_output_pin)),
     gsync_(new Signal(options.gsync_output_pin)),
     rf_slot_id_(0),
-    transmit_queue_(options.debug_serial, 10),
+    transmit_queue_(options.debug_serial, 5, 15),
     current_sync_(GetSyncByteFromName(kPsyncName)),
     sequence_num_(0),
     gc_interface_(interface),
