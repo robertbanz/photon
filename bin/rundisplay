@@ -29,7 +29,7 @@ x11vnc -display $screen -bg -nopw -rfbport $port -viewonly -forever -shared -noc
 xsetroot -display $screen -cursor /usr/photon/lib/images/blnk_ptr.xbm /usr/photon/lib/images/blnk_ptr.xbm
 
 while /usr/bin/true; do
-  /usr/photon/bin/$type -display $screen -- "$flags"
+  /usr/photon/bin/$type -display $screen -- "$flags" -p $4
   xsetroot -display $screen -solid red
   sleep 5
   xsetroot -display $screen -solid blue
