@@ -33,7 +33,7 @@ proc Accept { newSock addr port } {
   variable writeable_$newSock 1
   variable subscriptions_$newSock
 
-  ::debuglog "display connection accepted from $addr/$port"
+  ::debuglog "display connection accepted from [SockInfo $newSock]"
 
   fconfigure $newSock -blocking 0
   fconfigure $newSock -buffering line
@@ -153,8 +153,8 @@ proc CloseSock { sock } {
     set j [ lsearch $streaming_sockets $sock ]
     set streaming_sockets [ lreplace $streaming_sockets $j $j ]
   }
+  ::debuglog "display connection closed from [SockInfo $sock]"
   catch { close $sock }
-  ::debuglog "display connection $sock closed"
   return -code ok
 }
 
