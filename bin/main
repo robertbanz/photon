@@ -57,17 +57,19 @@ pack .log -side top -expand true -fill both
 
 # simple debug & warning log functions
 proc debuglog { j } {
+  set logtime [LogTime]
   global logwin
   $logwin configure -state normal
-  $logwin insert end "$j\n" 
+  $logwin insert end "$logtime $j\n" 
   $logwin configure -state disabled
   $logwin see end
 }
 
 proc warninglog { j } {
+  set logtime [LogTime]
   global logwin
   $logwin configure -state normal
-  $logwin insert end "$j\n" { warning }
+  $logwin insert end "$logtime $j\n" { warning }
   $logwin configure -state disabled
   $logwin see end
 }
@@ -350,15 +352,15 @@ proc viewScores { } {
 }
       
 proc EtSocketAccept { newSock addr port } {
-  ::debuglog "et connection accepted from $addr / $port"
+  ::debuglog "et connection accepted from [SockInfo $newSock]"
   fileevent $newSock readable [ list EtSocketHandler $newSock ]
 }
 
 proc EtSocketHandler { sock } {
   if [ eof $sock ] {
+    ::debuglog "et connection closed from [SockInfo $sock]"
     catch { close $sock }
-    ::debuglog "et connection $sock closed"
-    return
+    return -code ok
   }
 
   if { [ gets $sock line ] < 0 } {
@@ -383,14 +385,12 @@ proc EtSocketHandler { sock } {
     #   503 Command not recognized
     ::debuglog "command from et: $line"
     set j [ split $line " " ]
-    set b 0
     set command [ lindex $j 0 ]
     set commands { STATUS START FLICK SENDIR STOPIR }
   
     foreach x $commands {
       if { $x == $command } {
         EtSocketHandler_$command $sock $j
-        set b 1
         break
       }
     }

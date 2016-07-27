@@ -380,7 +380,7 @@ proc FlickSync { } {
   } else {
     fconfigure $s -buffering line
     set Message "Sending FLICK command to Game Computer..."
-    net_write $x "FLICK"
+    net_write $s "FLICK"
 
     global finalcode
     set finalcode 0
