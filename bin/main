@@ -543,7 +543,7 @@ proc LoadSoundTrack { trackname length } {
       '$trackname' and ( length = $length or length = 0 )" ]
 
   if { [ pg_result $res -numTuples ] != 1 } {
-    warninglog "Picking random track... ($trackname)"
+    warninglog "Picking random track."
     set trackname ""
   } else {
     pg_result $res -tupleArray 0 tdata
@@ -585,7 +585,6 @@ proc Pick_Track_With_Weight { pgresult } {
   for {set x 0} {$x < [pg_result $pgresult -numTuples]} {incr x} {
     set weight 10
     pg_result $pgresult -tupleArray $x tdata
-    puts [array get tdata]
     if {[info exists tdata(weight)] && $tdata(weight) ne ""} {
       set weight $tdata(weight)
     }
@@ -593,7 +592,6 @@ proc Pick_Track_With_Weight { pgresult } {
       lappend picklist $x
     }
   }
-  puts $picklist
   # pick a random element in the list
   return [lindex $picklist [expr {int(rand()*[llength $picklist])}]]
 }
