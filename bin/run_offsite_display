@@ -1,0 +1,2 @@
+#!/bin/sh
+ssh -i $HOME/.ssh/id_remotedisplay -p 564 rdisplay@gw.nofocus.org -R 8001:localhost:8001 -R 15432:localhost:5432 /usr/photon/bin/offsite_display

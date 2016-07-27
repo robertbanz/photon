@@ -112,11 +112,14 @@ trace variable ::Display::Server::GT_time w GT_time_formatter
 
 # preload images
 
-if { "$argv" == "nopg" } {
+if { $params(p) } {
   set noidle 1
-} elseif { "$argv" != "" } {
-  set screenpath $argv
+} else {
   set noidle 0
+}
+
+if { "$argv" != "" } {
+  set screenpath $argv
 } else {
   if { $hd_mode } {
     set screenpath $Conf::gamepath/cg_idle_hd
