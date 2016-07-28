@@ -33,6 +33,6 @@ xsetroot -display $screen -cursor /usr/photon/lib/images/blnk_ptr.xbm /usr/photo
 
 
 xset -display $screen s off
-/usr/photon/bin/$type -display $screen -- $flags -p $4
+/usr/photon/bin/$type -display $screen -- $flags $4
 
 kill $x11vncpid
