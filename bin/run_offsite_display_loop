@@ -1,0 +1,4 @@
+#!/bin/sh
+while true; do
+/usr/photon/bin/run_offsite_display
+done

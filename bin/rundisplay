@@ -1,6 +1,7 @@
 #!/bin/sh
 screen=:$1
 port=`expr 5900 + $1`
+httpport=`expr 5800 + $1`
 type="$2"display
 hd=$3
 
@@ -24,13 +25,14 @@ echo $! > $xpidfile
 
 sleep 5
 
-x11vnc -display $screen -bg -nopw -rfbport $port -viewonly -forever -shared -nocursor &
+x11vnc -display $screen -bg -nopw -rfbport $port -viewonly -forever -shared -nocursor -httpdir /usr/local/share/x11vnc/classes -httpport $httpport &
+
+x11vncpid=$!
 
 xsetroot -display $screen -cursor /usr/photon/lib/images/blnk_ptr.xbm /usr/photon/lib/images/blnk_ptr.xbm
 
-while /usr/bin/true; do
-  /usr/photon/bin/$type -display $screen -- "$flags"
-  xsetroot -display $screen -solid red
-  sleep 5
-  xsetroot -display $screen -solid blue
-done
+
+xset -display $screen s off
+/usr/photon/bin/$type -display $screen -- $flags $4
+
+kill $x11vncpid

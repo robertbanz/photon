@@ -1,0 +1,6 @@
+#!/bin/sh
+PGHOST=localhost export PGHOST
+PGPORT=15432 export PGPORT
+/usr/photon/bin/rundisplay 0 cg hd /usr/photon/lib/cg_idle_hd_no_video
+#/usr/photon/bin/rundisplay 1 cg
+#/usr/photon/bin/rundisplay 2 pg 

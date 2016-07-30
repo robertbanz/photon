@@ -42,5 +42,17 @@ proc net_write { sock message } {
 
 
 proc SqlTime { time } {
-  return [ clock format $time -format "%Y-%m-%d %T" ]
+  return [clock format $time -format "%Y-%m-%d %T"]
+}
+
+proc LogTime { } {
+  return [clock format [clock seconds] -format "%Y%m%d-%H%M%S"]
+}
+
+proc SockInfo { sock } {
+  if { [catch {fconfigure $sock -peername} result] } {    
+    return -code ok "(unknown) $result"
+  } else {
+    return [lindex $result 1]
+  }
 }

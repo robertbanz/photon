@@ -433,11 +433,14 @@ proc begingame { red_slots grn_slots } {
   variable EALARM
   variable GSYNC
   variable bigdebug
-
+  variable lastpollsn
+  
   namespace eval ::Photon::cr {
     set cr_list { }
     set cr_lock 0     
   }
+  
+  set lastpollsn -1
   
   # Set up the strategies for each message received
   for { set i 0 } { $i <= 0xff } { incr i } {

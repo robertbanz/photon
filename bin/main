@@ -55,19 +55,31 @@ pack .log.text -side left -fill both -expand true
 pack .status -side top
 pack .log -side top -expand true -fill both
 
+# If $j > 1024 lines, remove a line.
+proc trimlogwin { j }  {
+  set numlines [$j count -lines 1.0 end]
+  if  {$numlines > 1024} {
+    $j delete 1.0 2.0
+  }
+}
+
 # simple debug & warning log functions
 proc debuglog { j } {
+  set logtime [LogTime]
   global logwin
   $logwin configure -state normal
-  $logwin insert end "$j\n" 
+  trimlogwin $logwin
+  $logwin insert end "$logtime $j\n" 
   $logwin configure -state disabled
   $logwin see end
 }
 
 proc warninglog { j } {
+  set logtime [LogTime]
   global logwin
   $logwin configure -state normal
-  $logwin insert end "$j\n" { warning }
+  trimlogwin $logwin
+  $logwin insert end "$logtime $j\n" { warning }
   $logwin configure -state disabled
   $logwin see end
 }
@@ -350,15 +362,15 @@ proc viewScores { } {
 }
       
 proc EtSocketAccept { newSock addr port } {
-  ::debuglog "et connection accepted from $addr / $port"
+  ::debuglog "et connection accepted from [SockInfo $newSock]"
   fileevent $newSock readable [ list EtSocketHandler $newSock ]
 }
 
 proc EtSocketHandler { sock } {
   if [ eof $sock ] {
+    ::debuglog "et connection closed from [SockInfo $sock]"
     catch { close $sock }
-    ::debuglog "et connection $sock closed"
-    return
+    return -code ok
   }
 
   if { [ gets $sock line ] < 0 } {
@@ -383,14 +395,12 @@ proc EtSocketHandler { sock } {
     #   503 Command not recognized
     ::debuglog "command from et: $line"
     set j [ split $line " " ]
-    set b 0
     set command [ lindex $j 0 ]
     set commands { STATUS START FLICK SENDIR STOPIR }
   
     foreach x $commands {
       if { $x == $command } {
         EtSocketHandler_$command $sock $j
-        set b 1
         break
       }
     }
@@ -543,7 +553,7 @@ proc LoadSoundTrack { trackname length } {
       '$trackname' and ( length = $length or length = 0 )" ]
 
   if { [ pg_result $res -numTuples ] != 1 } {
-    warninglog "Picking random track... ($trackname)"
+    warninglog "Picking random track."
     set trackname ""
   } else {
     pg_result $res -tupleArray 0 tdata
@@ -585,7 +595,6 @@ proc Pick_Track_With_Weight { pgresult } {
   for {set x 0} {$x < [pg_result $pgresult -numTuples]} {incr x} {
     set weight 10
     pg_result $pgresult -tupleArray $x tdata
-    puts [array get tdata]
     if {[info exists tdata(weight)] && $tdata(weight) ne ""} {
       set weight $tdata(weight)
     }
@@ -593,7 +602,6 @@ proc Pick_Track_With_Weight { pgresult } {
       lappend picklist $x
     }
   }
-  puts $picklist
   # pick a random element in the list
   return [lindex $picklist [expr {int(rand()*[llength $picklist])}]]
 }

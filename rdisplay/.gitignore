@@ -1,0 +1,15 @@
+.config/**
+.dbus/**
+.esd_auth
+.mplayer/**
+.psql_history
+.Xauthority
+.bash_history
+.lesshst
+.ssh/**
+.gitconfig
+tmp/
+.ICEauthority
+.cache/**
+.local/**
+.tkcon_history
