@@ -55,11 +55,20 @@ pack .log.text -side left -fill both -expand true
 pack .status -side top
 pack .log -side top -expand true -fill both
 
+# If $j > 1024 lines, remove a line.
+proc trimlogwin { j }  {
+  set numlines [$j count -lines 1.0 end]
+  if  {$numlines > 1024} {
+    $j delete 1.0 2.0
+  }
+}
+
 # simple debug & warning log functions
 proc debuglog { j } {
   set logtime [LogTime]
   global logwin
   $logwin configure -state normal
+  trimlogwin $logwin
   $logwin insert end "$logtime $j\n" 
   $logwin configure -state disabled
   $logwin see end
@@ -69,6 +78,7 @@ proc warninglog { j } {
   set logtime [LogTime]
   global logwin
   $logwin configure -state normal
+  trimlogwin $logwin
   $logwin insert end "$logtime $j\n" { warning }
   $logwin configure -state disabled
   $logwin see end
