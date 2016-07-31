@@ -41,7 +41,7 @@ proc HitHandler { gs data } {
 
   # if they're equal, we hit our own player
   if { $tgtgs == $gs } {
-    if { ( $Params::etmode == 1 ) || ( $Params::etmode ==2 ) } {
+    if { ( $Params::etmode == 1 ) || ( $Params::etmode == 2 ) } {
       if { $Params::hitownplayer_godown } {     
         ::Photon::putdown $data 
       }
@@ -89,7 +89,7 @@ proc HitHandler { gs data } {
     ::Photon::putdown $data
   }
 
-#    debuglog 2 "slot $gs hit slot $tgtgs"
+  # debuglog 2 "slot $gs hit slot $tgtgs"
 
   set score($gs) [ expr { $score($gs) + $hitscore } ]
 
