@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Workspace>
-<Workspace xmlns="http://www.qlcplus.org/Workspace" CurrentWindow="VirtualConsole">
+<Workspace xmlns="http://www.qlcplus.org/Workspace" CurrentWindow="ShowManager">
  <Creator>
   <Name>Q Light Controller Plus</Name>
   <Version>4.10.4</Version>
@@ -9,9 +9,7 @@
  <Engine Autostart="128">
   <InputOutputMap>
    <Universe Name="Output 1" ID="0" Passthrough="False">
-    <Output Plugin="DMX USB" Line="0">
-     <PluginParameters UniverseChannels="51"/>
-    </Output>
+    <Output Plugin="DMX USB" Line="4294967295"/>
    </Universe>
    <Universe Name="Input" ID="1" Passthrough="False">
     <Input Plugin="ArtNet" Line="3" Profile="None">
@@ -131,6 +129,16 @@
   </Fixture>
   <Fixture>
    <Manufacturer>Generic</Manufacturer>
+   <Model>Generic Smoke</Model>
+   <Mode>Normal</Mode>
+   <ID>11</ID>
+   <Name>Fogger</Name>
+   <Universe>0</Universe>
+   <Address>59</Address>
+   <Channels>2</Channels>
+  </Fixture>
+  <Fixture>
+   <Manufacturer>Generic</Manufacturer>
    <Model>Generic</Model>
    <Mode>1 Channel</Mode>
    <ID>13</ID>
@@ -234,6 +242,7 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="1" Type="Script" Name="Track 2">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -282,6 +291,7 @@
    <Command></Command>
    <Command>startfunction%3A13%20%2F%2F%20Congrats%2FEnd</Command>
    <Command>wait%3A5m</Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -352,6 +362,7 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="3" Type="Script" Name="Track 4">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -395,6 +406,7 @@
    <Command></Command>
    <Command>startfunction%3A13%20%2F%2F%20Congrats%2FEnd</Command>
    <Command>wait%3A5m</Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -454,6 +466,7 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="5" Type="Script" Name="Track 6">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -489,6 +502,7 @@
    <Command></Command>
    <Command>startfunction%3A13%20%2F%2F%20Congrats%2FEnd</Command>
    <Command>wait%3A5m</Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -562,6 +576,7 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="7" Type="Script" Name="Track 8">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -591,12 +606,15 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="8" Type="Script" Name="Begin/RampUp/Phase1 (1m30s)" Path="Common">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
    <Direction>Forward</Direction>
    <RunOrder>Loop</RunOrder>
    <Command>startfunction%3A127%20%2F%2F%20FX%20Off</Command>
+   <Command></Command>
+   <Command>startfunction%3A147%20%2F%2F%20FogginTime</Command>
    <Command></Command>
    <Command>startfunction%3A35%20%2F%2F%20HitStart</Command>
    <Command>wait%3A12s</Command>
@@ -637,6 +655,7 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="9" Type="Script" Name="Rumble (110s)" Path="Tracks 1 &amp; 3">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -645,6 +664,7 @@
    <Command>startfunction%3A54%20%2F%2F%20Rumble%20Fast</Command>
    <Command>startfunction%3A53%20%2F%2F%20Rumble%20Slow</Command>
    <Command>wait%3A200s</Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -677,6 +697,7 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="11" Type="Script" Name="Keyboard (56s)" Path="Tracks 1 &amp; 3">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -696,6 +717,7 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="12" Type="Script" Name="Ramp Down(14s)" Path="Tracks 1 &amp; 3">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -703,6 +725,7 @@
    <RunOrder>Loop</RunOrder>
    <Command>startfunction%3A70%20%2F%2F%20RampDown</Command>
    <Command>wait%3A20s</Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -732,6 +755,7 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="14" Type="Script" Name="Heart Beat 1 (82s)" Path="Tracks 2 &amp; 4">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -739,6 +763,7 @@
    <RunOrder>Loop</RunOrder>
    <Command>startfunction%3A75%20%2F%2F%20HeartBeat%201</Command>
    <Command>wait%3A200s</Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -765,6 +790,7 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="16" Type="Script" Name="Heart Beat 3 (90s)" Path="Tracks 2 &amp; 4">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -772,6 +798,7 @@
    <RunOrder>Loop</RunOrder>
    <Command>startfunction%3A77%20%2F%2F%20HeartBeat%203</Command>
    <Command>wait%3A200s</Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -798,6 +825,7 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="18" Type="Script" Name="HuffPuff (14s)" Path="Tracks 2 &amp; 4">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -805,6 +833,7 @@
    <RunOrder>Loop</RunOrder>
    <Command>startfunction%3A79%20%2F%2F%20HuffPuff</Command>
    <Command>wait%3A50s</Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -822,6 +851,7 @@
    <Command>startfunction%3A92%20%2F%2F%20T5%20Feature</Command>
    <Command>startfunction%3A88%20%2F%2F%20T5%20Main</Command>
    <Command>wait%3A600s</Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -849,6 +879,7 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="21" Type="Script" Name="drum track b (61s)" Path="Tracks 6">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -858,6 +889,7 @@
    <Command>startfunction%3A111%20%2F%2F%20drum-B-wash</Command>
    <Command>startfunction%3A127%20%2F%2F%20FX%20Off</Command>
    <Command>wait%3A200s</Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -884,6 +916,7 @@
    <Command></Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="23" Type="Script" Name="dt wind up" Path="Tracks 7">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -892,6 +925,7 @@
    <Command>startfunction%3A132%20%2F%2F%20DT%20WIndup</Command>
    <Command>startfunction%3A133%20%2F%2F%20DT%20Windup%20Motion</Command>
    <Command>wait%3A30s</Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -909,6 +943,7 @@
    <Command>startfunction%3A140%20%2F%2F%20DT%20A%20Towers</Command>
    <Command>wait%3A300s</Command>
    <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="25" Type="Script" Name="theramin" Path="Tracks 7">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -918,6 +953,7 @@
    <Command>startfunction%3A144%20%2F%2F%20DT%20Theramin%20FX</Command>
    <Command>startfunction%3A145%20%2F%2F%20DT%20Theramin%20FX%20Movement</Command>
    <Command>wait%3A100s</Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
   </Function>
@@ -930,6 +966,7 @@
    <Command>wait%3A200s</Command>
    <Command></Command>
    <Command></Command>
+   <Command></Command>
   </Function>
   <Function ID="27" Type="Script" Name="stevie nicks (10s)" Path="Tracks 7">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -937,6 +974,10 @@
    <RunOrder>Loop</RunOrder>
    <Command>startfunction%3A146%20%2F%2F%20DT%20stevienicks</Command>
    <Command>wait%3A10s</Command>
+   <Command>stopfunction%3A146</Command>
+   <Command>wait%3A10s</Command>
+   <Command>startfunction%3A146</Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
   </Function>
@@ -944,6 +985,7 @@
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
    <Direction>Forward</Direction>
    <RunOrder>Loop</RunOrder>
+   <Command>startfunction%3A147%20%2F%2F%20FogginTime</Command>
    <Command>startfunction%3A82%20%2F%2F%20Intruder%20Start</Command>
    <Command>startfunction%3A115%20%2F%2F%20Intruder%201%20Alert</Command>
    <Command>startfunction%3A116%20%2F%2F%20Intruder%201%20FX</Command>
@@ -957,6 +999,7 @@
    <Command>startfunction%3A118%20%2F%2F%20Intruder%201%20Attack</Command>
    <Command>startfunction%3A117%20%2F%2F%20Intruder%201%20Attack</Command>
    <Command>wait%3A20s</Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -985,6 +1028,7 @@
    <Command>startfunction%3A122%20%2F%2F%20Intruder%20Spin</Command>
    <Command></Command>
    <Command>wait%3A20s</Command>
+   <Command></Command>
    <Command></Command>
    <Command></Command>
    <Command></Command>
@@ -2479,11 +2523,29 @@
    <FixtureVal ID="7">4,0,5,255,6,153,7,0,8,12,9,0,10,0,11,0</FixtureVal>
    <FixtureVal ID="10">4,0,5,255,6,153,7,0,8,12,9,0,10,0,11,0</FixtureVal>
   </Function>
+  <Function ID="147" Type="Script" Name="FogginTime" Path="Common">
+   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
+   <Direction>Forward</Direction>
+   <RunOrder>Loop</RunOrder>
+   <Command>setfixture%3A11%20ch%3A0%20val%3A255%20%2F%2F%20Fogger%2C%20Pump</Command>
+   <Command>setfixture%3A11%20ch%3A1%20val%3A255%20%2F%2F%20Fogger%2C%20Fan</Command>
+   <Command>wait%3A30s</Command>
+   <Command>setfixture%3A11%20ch%3A0%20val%3A0%20%2F%2F%20Fogger%2C%20Pump</Command>
+   <Command>setfixture%3A11%20ch%3A1%20val%3A255%20%2F%2F%20Fogger%2C%20Fan</Command>
+   <Command>wait%3A30s</Command>
+   <Command>setfixture%3A11%20ch%3A1%20val%3A0%20%2F%2F%20Fogger%2C%20Fan</Command>
+   <Command></Command>
+   <Command></Command>
+  </Function>
+  <Function ID="148" Type="Show" Name="New Show 148">
+   <TimeDivision Type="Time" BPM="120"/>
+  </Function>
   <Monitor DisplayMode="1" ShowLabels="1">
    <Font>Arial,12,-1,5,50,0,0,0,0,0</Font>
    <ChannelStyle>0</ChannelStyle>
    <ValueStyle>1</ValueStyle>
    <Grid Width="5" Height="5" Units="0"/>
+   <FxItem ID="10" XPos="170" YPos="2590"/>
    <FxItem ID="13" XPos="3335.15" YPos="700.638"/>
    <FxItem ID="15" XPos="535.484" YPos="1767.74"/>
    <FxItem ID="14" XPos="96.7742" YPos="1774.19"/>
@@ -2499,7 +2561,7 @@
    <FxItem ID="6" XPos="2877.42" YPos="690.323"/>
    <FxItem ID="9" XPos="554.839" YPos="1219.35"/>
    <FxItem ID="8" XPos="77.4194" YPos="1245.16"/>
-   <FxItem ID="10" XPos="170" YPos="2590"/>
+   <FxItem ID="11" XPos="473.988" YPos="3265.9"/>
   </Monitor>
  </Engine>
  <VirtualConsole>
@@ -2512,7 +2574,7 @@
     <Font>Default</Font>
    </Appearance>
    <Button Caption="Track 1" ID="1" Icon="">
-    <WindowState Visible="True" X="0" Y="50" Width="50" Height="50"/>
+    <WindowState Visible="False" X="0" Y="50" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
@@ -2526,7 +2588,7 @@
     <Input Universe="1" Channel="0"/>
    </Button>
    <Button Caption="Track 2" ID="2" Icon="">
-    <WindowState Visible="True" X="0" Y="100" Width="50" Height="50"/>
+    <WindowState Visible="False" X="0" Y="100" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
@@ -2540,7 +2602,7 @@
     <Input Universe="1" Channel="1"/>
    </Button>
    <Button Caption="Track 3" ID="3" Icon="">
-    <WindowState Visible="True" X="0" Y="150" Width="50" Height="50"/>
+    <WindowState Visible="False" X="0" Y="150" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
@@ -2554,7 +2616,7 @@
     <Input Universe="1" Channel="2"/>
    </Button>
    <Button Caption="Track 4" ID="4" Icon="">
-    <WindowState Visible="True" X="0" Y="200" Width="50" Height="50"/>
+    <WindowState Visible="False" X="0" Y="200" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
@@ -2568,7 +2630,7 @@
     <Input Universe="1" Channel="3"/>
    </Button>
    <Button Caption="Track 5" ID="5" Icon="">
-    <WindowState Visible="True" X="0" Y="250" Width="50" Height="50"/>
+    <WindowState Visible="False" X="0" Y="250" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
@@ -2582,7 +2644,7 @@
     <Input Universe="1" Channel="4"/>
    </Button>
    <Button Caption="Track 6" ID="6" Icon="">
-    <WindowState Visible="True" X="0" Y="300" Width="50" Height="50"/>
+    <WindowState Visible="False" X="0" Y="300" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
@@ -2596,7 +2658,7 @@
     <Input Universe="1" Channel="5"/>
    </Button>
    <Button Caption="Track 7" ID="7" Icon="">
-    <WindowState Visible="True" X="0" Y="350" Width="50" Height="50"/>
+    <WindowState Visible="False" X="0" Y="350" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
@@ -2610,7 +2672,7 @@
     <Input Universe="1" Channel="6"/>
    </Button>
    <Button Caption="Track 8" ID="8" Icon="">
-    <WindowState Visible="True" X="0" Y="400" Width="50" Height="50"/>
+    <WindowState Visible="False" X="0" Y="400" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
@@ -2624,7 +2686,7 @@
     <Input Universe="1" Channel="7"/>
    </Button>
    <Button Caption="Idle" ID="9" Icon="">
-    <WindowState Visible="True" X="0" Y="490" Width="50" Height="50"/>
+    <WindowState Visible="False" X="0" Y="490" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
@@ -2638,7 +2700,7 @@
     <Input Universe="1" Channel="8"/>
    </Button>
    <Button Caption="Button 10" ID="10" Icon="">
-    <WindowState Visible="True" X="0" Y="570" Width="50" Height="50"/>
+    <WindowState Visible="False" X="0" Y="570" Width="50" Height="50"/>
     <Appearance>
      <FrameStyle>None</FrameStyle>
      <ForegroundColor>Default</ForegroundColor>
