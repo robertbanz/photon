@@ -907,8 +907,8 @@ proc EditGame { toplevel } {
       bind Entry <Delete> { }
       bind Entry <KP_Delete> { }
       bind Entry <F9> { }
-      bind Entry <Control-G> { }
-      bind Entry <Control-g> { }
+      #bind Entry <Control-G> { }
+      #bind Entry <Control-g> { }
 
       bind $toplevel.$color.$i.picker <FocusIn> { Picker_Message }
       bind $toplevel.$color.$i.id <FocusIn> { Id_Message }
@@ -1398,10 +1398,11 @@ proc EnterPod { team slot mode } {
   set j [ toplevel .enterpod ]
   set j .enterpod
 
-#  bind all <Control-g> "bind $j <Return> \"\"\n Barcode_Scan %W\n bind $j <Return> { set cont 1 }"
+  # XXX
+  #bind all <Control-g> "bind $j <Return> \"\"\n Barcode_Scan %W\n bind $j <Return> { set cont 1 }"
 
-#  bind $j <Control-G> [ list Barcode_Scan . %K ]
-#  bind $j <Control-g> [ list Barcode_Scan . %K ]
+  #bind $j <Control-G> [ list Barcode_Scan . %K ]
+  #bind $j <Control-g> [ list Barcode_Scan . %K ]
 
   wm title $j ""
   wm resizable $j 0 0
