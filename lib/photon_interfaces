@@ -1,4 +1,425 @@
 
+namespace eval ::Photon {
+
+#
+# $Log: photon_interfaces,v $
+# Revision 1.8  1999/02/21 19:43:07  banz
+# current working version (before big changes)
+#
+# Revision 1.1  1998/11/08 22:06:39  banz
+# Initial revision
+#
+# 
+
+set rcsid  { $Id: photon_interfaces,v 1.8 1999/02/21 19:43:07 banz Exp banz $ }
+
+namespace export cr_handler
+
+proc putdown { data } {
+  cr_write $data    
+}
+
+proc cr_handler { } {
+  cr_read
+}
+
+proc game_cr_event_handler { serialnum slot action data } {
+  namespace eval ::Photon::cr {
+    if { "$action" == "xx" } {
+      ::debuglog "null adata from cr_read"
+    } elseif { ( "$action" == "rx" ) || ( "$action" == "tx" ) } {
+      if { $slot == 0 } {    
+        incr ::Photon::pp::pollcount    
+        # mark slots that we didn't receive anything in
+        # during this poll
+        for { set i 0 } { $i < 67 } { incr i } {
+          if { $radiodata_rx_sn($i) != $::Photon::lastpollsn } {
+            incr ::Photon::pp::missed($i)
+            incr ::Photon::pp::missinrow($i)
+    
+            if { $radiodata_rx_x($i) != ".." } {
+              set radiodata_rx($i) 0
+              set radiodata_rx_x($i) ".."
+              set radiodata_rx_sn($i) $::Photon::lastpollsn
+            }
+          }       
+          if { $radiodata_tx_sn($i) != $::Photon::lastpollsn } {
+            if { $radiodata_tx_x($i) != ".." } {
+              set radiodata_tx($i) 0
+              set radiodata_tx_x($i) ".."
+              set radiodata_tx_sn($i) $::Photon::lastpollsn
+            }
+          }
+        }
+        
+        # update lastpollsn, and check for skippage
+        if { $::Photon::lastpollsn == -1 } {
+          set ::Photon::lastpollsn $serialnum
+        } else {
+          incr ::Photon::lastpollsn
+          if { $::Photon::lastpollsn == 256 } {
+            set ::Photon::lastpollsn 0
+          }
+          if { $::Photon::lastpollsn != $serialnum } {
+            ::warninglog "Skipped Poll: $Photon::lastpollsn != $serialnum"
+            set ::Photon::lastpollsn $serialnum
+          }
+        }
+      }
+
+      if { "$action" == "rx" } {
+        set radiodata_rx($slot) $data
+        set radiodata_rx_x($slot) [ format "%02x" $data ]
+        set radiodata_rx_sn($slot) $serialnum
+      } elseif { "$action" == "tx" } {
+        set radiodata_tx($slot) $data
+        set radiodata_tx_x($slot) [ format "%02x" $data ]
+        set radiodata_tx_sn($slot) $serialnum
+      }
+
+      if { $slot != 0 } {
+        set e [ catch {
+          namespace eval ::Photon $::Photon::slot_op($data) $slot $action $data
+        } x ]
+        if { $e != 0 } {
+          ::debuglog "error in slot_op eval: \
+                      $::Photon::slot_op($data) $slot $action $data -- $x"
+          set cr_lock 0
+          return --code ok
+        }  
+      }
+    }
+  }
+}
+
+proc game_cr_handler { } {  
+  namespace eval ::Photon::cr {
+    variable lastslotid
+    variable lastpollsn
+  
+    variable radiodata_rx
+    variable radiodata_rx_x
+    variable radiodata_rx_sn
+
+    variable radiodata_tx
+    variable radiodata_tx_x
+    variable radiodata_tx_sn
+
+    variable cr_lock
+    variable cr_list
+
+    if { $cr_lock != 0 } {
+      puts "already in loop"
+      lappend cr_list [ cr_read ]
+      return -code ok
+    }
+
+    set cr_lock 1
+
+    lappend cr_list [ cr_read ]
+  
+    # while we have stuff in our list, execute the following:
+    # note, we're probably appending to this all of the time      
+
+    while { [ llength $cr_list ] != 0 } {
+      set qlen [ llength $cr_list ]
+
+      if { $qlen != 1 } {
+        puts "length of queue: $qlen"
+      }
+    
+      set indata [ lindex $cr_list 0 ]
+
+      set cr_list [ lrange $cr_list 1 end ]
+    
+      set indata [ string trim $indata "{}"]
+      set indata [ string trimleft $indata "{}"]
+    
+      set list_indata [ split $indata " " ]
+
+      set serialnum [ lindex $list_indata 0 ]
+      set slot [ lindex $list_indata 1 ]
+      set action [ lindex $list_indata 2 ]
+      set data [ lindex $list_indata 3 ]
+
+      if { $data == "" } {
+        continue
+      }
+
+      set e [ catch {
+        namespace eval ::Photon game_cr_event_handler $serialnum $slot \
+        $action $data
+      } x ]
+      if { $e != 0 } {
+        ::debuglog "error in event handler $serialnum $slot $action $data - $x"
+      }
+    }
+    set cr_lock 0
+    return -code ok
+  }
+}
+
+proc init { } {
+  variable debug
+  variable menu
+  variable slot_op
+  variable answerback_debug
+  variable cr_lock
+  variable slot_used
+  
+  source $Conf::libpath/cr
+  
+  cr_init
+  
+  # initialized pod performance data
+  init_pp
+  
+  set cr_lock 0
+  set answerback_debug 0
+  
+  namespace eval cr {
+    set lastslotid 1
+    for { set i 0 } { $i < 68 } { incr i } {
+      set radiodata_rx($i) 0
+      set radiodata_rx_sn($i) 0
+      set radiodata_rx_x($i) "--"
+      set radiodata_tx($i) 0
+      set radiodata_tx_sn($i) 0
+      set radiodata_tx_x($i) "--"
+    }
+    set radio_watchlist { radiodata_rx_x radiodata_tx_x }
+  }
+
+  for { set i 0 } { $i < 40 } { incr i } {
+    set slot_used($i) 0
+  }
+
+  setcrenable 1
+
+  # when the game isn't running, we set this...
+  uplevel 0 { proc cr_handler { } { cr_read } }
+
+  if { $debug == 1 } {
+    ::debuglog "photon: cr enable/init complete"
+  }
+  
+  menu .menubar.photon -tearoff 0
+  ::.menubar add cascade -label Photon -menu .menubar.photon
+  .menubar.photon add check -label Debug -variable Photon::debug
+
+  menu .menubar.photon.sync -tearoff 1
+  .menubar.photon add cascade -label Sync -menu .menubar.photon.sync
+  .menubar.photon.sync add radio -label PSYNC \
+      -variable ::Photon::currentsyncbin \
+      -value $Photon::PSYNC -command { ::Photon::setsync $Photon::PSYNC }
+  .menubar.photon.sync add radio -label GSYNC \
+      -variable ::Photon::currentsyncbin \
+      -value $Photon::GSYNC -command { ::Photon::setsync $Photon::GSYNC }
+  .menubar.photon.sync add radio -label ESYNC \
+      -variable ::Photon::currentsyncbin \
+      -value $Photon::ESYNC -command { ::Photon::setsync $Photon::ESYNC }
+
+  .menubar.photon add check -label cr_enable -variable Photon::crenable \
+      -command { ::Photon::setcrenable $Photon::crenable }
+
+  .menubar.photon add command -label "Start Test Game Mode" -command {
+    ::Photon::begingame \
+    { 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 } \
+    { 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 } \
+  }
+  
+  .menubar.photon add command -label "End Test Game Mode" -command { \
+    ::Photon::endgame }
+
+  .menubar.photon add check -label "Game Interface Debug" \
+      -variable ::Photon::gdebug
+  
+  .menubar.photon add check -label "Performance" -command \
+      { namespace eval ::Photon { ::Photon::podperf_window $podperfon } } \
+      -variable ::Photon::podperfon
+  .menubar.photon add check -label "Radio Monitor" -command \
+      { namespace eval ::Photon { ::Photon::radio_window $radiomon } } \
+      -variable ::Photon::radiomon
+  .menubar.photon add check -label "Answerback Mode" \
+      -variable ::Photon::answerback_debug
+
+
+  for { set i 0 } { $i <= 0xff } { incr i } {
+      set slot_op($i) sp_null
+  }
+}
+
+proc radio_window { i } {
+  if { [ winfo exists .radio ] } {
+    if { ! $i } {
+      destroy .radiomon
+      return -code ok
+    } else {
+      return -code ok
+    }
+  }
+  
+  set r [ frame .radio ]
+  
+  set row 0
+  set col 0
+  
+  proc rx_row { slots } {
+    upvar row row
+    upvar col col
+    upvar r r
+    set col 0
+    foreach a $slots {
+      label ${r}.${a} -textvariable ::Photon::cr::radiodata_rx_x($a) -width 3
+      grid ${r}.${a} -row $row -column [incr col] -sticky e
+    }
+    incr row
+  }
+
+  proc tx_row { slots } {
+    upvar row row
+    upvar col col
+    upvar r r
+    set col 0
+    foreach a $slots {
+      label ${r}.${a} -textvariable ::Photon::cr::radiodata_tx_x($a) -width 3
+      grid ${r}.${a} -row $row -column [incr col] -sticky e
+    }
+    incr row
+  }
+    
+  tx_row {0}
+  rx_row {3 4}
+  rx_row {5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24}
+  tx_row {25 26 27 28 29}
+  rx_row {31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50}
+  tx_row {55 56 57 58 59}
+  
+  wm manage .radio
+}
+    
+proc podperf_window { i } {
+
+  variable slot_used
+
+  variable RED_RFSTART
+  variable GRN_RFSTART
+
+  proc labelit { r var i color } {
+    upvar col col
+    upvar row row
+    label ${r}.${var}${i} -textvariable ::Photon::pp::${var}($i) -width 3 \
+        -fg $color
+    grid ${r}.${var}${i} -row $row -column [incr col] -sticky e   
+  }
+
+  if { [ winfo exists .podperf ] } {
+    if { ! $i } {
+      destroy .podperf
+      return -code ok
+    } else {
+      return -code ok
+    }
+  }
+
+  set r [ frame .podperf ]
+
+  set row 0
+
+  set list { idlu syncmissed wsyncrcvd serror ealarm missinrow invalidinrow \
+      missed invalid valid hitssent hitsackn  }
+
+  set titles { "ID" "RX: smiss" "wsync" "serror" "elrm" "TX: mir" "iir" \
+      "miss" "inval" "val" "HITS: sent" "ackn" }
+
+  label $r.headslot -text "slot"
+  grid $r.headslot -row $row -column 0 -sticky nw
+  
+  set col 0
+
+  foreach x $list {
+    label $r.$x -text [ lindex $titles $col]
+    grid $r.$x -row $row -column [ incr col ] -sticky nw
+  }
+
+  label $r.lastradio -text LRx
+  grid $r.lastradio -row $row -column [ incr col ] -sticky nw
+
+  incr row
+
+  for { set i 0 } { $i < 67 } { incr i } {
+    set col 0
+
+    if { ( $i >= $RED_RFSTART ) && ( $i < ( $RED_RFSTART + 20 ) ) } {
+      set color "#ff9999"
+      set gs [ rs_to_gs $i ]
+    } elseif { ( $i >= $GRN_RFSTART ) && ( $i < ( $GRN_RFSTART + 20 ) ) } {
+      set color "#99ff99"
+      set gs [ expr [ rs_to_gs $i ] - 20 ]
+    } else {
+      continue
+    }
+
+    if { ! $slot_used([rs_to_gs $i]) } {
+      continue
+    }
+
+    label $r.$i -text $gs
+    grid $r.$i -row $row -column 0
+
+    foreach x $list  {
+      labelit $r $x $i $color
+    }
+
+    label $r.radio$i -textvariable ::Photon::cr::radiodata_rx_x($i) -fg $color
+    grid $r.radio$i -row $row -column [ incr col ] -sticky e
+
+    incr row
+    
+    # Don't cause the world to pause.
+    update
+  }                 
+  wm manage .podperf
+
+}
+
+proc setsync { sync } {
+  variable currentsync
+  variable currentsyncbin
+  variable PSYNC
+  variable ESYNC
+  variable GSYNC
+  variable debug
+
+  if { $sync == $PSYNC } {
+    cr_setsync PSYNC
+    set currentsync "PSYNC"
+    set currentsyncbin $PSYNC
+  } elseif { $sync == $GSYNC } {
+    cr_setsync GSYNC
+    set currentsync "GSYNC"
+    set currentsyncbin $GSYNC
+  } elseif { $sync == $ESYNC } {
+    cr_setsync ESYNC
+    set currentsync "ESYNC"
+    set currentsyncbin $ESYNC
+  }   
+  if { $debug == 1 } {
+    ::debuglog "photon: Sync set to $currentsync ($currentsyncbin)"
+  } 
+}
+
+proc setcrenable { what } {
+  variable crenable
+  variable debug
+  if { $what } {
+    cr_enable 1
+    set crenable 1
+  } else {
+    cr_enable 0 
+    set crenable 0
+  }
+
 namespace eval Photon {
 
 #
@@ -169,6 +590,9 @@ proc init { } {
   
   cr_init
   
+  # initialized pod performance data
+  init_pp
+  
   set cr_lock 0
   set answerback_debug 0
   
@@ -183,6 +607,10 @@ proc init { } {
       set radiodata_tx_x($i) "--"
     }
     set radio_watchlist { radiodata_rx_x radiodata_tx_x }
+  }
+
+  for { set i 0 } { $i < 40 } { incr i } {
+    set slot_used($i) 0
   }
 
   setcrenable 1
@@ -218,10 +646,10 @@ proc init { } {
   .menubar.photon add check -label G_intdebug -variable Photon::gdebug
   
   .menubar.photon add check -label "Performance" -command \
-      { namespace eval Photon:: { Photon::podperf_window $podperfon } } \
+      { namespace eval Photon:: { ::Photon::podperf_window $podperfon } } \
       -variable Photon::podperfon
   .menubar.photon add check -label "Radio Monitor" -command \
-      { namespace eval Photon:: { Photon::radio_window $radiomon } } \
+      { namespace eval Photon:: { ::Photon::radio_window $radiomon } } \
       -variable Photon::radiomon
   .menubar.photon add check -label "Answerback Mode" \
       -variable Photon::answerback_debug
@@ -414,6 +842,59 @@ proc endgame { } {
   after 15000 { ::Photon::setsync $::Photon::PSYNC }  
 }
 
+proc init_pp { } {
+  # clear all counters (used for pod performance kind of stuff
+  # pod perfomance uses raw slot #'s for indexing...
+
+  namespace eval pp {
+    set pollcount 0
+
+    for { set i 0 } { $i < 67 } { incr i } {
+      # stateful stuff
+      set id($i) -1            
+      set used($i) 0  
+      if { [ info exists ::Photon::slot_used([::Photon::rs_to_gs $i]) ] } {
+          set gameused($i) $::Photon::slot_used([::Photon::rs_to_gs $i])
+      } else {
+          set gameused($i) 0
+      }
+
+      # interesting stuff
+      set missinrow($i) 0      
+      set invalidinrow($i) 0     
+      set invalidvalids($i) 0  
+  
+      # counting stuff
+      set idinrow($i) 0
+      set idcount($i) 0        
+      set basecount($i) 0      
+      set syncmissed($i) 0     
+      set psyncrcvd($i) 0     
+      set esyncrcvd($i) 0
+      set wsyncrcvd($i) 0
+      set serror($i) 0       
+      set ealarm($i) 0       
+      set missed($i) 0       
+      set ack_pkts($i) 0   
+      set invalid($i) 0       
+      set other($i) 0  
+      set valid($i) 0
+      set idlu($i) -1 
+      # tx/rx confirmation
+      set hitssent($i) 0     
+      set hitsackn($i) 0   
+
+      set curobject($i) 0
+      set chosenbase($i) 0
+    }
+  }
+
+  if { [ winfo exists .podperf ] } {
+      destroy .podperf
+      podperf_window 1
+  }
+}
+
 proc begingame { red_slots grn_slots } {
   variable slot_op
   variable slot_used
@@ -433,11 +914,14 @@ proc begingame { red_slots grn_slots } {
   variable EALARM
   variable GSYNC
   variable bigdebug
-
+  variable lastpollsn
+  
   namespace eval ::Photon::cr {
     set cr_list { }
     set cr_lock 0     
   }
+  
+  set lastpollsn -1
   
   # Set up the strategies for each message received
   for { set i 0 } { $i <= 0xff } { incr i } {
@@ -494,18 +978,534 @@ proc begingame { red_slots grn_slots } {
     } else {
       set slot_used($i) 0
     }
-  }
-
-  for { set i 0 } { $i < 20 } { incr i } {
     if { [ lsearch -exact $grn_slots $i ] != -1 } {
       set slot_used([ expr { $i + 20 } ]) 1   
     } else {
       set slot_used([ expr { $i + 20 } ]) 0
     }
+  }
+
+  # initialize pod performance data
+  init_pp
+  
+  # Really get the party started.
+  setsync $GSYNC
+}
+
+proc debuglog { i } {
+  variable debug
+  if { $debug == 1 } {
+      ::debuglog $i
+  }
+}
+
+proc gdebuglog { i } {
+  variable gdebug 
+  if { $gdebug } {
+      ::debuglog "photon:g:$i"
+  }
+}
+
+# given a radio slot, return a team and player # (indexed @0)
+proc rs_to_gs { slot } {
+  variable RED_RFSTART
+  variable GRN_RFSTART
+  variable rs_to_gs_table
+
+  if { [ info exists rs_to_gs_table ] } {
+    return $rs_to_gs_table($slot)
+  } else {
+    for { set j 0 } { $j < 100 } { incr j } {
+      if { ( $j >= $RED_RFSTART ) && 
+           ( $j < ( $RED_RFSTART + 20 ) ) } {
+        set rs_to_gs_table($j) [ expr { $j - $RED_RFSTART } ]
+      } elseif { ( $j >= $GRN_RFSTART ) &&
+                 ( $j < ( $GRN_RFSTART + 20 ) ) } {
+        set rs_to_gs_table($j) [ expr { ( $j - $GRN_RFSTART ) + 20 } ]
+      } else {
+        set rs_to_gs_table($j) -1
+      }
+    }     
+    return $rs_to_gs_table($slot)
+  }
+}
+
+proc ir_to_gs { irn } {
+  variable REDIR
+  variable GRNIR
+  variable ir_to_gs_table
+
+  if { [ info exists ir_to_gs_table ] } {
+      return $ir_to_gs_table($irn)
+  }
+
+  for { set i 0 } { $i <= 255 } { incr i } {
+    if { $i == 0x94 } {
+      set ir 0x80
+    } else {
+      set ir $i
+    }
+      
+    if { ( $ir >= $REDIR ) &&
+         ( $ir < ( $REDIR + 20 ) ) } {
+      set ir_to_gs_table($i) [ expr { $ir - $REDIR } ]
+    } elseif { ( $ir >= $GRNIR ) &&
+               ( $ir < ( $GRNIR + 20 ) ) } {
+      set ir_to_gs_table($i) [ expr ( { $ir - $GRNIR ) + 20 } ]
+    } else {
+      set ir_to_gs_table($i) -1
+    }
+  }
+  return $ir_to_gs_table($irn)
+}
+
+proc gs_to_ir { gsn } {
+  variable REDIR
+  variable GRNIR
+  variable gs_to_ir_table
+
+  if { [ info exists gs_to_ir_table ] } {
+    return $gs_to_ir_table([ expr int($gsn)])
+  }
+
+  for { set i 0 } { $i < 20 } { incr i } {
+    set gs_to_ir_table($i) [ expr $REDIR + $i ]
+    set gs_to_ir_table([ expr $i + 20 ]) [ expr $GRNIR + $i ]
+  }
+
+  # Because Green Slot 0.
+  set gs_to_ir_table(20) [ expr int(0x94) ]
+
+  return $gs_to_ir_table([ expr int($gsn)])
+}
+
+
+proc id_to_sig { idr } {
+  variable id_to_sig_table
+  if { [ info exists id_to_sig_table ] } {
+    return $id_to_sig_table([ expr int($idr) ])
+  }
+
+  for { set id 0 } { $id <= 255 } { incr id } {
+    if { ( $id > 0 ) && ( $id < 11 ) } {
+      set id_to_sig_table($id) [ expr { $id + 0x5f } ]
+    } elseif { ( $id > 10 ) && ( $id < 21 ) } {
+      set id_to_sig_table($id) [ expr { ( $id - 11 ) + 0x70 } ]
+    } elseif { ( $id > 20 ) && ( $id < 27 ) } {
+      set id_to_sig_table($id) [ expr { ( $id - 21 ) + 0x6a } ]
+    } elseif { ( $id > 26 ) && ( $id < 33 ) } {
+      set id_to_sig_table($id) [ expr { ( $id - 27 ) + 0x7a } ]
+    } elseif { $id == 33 } {
+      set id_to_sig_table($id) [ expr { int(0x5f) } ]
+    } elseif { $id == 34 } {
+      set id_to_sig_table($id) [ expr { int(0x5d) } ]
+    } elseif { ( $id > 34 ) && ( $id < 45 ) } {
+      set id_to_sig_table($id) [ expr { ( $id - 35 ) + 0x01 } ]
+    } elseif { ( $id >= 45 ) && ( $id < 65 ) } {
+      set id_to_sig_table($id) [ expr { ( $id - 45 ) + 0x10 } ]
+    } else {
+      set id_to_sig_table($id) -1
+    }
+  }
+  return $id_to_sig_table([ expr int($idr) ]) 
+}
+
+proc sig_to_id { sigr } { 
+  variable sig_to_id_table 
+  
+  if { [ info exists sig_to_id_table ] } {
+      return $sig_to_id_table([ expr int($sigr) ]) 
+  }
+
+  for { set i 0 } { $i <= 255 } { incr i } {
+    set sig_to_id_table([id_to_sig $i]) $i
+  }
+
+  return $sig_to_id_table([ expr int($sigr) ])
+}
+
+proc gs_to_rs { gsr } { 
+  variable RED_RFSTART
+  variable GRN_RFSTART
+  variable gs_to_rs_table
+
+  if { [ info exists gs_to_rs_table ] } {
+      return $gs_to_rs_table($gsr)
   } 
 
-# clear all counters (used for pod performance kind of stuff
-# pod perfomance uses raw slot #'s for indexing...
+  for { set gs -2 } { $gs < 0xff } { incr gs } {
+      
+    if { $gs < 0 } {
+      set gs_to_rs_table($gs) -1
+    } elseif { $gs < 20 } {
+      set gs_to_rs_table($gs) [ expr { $gs + $RED_RFSTART } ]
+    } elseif { $gs < 40 } {
+      set gs_to_rs_table($gs) [ expr { $gs + ( $GRN_RFSTART - 20 ) } ]
+    } else {
+      set gs_to_rs_table($gs) -1
+    }
+  }
+
+  return $gs_to_rs_table($gsr)
+}
+
+       
+proc op_idcode { slot op data } {
+
+  if { $op == "rx" } {
+    set gs [ rs_to_gs $slot ]
+      
+    if { $gs == -1 } {
+      return -code ok
+    }
+      
+    set pp::missinrow($slot) 0
+      
+    if { $pp::used($slot) == 0 } {
+      set pp::used($slot) 1
+    }
+      
+    # ID discovery phase
+    if { $pp::idinrow($slot) <= 4 } {
+      if { $pp::id($slot) == $data } {
+        set pp::invalidinrow($slot) 0
+        incr pp::idinrow($slot)
+      } else {
+        set pp::invalidinrow($slot) 0
+        set pp::id($slot) $data
+        set pp::idinrow($slot) 1        
+      }
+      # ID discovered   
+    } elseif { $pp::idinrow($slot) == 5 } {
+      set pp::invalidinrow($slot) 0
+      set pp::idcount($slot) $pp::idinrow($slot)
+      set pp::idlu($slot) [ sig_to_id $data ]
+      incr pp::idinrow($slot)
+      set pp::valid($slot) [ expr $pp::valid($slot) + 5 ]
+      debuglog "ID Discovered $data in slot $slot"
+      # Just another day at the office
+    } elseif { $pp::id($slot) == $data } {
+      set pp::invalidinrow($slot) 0
+      incr pp::idcount($slot)
+      incr pp::valid($slot)
+      if { $Photon::answerback_debug } { 
+        putdown [ gs_to_ir [ rs_to_gs $slot ] ]
+      }
+    # Not a valid day at the office
+    } else {
+      incr pp::invalidinrow($i)
+      incr pp::invalid($i)
+    }
+    namespace eval ::Game NullHandler [ rs_to_gs $slot ]
+  }
+}
+
+
+proc op_podcode { slot op data } {
+  variable slot_used
+  if { $op == "rx" } {    
+    set pp::missinrow($slot) 0
+    if { $pp::used($slot) == 0 } {
+      set pp::used($slot) 1
+    }
+    # see if the code coming is from a "pod"
+    # that is valid (is it used)
+    set gs [ ir_to_gs $data ]
+    if { $slot_used($gs) != 1 } {
+      incr pp::invalidvalids($slot)
+      incr pp::invalidinrow($slot)
+      return -code ok
+    } else {
+      set pp::invalidinrow($slot) 0
+      incr pp::valid($slot)
+    }
+    # everything is peachy, we now pass
+    # it off to the game manager
+    set gs [ rs_to_gs $slot ]
+
+    if { $gs != -1 } {      
+      gdebuglog "HitHandler $gs $data"
+      if { $slot_used($gs) == 1 } {
+        namespace eval ::Game HitHandler $gs $data
+      }
+    }
+  }
+
+  if { $op == "tx" } {    
+    set slot [ gs_to_rs [ ir_to_gs $data ] ]
+    incr pp::hitssent($slot)
+  }     
+  return -code ok
+}
+      
+proc op_targetcode { slot op data } {
+  variable TARGET
+  variable RTOWER
+  variable GTOWER
+  variable RBASE
+  variable GBASE
+  variable RBASE2
+  variable GBASE2
+  variable slot_used
+  
+  if { $op == "rx" } {
+    set gs [ rs_to_gs $slot ]
+
+    if { $gs == -1 } {
+      return -code ok
+    }
+
+    set pp::missinrow($slot) 0
+
+    if { $pp::curobject($slot) == $data } {
+      set pp::invalidinrow($slot) 0
+      incr pp::valid($slot)
+      incr pp::basecount($slot)
+      return -code ok
+    }
+
+    set valid 0
+
+    if { $data == $TARGET } {
+      set pp::curobject($slot) $data
+      set pp::invalidinrow($slot) 0
+      incr pp::valid($slot)
+      incr pp::basecount($slot)
+
+      gdebuglog "TargetHandler: $gs $data"
+      if { $slot_used($gs) == 1 } {
+        namespace eval ::Game TargetHandler $gs $data
+      }
+      return -code ok
+    }
+
+    if { $gs < 0 } {
+      return -code ok
+    } elseif { $gs < 20 } {
+      if { $data == $GTOWER } {
+        set pp::curobject($slot) $data
+        set pp::invalidinrow($slot) 0
+        incr pp::valid($slot)
+        incr pp::basecount($slot)
+        gdebuglog "TargetHandler: $gs $data"
+        if { $slot_used($gs) == 1 } {
+          namespace eval ::Game TargetHandler $gs $data
+        }
+      } 
+    
+      if { $data == $GBASE } {
+        if { $pp::chosenbase($slot) == $GBASE2 } {
+          incr pp::invalidinrow($slot)
+          incr pp::invalid($slot)
+          return -code ok
+        }
+        set pp::curobject($slot) $data
+        set pp::invalidinrow($slot) 0
+        set pp::chosenbase($slot) $GBASE
+        incr pp::valid($slot)
+        incr pp::basecount($slot)
+        gdebuglog "TargetHandler: $gs $data"
+        if { $slot_used($gs) == 1 } {
+          namespace eval ::Game TargetHandler $gs $data
+        }
+      }
+
+      if { $data == $GBASE2 } {
+        if { $pp::chosenbase($slot) == $GBASE } {
+          incr pp::invalidinrow($slot)
+          incr pp::invalid($slot)
+          return -code ok
+        }
+        set pp::curobject($slot) $data
+        set pp::invalidinrow($slot) 0
+        set pp::chosenbase($slot) $GBASE2
+        incr pp::valid($slot)
+        incr pp::basecount($slot)    
+        gdebuglog "TargetHandler: $gs $data"
+        if { $slot_used($gs) == 1 } {
+          namespace eval ::Game TargetHandler $gs $data
+        }
+      }   
+    } elseif { $gs < 40 } {   
+      if { $data == $RTOWER } {
+        set pp::curobject($slot) $data
+        set pp::invalidinrow($slot) 0
+        incr pp::valid($slot)
+        incr pp::basecount($slot)              
+        gdebuglog "TargetHandler: $gs $data"
+        if { $slot_used($gs) == 1 } {
+          namespace eval ::Game TargetHandler $gs $data
+        }
+      }
+    
+      if { $data == $RBASE } {
+        if { $pp::chosenbase($slot) == $RBASE2 } {
+          incr pp::invalidinrow($slot)
+          incr pp::invalid($slot)
+          return -code ok
+        }
+        set pp::curobject($slot) $data
+        set pp::invalidinrow($slot) 0
+        set pp::chosenbase($slot) $RBASE
+        incr pp::valid($slot)
+        incr pp::basecount($slot)       
+        gdebuglog "TargetHandler: $gs $data"
+        if { $slot_used($gs) == 1 } {
+          namespace eval ::Game TargetHandler $gs $data
+        }
+      }
+
+      if { $data == $RBASE2 } {
+        if { $pp::chosenbase($slot) == $RBASE } {
+          incr pp::invalidinrow($slot)
+          incr pp::invalid($slot)
+          return -code ok
+        }
+        set pp::curobject($slot) $data
+        set pp::invalidinrow($slot) 0
+        set pp::chosenbase($slot) $RBASE2
+        incr pp::valid($slot)
+        incr pp::basecount($slot)       
+        gdebuglog "TargetHandler: $gs $data"
+        if { $slot_used($gs) == 1 } {
+          namespace eval ::Game TargetHandler $gs $data
+        }
+      }   
+    }
+  }
+  return -code ok
+}
+
+proc op_syncmiss { slot op data } { 
+  if { $op == "rx" } {    
+    set pp::missinrow($slot) 0
+    set pp::invalidinrow($slot) 0
+    incr pp::valid($slot)
+    incr pp::syncmissed($slot)
+    namespace eval ::Game NullHandler [ rs_to_gs $slot ]
+  }
+}
+
+proc op_psyncrcvd { slot op data } {  
+  variable PSYNC
+  variable currentsyncbin
+
+  if { $op == "rx" } {
+    if { $currentsyncbin != $PSYNC } {
+      set pp::missinrow($slot) 0
+      set pp::invalidinrow($slot) 0
+      incr pp::valid($slot)
+      incr pp::wsyncrcvd($slot)
+      incr pp::psyncrcvd($slot) 
+    } else {
+      set pp::missinrow($slot) 0
+      set pp::invalidinrow($slot) 0
+      incr pp::valid($slot)
+      incr pp::psyncrcvd($slot)
+    }
+    namespace eval ::Game NullHandler [ rs_to_gs $slot ]
+  }
+}
+
+proc op_esyncrcvd { slot op data } {
+
+  variable ESYNC
+  variable currentsyncbin
+
+  if { $op == "rx" } {
+    set gs [ rs_to_gs $slot ]
+    if { $currentsyncbin != $ESYNC } {
+      set pp::missinrow($slot) 0
+      set pp::invalidinrow($slot) 0
+      incr pp::valid($slot)
+      incr pp::wsyncrcvd($slot)
+      incr pp::esyncrcvd($slot)
+    } else {
+      set pp::missinrow($slot) 0
+      set pp::invalidinrow($slot) 0
+      incr pp::valid($slot)
+      incr pp::esyncrcvd($slot)
+    }
+    if { $gs != -1 } {
+      namespace eval ::Game NullHandler $gs
+    }
+  }
+}
+
+proc op_syncerror { slot op data } { 
+  if { $op == "rx" }  {
+    set gs [ rs_to_gs $slot ]
+    set pp::missinrow($slot) 0
+    set pp::invalidinrow($slot) 0
+    incr pp::valid($slot)
+    incr pp::serror($slot)
+    if { $gs != -1 } {
+      namespace eval ::Game NullHandler $gs
+    }
+  }
+}
+
+proc op_ealarm { slot op data } { 
+  if { $op == "rx" }  {
+    set gs [ rs_to_gs $slot ]
+
+    set pp::missinrow($slot) 0
+    set pp::invalidinrow($slot) 0
+    incr pp::valid($slot)
+    incr pp::ealarm($slot)
+
+    if { $gs != -1 } { 
+      namespace eval ::Game NullHandler $gs
+    }
+  }
+}
+
+proc op_ack { slot op data } {
+  if { $op == "rx" } {
+    set gs [ rs_to_gs $slot ]
+    set pp::missinrow($slot) 0
+    set pp::invalidinrow($slot) 0
+    incr pp::valid($slot)
+    set diff [ expr { $data - 0xa0 } ]
+    debuglog "ackn $slot $data $diff"
+    set pp::hitsackn($slot) [ expr { $pp::hitsackn($slot) + $diff } ]
+    if { $gs != -1 } {
+      namespace eval ::Game NullHandler $gs
+    }
+  }
+}
+
+proc op_error { slot op data } {
+  if { $op == "rx" } {
+      set gs [ rs_to_gs $slot ]
+      set pp::missinrow($slot) 0
+      incr pp::invalidinrow($slot)
+      incr pp::invalid($slot)
+      
+    if { $gs != -1 } {
+      namespace eval ::Game NullHandler $gs
+    }
+  }
+}
+
+}
+#namespace
+
+  if { $debug == 1 } {
+    ::debuglog "photon: crenable set to $crenable"
+  }
+}
+
+proc endgame { } {
+  setsync $::Photon::ESYNC
+
+  after 3000 { uplevel 0 { proc ::Photon::cr_handler { } { cr_read } } }
+  after 15000 { ::Photon::setsync $::Photon::PSYNC }  
+}
+
+proc init_pp { } {
+  # clear all counters (used for pod performance kind of stuff
+  # pod perfomance uses raw slot #'s for indexing...
 
   namespace eval pp {
     set pollcount 0
@@ -554,7 +1554,101 @@ proc begingame { red_slots grn_slots } {
       destroy .podperf
       podperf_window 1
   }
+}
 
+proc begingame { red_slots grn_slots } {
+  variable slot_op
+  variable slot_used
+  variable REDIR
+  variable GRNIR
+  variable RBASE
+  variable RBASE2
+  variable GBASE
+  variable GBASE2
+  variable RTOWER
+  variable GTOWER
+  variable TARGET
+  variable SMISS
+  variable PRCVD
+  variable ERCVD
+  variable SERROR
+  variable EALARM
+  variable GSYNC
+  variable bigdebug
+  variable lastpollsn
+  
+  namespace eval ::Photon::cr {
+    set cr_list { }
+    set cr_lock 0     
+  }
+  
+  set lastpollsn -1
+  
+  # Set up the strategies for each message received
+  for { set i 0 } { $i <= 0xff } { incr i } {
+    # pod ID codes
+    if { ( ($i >= 0x5f) && ($i <= 0x7f) ) ||
+         ( ($i >= 0x01) && ($i <= 0x23) ) ||
+         ( $i == 0x5d ) } {
+      set slot_op($i) op_idcode
+    # actual pod codes
+    } elseif { ( ( $i >= $REDIR ) && ( $i < ( $REDIR + 20 )) ) ||
+               ( ($i >= ( $GRNIR + 1 )) && ( $i < ( $GRNIR + 20 )) ) ||
+               ( $i == 0x94 ) } {   
+      set slot_op($i) op_podcode
+    # targets...
+    } elseif { ( $i == $RBASE ) ||
+               ( $i == $RBASE2 ) ||
+               ( $i == $GBASE ) ||
+               ( $i == $GBASE2 ) ||
+               ( $i == $RTOWER ) ||
+               ( $i == $GTOWER ) ||
+               ( $i == $TARGET ) } {
+      set slot_op($i) op_targetcode
+    # diagnostics
+    } elseif { $i == $SMISS } {
+      set slot_op($i) op_syncmiss
+    } elseif { $i == $PRCVD } {
+      set slot_op($i) op_psyncrcvd
+    } elseif { $i == $ERCVD } {
+      set slot_op($i) op_esyncrcvd
+    } elseif { $i == $SERROR } {
+      set slot_op($i) op_syncerror
+    } elseif { $i == $EALARM } {
+      set slot_op($i) op_ealarm
+    } elseif { ( $i > 0xa0 ) && ( $i <= 0xaf ) } {
+      set slot_op($i) op_ack
+    } else {
+      set slot_op($i) op_error
+    }
+  }
+  
+  uplevel 0 { 
+    proc cr_handler { } { 
+      set e [ catch ::Photon::game_cr_handler x ] 
+      if { $e != 0 } {
+        ::debuglog "cr_handler: $x"
+      } 
+      return -code ok
+    }
+  }
+
+  for { set i 0 } { $i < 20 } { incr i } {
+    if { [ lsearch -exact $red_slots $i ] != -1 } {
+      set slot_used($i) 1   
+    } else {
+      set slot_used($i) 0
+    }
+    if { [ lsearch -exact $grn_slots $i ] != -1 } {
+      set slot_used([ expr { $i + 20 } ]) 1   
+    } else {
+      set slot_used([ expr { $i + 20 } ]) 0
+    }
+  }
+
+  # initialize pod performance data
+  init_pp
+  
   # Really get the party started.
   setsync $GSYNC
 }

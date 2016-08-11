@@ -26,7 +26,6 @@ proc debuglog { level msg } {
   }
 
 }
-         
 
 proc HitHandler { gs data } {   
   set tgtgs [ ::Photon::ir_to_gs $data ]
