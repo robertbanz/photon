@@ -1,0 +1,16 @@
+#!/bin/sh
+psql photon << EOF
+\set begintime '$1'
+\set endtime '$2'
+  select pod, color, \
+  trunc(sum(syncmissed)::numeric / sum(polls), 4) as SyncMissed, \
+  trunc(sum(wsyncrcvd)::numeric / sum(polls), 4) as RXWrongSync, \
+  trunc(sum(serror)::numeric / sum(polls), 4) as RXSyncError, \
+  trunc(sum(missed)::numeric / sum(polls), 4) as RXSyncMissed, \
+  trunc(sum(invalid)::numeric / sum(polls), 4) as TxInvalid, \
+  trunc(sum(valid)::numeric / sum(polls), 4) as TxValid, \
+  trunc(sum(hitsackn)::numeric / sum(hitsent)::numeric, 4) as HitsAck, \
+  trunc(sum(mir)::numeric / sum(polls), 4) as MissInRow, \
+  count(pod) as Games from g_pods where id in \
+  ( select id from g_data where rantime >= :'begintime' and rantime <= :'endtime' ) group by pod, color order by color, pod;
+EOF
