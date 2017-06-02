@@ -16,10 +16,9 @@ source /usr/local/bin/tkcon
 source $Conf::gamepath/helpers
 source $Conf::gamepath/photon_vals
 source $Conf::gamepath/photon_interfaces
+source $Conf::gamepath/photon_phasers
 source $Conf::gamepath/lightmaster
 source $Conf::gamepath/mixer.tcl
-
-namespace import Photon::cr_handler
 
 # load the X app defaults file
 if [ file exists $Conf::appdefaults ] {
@@ -37,6 +36,7 @@ wm resizable . 0 0
 wm positionfrom . program
 wm geometry . 640x480+20+20
 
+# initialize menu.
 menu .menubar
 . config -menu .menubar
 frame .statusframe 
@@ -91,10 +91,16 @@ menu .menubar.main -tearoff 0
 .menubar.main add command -label "Console" -command { openConsole }
 .menubar.main add command -label "Audio Control" -command { audioControl }
 
+update idletasks
+
 # Initialize the "Photon" subsystem (pod/radio communications)
 Photon::init
 
-source $Conf::gamepath/photon_phasers
+# Initialize the phaserstation library
+Photon_ps::init
+
+# Init Lightmaster
+Lightmaster::init
 
 # Create sync status thing
 frame .status.sync
@@ -115,7 +121,6 @@ set GT_direction 0
 set GT_lastseconds [clock seconds]
 
 ::Photon::setsync $::Photon::PSYNC
-::Photon::setcrenable 1
 set STATE IDLE
 
 after idle {
@@ -410,11 +415,11 @@ proc EtSocketHandler_START { sock com } {
 }
 
 proc EtSocketHandler_SENDIR { sock com } {
-  cr_puts $com
+  cr::putstring $com
 }
 
 proc EtSocketHandler_STOPIR { sock com } {
-  cr_puts $com
+  cr::putstring $com
 }
 
 # system states:
@@ -587,7 +592,8 @@ proc Pregame_To_Game { } {
   set GT_description "Time Remaining:"
 
   after [ expr { $Ginfo::length * 1000} ] { Game_To_Postgame }
-  set ::Photon_ps::phaseron 1
+  ::Photon_ps::game_on
+
   set STATE GAME
 }
 
@@ -615,7 +621,8 @@ proc Game_To_Postgame { } {
   after [ expr { 10 * 1000 } ] {
     Mixer::fade rec $Conf::max_background_audio 10 }
   after [ expr { 18 * 1000 } ] { Postgame_To_Idle }
-  set ::Photon_ps::phaseron 0
+
+  ::Photon_ps::game_off
 
   set STATE POSTGAME
 }

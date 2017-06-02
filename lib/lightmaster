@@ -1,5 +1,20 @@
 namespace eval ::Lightmaster {
-  
+
+proc init {} {
+  set m [ menu .menubar.lightmaster -tearoff 0 ]
+  .menubar add cascade -label Lightmaster -menu $m
+  $m add command -label "Send Reset State" \
+      -command [ namespace code "reset_state" ]
+  $m add command -label "Run Idle Scene" \
+      -command [ namespace code "start_idle" ]
+  set trackmenu [ menu ${m}.track -tearoff 0 ]
+  $m add cascade -label "Run Game Scene" -menu $trackmenu
+  for { set t 1 } { $t <= 8 } { incr t } {
+    $trackmenu add command -label "Track $t" \
+      -command [ namespace code "start_game $t" ]
+  }
+}
+
 proc reset_state {} {
   set reset_channel 10
   toggle_channel $reset_channel

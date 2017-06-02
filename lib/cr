@@ -1,30 +1,38 @@
 
-namespace eval :: {
+namespace eval ::Photon::cr {
 
-set cr_pending { }
-set cr_sock ""
+variable cr_pending { }
+variable cr_sock ""
+variable cr_handler_callback ""
 
-proc cr_newdata { sock } {
-  variable cr_sock
+proc set_cr_handler { handler } {
+  variable cr_handler_callback
+  set cr_handler_callback $handler
+}
+
+# Called when new data has arrived on the radio socket. Catches errors
+# and will try to reconnect if there's a problem.
+proc newdata { sock } {
   if { [ eof $sock ] } {
-    variable cr_sock
-    close $cr_sock
-    cr_reconnect
+    ::warninglog "cr::newdata eof while reading from $sock"
+    close $sock
+    reconnect
     return -code ok
   }
-  if { [ catch [ list cr_readdata $sock ] stuff ]} {
-    ::warninglog "cr_readdata failed $stuff"
+  if {[catch {readdata $sock} error]} {
+    ::warninglog "readdata failed $error"
   }
   return -code ok
 }
 
-proc cr_setsync { sync } {
+# Sends a SETSYNC command to the radio.
+proc setsync { sync } {
   variable cr_sock
-  cr_sputs $cr_sock "SETSYNC $sync"
-  cr_sflush $cr_sock
+  putstring "SETSYNC $sync"
 }
 
-proc cr_read { } {
+# Returns any waiting data from cr_pending.
+proc read { } {
   variable cr_sock
   variable cr_pending
   set cr_returned $cr_pending
@@ -32,35 +40,39 @@ proc cr_read { } {
   return $cr_returned
 }
 
-proc cr_write { byte } {
+# Sends a WRITE command to the radio.
+proc write { byte } {
   variable cr_sock
-  cr_sputs $cr_sock "WRITE $byte"
-  cr_sflush $cr_sock
+  putstring "WRITE $byte"
 }
 
-proc cr_puts { data } {
+# Sends the the string "data" to the radio device.
+proc putstring { data } {
   variable cr_sock
-  cr_sputs $cr_sock $data
-  cr_sflush $cr_sock
+  sputs $cr_sock $data
+  sflush $cr_sock
 }
 
-proc cr_enable { on } {
+# "enables" or "disables" the radio.
+proc enable { on } {
   variable cr_sock
 
   set mode "OFF"
   if { "$on" == "1" } {
     set mode "ON"
   }
-  cr_sputs $cr_sock "ENABLE ON"
-  cr_sputs $cr_sock "READ ON"
-  cr_sflush $cr_sock
+  sputs $cr_sock "ENABLE $mode"
+  sputs $cr_sock "READ $mode"
+  sflush $cr_sock
 }
 
-proc cr_readdata { sock } {
+# Reads any pending messages from the radio.
+proc readdata { sock } {
   variable cr_sock
   variable cr_pending
+  variable cr_handler_callback
   
-  if { [ eof $sock ] } {
+  if { [ eof $cr_sock ] } {
     return -code ok
   }
 
@@ -79,38 +91,41 @@ proc cr_readdata { sock } {
     }
   }
   
-  if { [ catch [ list ::Photon::cr_handler ] stuff ] } {
-    ::warninglog "cr_handler failed $stuff"
+  if { [ catch {$cr_handler_callback} dummy error ] } {
+    ::warninglog "cr_handler failed $error"
   }
 
   return -code ok
 }
 
-proc cr_sputs { sock message } {
-  if { [ catch [ list puts $sock $message ] stuff ] } {
-    ::warninglog "write error to socket $sock ($stuff)"
+proc sputs { sock message } {
+  if { [ catch {puts $sock $message} error ] } {
+    ::warninglog "write error to socket $sock ($error)"
   }
 }
 
-proc cr_sflush { sock } {  
-  if { [ catch [ flush $sock ] stuff ] } {
-    ::warninglog "flush error to socket $sock ($stuff)"
+proc sflush { sock } {  
+  if { [ catch {flush $sock} error ] } {
+    ::warninglog "flush error to socket $sock ($error)"
   }
 }   
 
-proc cr_init { } {
+proc init { read_callback } {
   variable cr_sock
-  cr_reconnect
+  variable cr_handler_callback
+  set cr_handler_callback $read_callback
+  reconnect
 }
 
-proc cr_reconnect { } {
+proc reconnect { } {
   variable cr_sock
 
-  if {[info exists ::Conf::cr_tty ]} {
+  if {[info exists ::Conf::cr_tty]} {
     ::warninglog "Opening radio at $::Conf::cr_tty"
     set rc [ catch "open $::Conf::cr_tty RDWR" s ]
   } else {
-    ::warninglog "Opening radio at $::Conf::cr_server_name $::Conf::cr_listenport"
+    ::warninglog \
+        "Opening radio at $::Conf::cr_server_name $::Conf::cr_listenport"
     set rc [ catch "socket $::Conf::cr_server_name $::Conf::cr_listenport" s ]
   }
 
@@ -127,16 +142,12 @@ proc cr_reconnect { } {
   fconfigure $s -translation binary
   fconfigure $s -eofchar {}
 
-  set rc [ catch {
-    puts $s "ENABLE ON"
-    puts $s "READ ON"
-    flush $s
-  } stuff ]
+  
   if { $rc != 0 } {
     ::warninglog "error initializing cr $stuff"
   }
 
-  fileevent $s readable [ list ::cr_newdata $s ]
+  fileevent $s readable [namespace code "newdata $s"]
 
   set cr_sock $s
 }

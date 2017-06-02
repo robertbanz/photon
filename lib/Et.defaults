@@ -7,6 +7,7 @@
 *selectBackground: 		#c3c3c3
 *troughColor:			#c3c3c3
 *disabledforeground:		#a3a3a3
+*insertBackground: #ffffff
 *Font: -*-bitstream vera sans-bold-r-*-*-17-*-*-*-*-*-*-*
 
 *info.foreground:			#ff0000
@@ -75,7 +76,6 @@
 *params*Font:				-*-bitstream vera sans-medium-r-*-*-18-*-*-*-*-*-*-*
 *params*highlightForeground:		#111111
 *params*highlightBackground:		#222222
-*params*insertBackground:				#ffffff
 *params*relief:				flat
 
 *params*background:			#111133

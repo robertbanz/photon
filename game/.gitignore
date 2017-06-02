@@ -4,6 +4,7 @@
 .mplayer/**
 .psql_history
 .Xauthority
+.Xauthority-n
 .bash_history
 .lesshst
 .ssh/**

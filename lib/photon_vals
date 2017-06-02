@@ -41,12 +41,16 @@ namespace eval ::Photon {
   set REDIR 0x42
   set GRNIR 0x80
 
+  set GRN_SLOT_0_IR 0x94
+
   set RED_RFSTART 5
   set GRN_RFSTART 31
 
   set RF_TX { 25 26 27 28 29 55 56 57 58 59 }
 
   set RF_SLOT_MAX 66
+
+  set PLAYERS_PER_TEAM 20
   
   set debug 0
   set gdebug 0

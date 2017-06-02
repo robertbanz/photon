@@ -1,0 +1,17 @@
+#!/usr/local/bin/wish8.6
+source /usr/photon/bin/main
+::Photon::begingame { 0 } { 0 }
+
+# Test all valid inputs.
+for { set i 0 } { $i < 0xff } { incr i } { 
+  namespace eval ::Photon $::Photon::slot_op($i) 5 rx $i
+  namespace eval ::Photon $::Photon::slot_op($i) 31 rx $i
+  after 250 set end 1
+  vwait end
+}
+
+# Test ID detection
+set code [ expr 0x7a ]
+for { set i 0 } { $i < 10 } { incr i} {
+  namespace eval ::Photon $::Photon::slot_op($code) 5 rx $code
+}

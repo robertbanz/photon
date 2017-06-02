@@ -1,34 +1,91 @@
-
-# $Log: photon_phasers,v $
-# Revision 1.1  1999/02/06 20:24:36  game
-# Initial revision
-#
-#
-
 namespace eval Photon_ps {
-  if { [ info exists ::Conf::phasertty ] } {
-    set fd [ open $::Conf::phasertty "w" ]
-    set phaseron 0
-    set outstring [ format "%c" [ expr $::Photon::GSYNC ] ]
-    fconfigure $fd -blocking 0 -buffering none -translation binary
-    menu .menubar.photonps -tearoff 0
-    ::.menubar add cascade -label PhotonPS -menu .menubar.photonps
-    .menubar.photonps add check -label ON -variable ::Photon_ps::phaseron -offvalue 0 -onvalue 1
-  } else {
-    set phaseron -1
-  }
-  after 1000 ::Photon_ps::phasersync
-  proc phasersync { } {
-  if { [ info exists ::Conf::phasertty ] } {
-    variable phaseron   
-    variable fd 
-    variable outstring
-    if { $phaseron == 1 } {
-      puts -nonewline $fd $outstring
+  
+variable PHASER_GAME_CODE $::Photon::GSYNC
+variable PHASER_CLINK_CODE 0xC5
+variable PHASER_GAME_CODE_COUNT 3
+variable phaser_installed 0
+variable phaser_enabled 0
+variable phaser_send_clink 0
+variable free_clinks 0
+variable fd 0
+
+proc init {} {
+  variable phaser_installed
+  variable fd
+  variable free_clinks
+  
+  if {[info exists ::Conf::phasertty]} {
+    if {[catch {open $::Conf::phasertty "w"} fd]} {
+      ::warninglog "Could not open phaser station device!"
+      set phaser_installed 0
+      return --code ok
     }
-    after 1000 ::Photon_ps::phasersync
+    ::warninglog "Phaser stations installed on $::Conf::phasertty"
+    set phaser_installed 1
+    fconfigure $fd -buffering none
+    fconfigure $fd -blocking 0
+    fconfigure $fd -encoding binary
+    fconfigure $fd -eofchar {}
+    fconfigure $fd -translation binary
+    #fconfigure $fd -mode 1200,n,8,1
+    
+    if {[info exists ::Conf::phaser_free_clinks]} {
+      set free_links $::Conf::phaser_free_clinks
     }
+    
+    after 1000 [namespace code {phasersync}]
+  
+    set m [menu .menubar.phaser -tearoff 0]
+    .menubar add cascade -label "Phaser Stations" -menu ${m}
+    ${m} add command -label "Send Clink Code" \
+        -command [ namespace code { send_clink } ]
+    ${m} add command -label "Send Game Start" \
+        -command [ namespace code { game_on } ]
+    ${m} add command -label "Stop Sending Game Start" \
+        -command [ namespace code { game_off } ]
+    ${m} add check -label "Free Clink Mode" -variable ::Photon_ps::free_clinks
   }
 }
 
+# Called every second.
+proc phasersync { } {
+  variable phaser_send_clink
+  variable PHASER_CLINK_CODE
+  variable phaser_enabled
+  variable PHASER_GAME_CODE
+  variable fd
+  
+  if { $phaser_send_clink > 0 } {
+    ::debuglog "phaser: send clink"
+    puts -nonewline $fd [ scan $PHASER_CLINK_CODE "%c" ]
+    incr phaser_send_clink -1
+  } elseif { $phaser_enabled > 0 } {
+    ::debuglog "phaser:: send game code"
+    puts -nonewline $fd [ scan $PHASER_GAME_CODE "%c" ]
+    incr phaser_enabled -1
+  }
+  after 1000 [ namespace code { phasersync } ]
+}
 
+proc send_clink { } {
+  variable phaser_send_clink
+  set phaser_send_clink 1
+}
+
+proc game_on { } {
+  variable phaser_enabled
+  variable PHASER_GAME_CODE_COUNT
+  variable phaser_send_clink
+  variable free_clinks
+  if {$free_clinks} {
+    set phaser_send_clink 1
+  }
+  set phaser_enabled $PHASER_GAME_CODE_COUNT
+}
+
+proc game_off { } {
+  variable phaser_enabled
+  set phaser_enabled 0
+}
+
+}

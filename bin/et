@@ -1,43 +1,4 @@
 #!/usr/bin/env wish8.6
-    
-#
-# $Log: et,v $
-# Revision 1.4  1999/02/13 01:35:00  banz
-# *** empty log message ***
-#
-# Revision 1.3  1999/02/06 14:21:55  banz
-# little bug fixes
-#
-# Revision 1.2  1999/02/04 10:00:20  root
-# move start button to some place less annoying
-# remove IR Test Menu
-# fix autoload for green tea
-#
-# Revision 1.1  1999/02/04 09:54:16  root
-# Initial revision
-#
-# Revision 1.6  1998/12/13 14:53:27  banz
-# moved bitmap locations
-#
-# Revision 1.5  1998/12/12 21:28:37  banz
-# much betterer user interface in edit mode
-#
-# Revision 1.4  1998/12/04 05:32:07  banz
-# updates/operability/view screen
-#
-# Revision 1.3  1998/11/29 22:21:11  banz
-# Screen layout
-# Barcode Scanner support
-# Game Parameter editing screen
-# CGDISPLAY window
-#
-# Revision 1.2  1998/11/08 22:13:16  banz
-# fixed RCS identifier
-#
-# Revision 1.1  1998/11/08 22:04:42  banz
-# Initial revision
-#
-#
 
 set rcsid { $Id: et,v 1.4 1999/02/13 01:35:00 banz Exp banz $ }
 
@@ -72,7 +33,6 @@ namespace eval ::Ginfo {
 }
 
 # set name & id traces so they're kept to the appropriate values
-
 for { set x 0 } { $x < 40 } { incr x } { 
     set codename_update($x) 0
 }
@@ -87,6 +47,7 @@ proc warninglog { j } {
   set Message "warning: $j"
 }
 
+# Load a game mode from the database.
 proc setGameMode { mode } {
   set conn [ db_connect ]
     
@@ -114,28 +75,25 @@ proc setGameMode { mode } {
   pg_disconnect $conn
 }
 
+# Reset game parameters to defaults.
 proc InitGame { } {
-
   namespace eval ::Ginfo { 
-  
     for { set i 0 } { $i < 40 } { incr i } {
       set name($i) ""
       set id($i) ""
       set used($i) 0
     }
-
     set redteamname "ALPHA  RED"
     set greenteamname "ALPHA  GRN"
     set trackname "RANDOM"
   }
-  
   setGameMode $::Conf::default_game_mode
 }
 
 InitGame
 
+# Install watches on codename & passport numbers to keep them legal.
 namespace eval ::Ginfo {
-
   proc FixName { varName index op } {
     upvar $varName var
     regsub -all {[\\\'\"]} "$var($index)" "" var($index)
@@ -143,7 +101,6 @@ namespace eval ::Ginfo {
       set var($index) [ string range "$var($index)" 0 14 ]
     }
   }
-
   proc FixId { varName index op } {
     upvar $varName var
     regsub -all {[^0-9]} "$var($index)" "" var($index)  
@@ -151,8 +108,7 @@ namespace eval ::Ginfo {
     if { [ string length "$var($index)" ] > 10 } {
       set var($index) [ string range "$var($index)" 0 9 ]
     }
-  }
-    
+  } 
   trace variable name w ::Ginfo::FixName
   trace variable id w ::Ginfo::FixId
 }
@@ -166,8 +122,6 @@ set Message "initializing..."
 frame .contents -background black
 label .message -textvariable Message
 
-set Message "Select a function from the menu!"
-
 pack .contents 
 pack .message -side bottom -fill both
 
@@ -177,7 +131,6 @@ proc ButtonMenuExec { button } {
     $button flash
     $button invoke
 }
-
 
 proc ButtonMenu { functionlist functionname } {
     destroy .buttonmenu 
@@ -236,7 +189,14 @@ set std_functionname {
     "goto_ClearGame"
 }
 
+if { $Conf::enable_et_flicksync == "false" } {
+  lset std_functionlist 10 ""
+  lset std_functionname 10 ""
+}
+
 ButtonMenu $std_functionlist $std_functionname
+
+set Message "Select a function from the menu"
 
 bind all <Control-g> { Barcode_Scan %W }
 bind all <Control-G> { Barcode_Scan %W }
@@ -287,43 +247,36 @@ proc Barcode_Get { widget scancode } {
     focus -force $Barcode_OldFocus
 
     if { [ info exists Barcode_DoitFunction ] } {
-
       if { $Barcode_InFunctionLock == 0 } {
-    
         set Barcode_InFunctionLock 1
         $Barcode_DoitFunction $widget $Barcode_Get_Code
         set Barcode_Get_code ""
         set Barcode_InFunctionLock 0
-
       } 
     }
   } else {
     return
-  }
-    
+  }    
   return -code break ""
 }
 
+# Loads an existing game from the database (used for pre-booked games)
 proc LoadGame { gameid } {
   global team_red
   global team_green
 
   variable old_game
   variable old_state
-
   # clear out the previous game...
-
   InitGame
-
   set conn [ db_connect ]
-
   if { [ info exists old_game ] } {
     # if the previous game we were editing is in the
     # ETING state, change it back to it's old state
     my_pg_exec $conn "update g_data set state = '$old_state' where \
         id = $old_game and storeid = $Conf::storeid and state = 'ETING'"
   }
-
+  
   set Ginfo::gameid $gameid
 
   set res [ my_pg_exec $conn "select * from g_data where id = $gameid \
@@ -359,10 +312,9 @@ proc LoadGame { gameid } {
 
   pg_select $conn "select team, slot, name, idnum from g_players \
       where id = $gameid and storeid = $Conf::storeid and used " array {
-    set adder [ expr { $array(team) * 20 } ]
-    set j [ expr { $array(slot) + $adder } ]
-    set ::Ginfo::name($j) $array(name)
-    set ::Ginfo::id($j) $array(idnum)
+    set gslot [ ::Photon::ts_to_gs $array(slot) $array(team) ]
+    set ::Ginfo::name($gslot) $array(name)
+    set ::Ginfo::id($gslot) $array(idnum)
   }    
 
   pg_disconnect $conn
@@ -392,11 +344,10 @@ proc FlickSync { } {
 }
 
    
-proc BeginGame { } {
-  
+proc BeginGame { } {  
   variable begingamelock
   variable codename_update
-
+  
   if { [ info exists begingamelock ] && ( $begingamelock == 1 ) } {
     return -code ok
   }
@@ -450,14 +401,14 @@ proc BeginGame { } {
       storeid = $Conf::storeid"
  
   for { set x 0 } { $x < 40 } { incr x } {
-    if { $x < 20 } {
+    if { $x < $::Photon::PLAYERS_PER_TEAM } {
       set color red
       set colornum 0
       set slot $x
     } else {
       set color green
       set colornum 1
-      set slot [ expr $x - 20 ]
+      set slot [ expr $x - $::Photon::PLAYERS_PER_TEAM ]
     }
   
     if { $Ginfo::used($x) == 1 } {
@@ -827,7 +778,7 @@ proc Preenter_Goto { id } {
   focus $p.$x$i
   set preenter_current $i
 }
-      
+
 proc EditGame { toplevel } {
   set bigtoplevel $toplevel
   global game_descr
@@ -847,27 +798,30 @@ proc EditGame { toplevel } {
   frame $toplevel.green    
 
   grid $toplevel.title -row 0 -column 0 -columnspan 2
-  
+
   foreach color { red green } {
 
     for { set i 0 } { $i < $::Conf::max_etable_players } { incr i } {      
       frame $toplevel.$color.$i     
-      if { $::Ginfo::used($i) == 1 } {
+    
+      set j [ ::Photon::ts_to_gs $i $color ]
+
+      if { $::Ginfo::used($j) == 1 } {
         set state normal
       } else {
         set state disabled
       }
     
       if { "$color" == "green" } {
-        set j [ expr { $i + 20 } ]
         set ci 1
         set bitmap "@$Conf::gamepath/images/ldblarrow.xbm"
-      } else {
-        set j $i
+      } elseif { "$color" == "red" } {
         set ci 0
         set bitmap "@$Conf::gamepath/images/rdblarrow.xbm"
+      } else {
+        return -code error "unknown error"
       }
-    
+
       entry $toplevel.$color.$i.id -textvariable ::Ginfo::id($j) \
           -state $state -width 10
       entry $toplevel.$color.$i.name -textvariable ::Ginfo::name($j) \
@@ -875,7 +829,6 @@ proc EditGame { toplevel } {
       checkbutton $toplevel.$color.$i.enable -variable ::Ginfo::used($j) \
           -command "EditEnable $toplevel.$color.$i.id \
               $toplevel.$color.$i.name $ci $j" -text $i -state disabled
-    
 
       label $toplevel.$color.$i.picker -bitmap $bitmap
       
@@ -907,8 +860,6 @@ proc EditGame { toplevel } {
       bind Entry <Delete> { }
       bind Entry <KP_Delete> { }
       bind Entry <F9> { }
-      #bind Entry <Control-G> { }
-      #bind Entry <Control-g> { }
 
       bind $toplevel.$color.$i.picker <FocusIn> { Picker_Message }
       bind $toplevel.$color.$i.id <FocusIn> { Id_Message }
@@ -927,7 +878,9 @@ proc EditGame { toplevel } {
 
   bind $toplevel.red.teamname <Down> { Edit_DownArrow %W }
   bind $toplevel.green.teamname <Down> { Edit_DownArrow %W }
-
+  bind $toplevel.red.teamname <Tab> { Edit_Tab %W }
+  bind $toplevel.green.teamname <Tab> { Edit_Tab %W }
+  
   grid $toplevel.green.teamname -row 0 -column 0 -columnspan 3
   grid $toplevel.red.teamname -row 0 -column 0 -columnspan 3
 
@@ -970,10 +923,8 @@ proc Edit_Insert { widget } {
 }
 
 proc Edit_Home { widget } {
-
   # if the slot has either a passport or code name, put it in the
   # then call ir_enterpod for it...
-
   set l [ split "$widget" "." ]
 
   variable EditToplevel
@@ -1064,7 +1015,7 @@ proc Edit_BarcodeRead { widget code } {
   for { set x 0 } { $x < 40 } { incr x } {
       
       if { "$Ginfo::id($x)" == "$code" } { 
-        if { $x >= 20 } {
+        if { $x >= $::Photon::PLAYERS_PER_TEAM } {
           set color green
           set colorcode 1
           set i [ expr $x - 20 ]
@@ -1139,7 +1090,6 @@ proc Edit_BarcodeRead { widget code } {
   return -code break
 }
 
-    
 
 proc Id_Message { } {   
   global Message
@@ -1191,157 +1141,101 @@ proc AutoLoad_Name { slot } {
   }
 }
 
-proc Edit_UpArrow { widget } { 
-  global edit_wishwhat
-
-  regsub {^(.*)\.(green|red)(.*)$} $widget {\1} toplevel
-  regsub {^.*(green|red)(.*)$} $widget {\1\2} j
-  set l [ split $j . ]
-  set color [ lindex $l 0 ]
-  set slot [ lindex $l 1 ]
-  set what [ lindex $l 2 ]
-
-  set slot [ expr $slot - 1 ]
- 
-
-  if { $slot == -1 } {
-    if { $color == "green" } {
-        set newwidget "$toplevel.green.teamname"
-    } else {
-        set newwidget "$toplevel.red.teamname"
-    }
-    grab release $widget
-    focus $newwidget
-    return -code break
+# Returns the toplevel portion of an edit widget string
+proc GetTopLevelFromEditWidget { widget } {
+  if {[regsub {^(.*)\.(green|red)(.*)$} $widget {\1} toplevel] != 1} {
+    return -code error "failed to get TopLevel from EditWidget $widget"
   }
-
-  if { $slot > ( $::Conf::max_etable_players - 1 ) } {
-    set slot [ expr $::Conf::max_etable_players - 1 ]
-  }
-  if { $slot < 0 } { set slot 0 }
-
-  if { ! [ info exists edit_wishwhat ] } { 
-    set edit_wishwhat picker
-  }
-
-  if { $what != "picker" } { 
-    set edit_wishwhat $what
-  }
-
-  if { $color == "green" } {
-    set gslot [ expr $slot + 20 ]
-    set ocolor red
-  } else {
-    set gslot $slot
-    set ocolor green
-  }
-
-  if { $::Ginfo::used($gslot) } {
-    set newwidget "$toplevel.$color.$slot.name"
-  } else {
-    set newwidget "$toplevel.$color.$slot.picker"
-  }
-  grab release $widget
-#    grab $newwidget
-  focus $newwidget
-  Edit_SetCurrent $slot $color
-  return -code break
+  return $toplevel
 }
 
+# Returns a list of { color, slot, type } from the widget name
+proc GetEditWidget { widget } {
+  if {[regsub {^.*(green|red)(.*)$} $widget {\1\2} j] != 1} {
+    return -code error "failed to extract widget specifics from $widget"
+  }
+  return [split $j .]
+}
 
-
-proc Edit_DownArrow { widget } { 
-
+proc Edit_Move { widget direction change_color } {
   global edit_wishwhat
-
-  regsub {^(.*)\.(green|red)(.*)$} $widget {\1} toplevel
-  regsub {^.*(green|red)(.*)$} $widget {\1\2} j
-  set l [ split $j . ]
-  set color [ lindex $l 0 ]
-  set slot [ lindex $l 1 ]
-  set what [ lindex $l 2 ]
-
   if { ! [ info exists edit_wishwhat ] } { 
     set edit_wishwhat picker
   }
 
+  set toplevel [GetTopLevelFromEditWidget $widget]
+  set color [lindex [GetEditWidget $widget] 0]
+  set slot [lindex [GetEditWidget $widget] 1]
+
   if { $slot == "teamname" } {
-    set slot 0
-    set what $edit_wishwhat
+    if { $direction > 0 } {
+      set slot 0
+      set what $edit_wishwhat
+    } else {
+      set slot -1
+    }
   } else {
-    incr slot
+    set slot [expr $slot + $direction]
+    set what [lindex [GetEditWidget $widget] 2]
   }
 
-  if { $slot > ( $::Conf::max_etable_players - 1 ) } {
-    set slot [ expr $::Conf::max_etable_players - 1 ]
+  if { $change_color } {
+    if { $color == "red" } {
+      set color "green"
+    } elseif { $color == "green" } {
+      set color "red"
+    } else {
+      return -code error "unknown color $color"
+    }
   }
-  if { $slot < 0 } { set slot 0 }
+
+  if { $slot < 0 } {
+    set newwidget "${toplevel}.${color}.teamname"
+    grab release $widget
+    grab $newwidget
+    focus $newwidget
+    return
+  }
+
+  if { $slot > $::Conf::max_etable_players - 1 } {
+    set slot [expr $::Conf::max_etable_players - 1]
+  }
 
   if { $what != "picker" } { 
     set edit_wishwhat $what
   }
 
-  if { $color == "green" } {
-    set gslot [ expr $slot + 20 ]
-    set ocolor red
-  } else {
-    set gslot $slot
-    set ocolor green
-  }
+  set gslot [::Photon::ts_to_gs $slot $color]
 
   if { $::Ginfo::used($gslot) } {
     set newwidget "$toplevel.$color.$slot.name"
   } else {
     set newwidget "$toplevel.$color.$slot.picker"
   }
-
   grab release $widget
-#    grab $newwidget
+  grab $newwidget
   focus $newwidget
-
   Edit_SetCurrent $slot $color
+  return
+}
 
-  return -code break
+proc Edit_UpArrow { widget } { 
+  return -code break [Edit_Move $widget -1 0]
+}
+
+proc Edit_DownArrow { widget } { 
+  return -code break [Edit_Move $widget 1 0]
 }
 
 proc Edit_Tab { widget } { 
-    
-  regsub {^(.*)\.(green|red)(.*)$} $widget {\1} toplevel
-  regsub {^.*(green|red)(.*)$} $widget {\1\2} j
-  set l [ split $j . ]
-  set color [ lindex $l 0 ]
-  set slot [ lindex $l 1 ]
-  set what [ lindex $l 2 ]
-
-  if { $color == "red" } {
-    set gslot [ expr $slot + 20 ]
-    set ocolor green
-  } else {
-    set gslot $slot
-    set ocolor red
-  }
-
-  if { ! $::Ginfo::used($gslot) } {
-    set newwidget "$toplevel.$ocolor.$slot.picker"
-  } else {
-    set newwidget "$toplevel.$ocolor.$slot.name"
-  }
-
-  grab release $widget
-  focus $newwidget
-  
-  Edit_SetCurrent $slot $ocolor
-
-  return -code break
+  return -code break [Edit_Move $widget 0 1]
 }
 
 proc Edit_LeftArrow { } { }
 proc Edit_RightArrow { } { }
 
 proc EditEnable { idwidget namewidget color number } {
-
   if { $::Ginfo::used($number) } {
-  
     set oldfocus .
   
     $idwidget configure -state normal
@@ -1359,7 +1253,6 @@ proc EditEnable { idwidget namewidget color number } {
     grab $idwidget
     focus $idwidget
   } else {
-  
     bind $idwidget <Return> { }
     bind $idwidget <Escape> { }
     bind $namewidget <Return> { }
@@ -1370,7 +1263,6 @@ proc EditEnable { idwidget namewidget color number } {
 
     $idwidget configure -state disabled
     $namewidget configure -state disabled
-  
   }
 
   if { $color == 1 } {
@@ -1384,9 +1276,7 @@ proc EditEnable { idwidget namewidget color number } {
   Edit_SetCurrent $n $c
 }
 
-
 proc EnterPod { team slot mode } {
-
   global cont 
   global Message
 
@@ -1397,12 +1287,6 @@ proc EnterPod { team slot mode } {
   set old [ focus ]
   set j [ toplevel .enterpod ]
   set j .enterpod
-
-  # XXX
-  #bind all <Control-g> "bind $j <Return> \"\"\n Barcode_Scan %W\n bind $j <Return> { set cont 1 }"
-
-  #bind $j <Control-G> [ list Barcode_Scan . %K ]
-  #bind $j <Control-g> [ list Barcode_Scan . %K ]
 
   wm title $j ""
   wm resizable $j 0 0
@@ -1417,7 +1301,8 @@ proc EnterPod { team slot mode } {
   tkwait visibility $j
 
   focus -force $j
-  grab -global $j
+  #grab -global $j
+  grab $j
 
   set cont 0
 
@@ -1425,26 +1310,15 @@ proc EnterPod { team slot mode } {
   bind $j <KP_Enter> { set cont 1 }
   bind $j <Escape> { set cont -1 }
 
-#  while { $cont == 0 } {
-#    tkwait variable cont
-#  }
+  if { [ catch {
+      ::IrLib::ir_enterpod $team [
+          expr { $slot - ( $team * $::Photon::PLAYERS_PER_TEAM ) } ] $mode
+    } err ] } {
+    set Message "$err"  
+  } else {
+    set Message "Press enter when pod is activated"  
+  }
   
-#  if { $cont == -1 } {
-#    grab release $j
-#    focus $old
-#    destroy .enterpod
-#    bind $j <Return> { }
-#    bind $j <KP_Enter> { }
-#    bind $j <Escape> { }
-#    return
-#  }
-
-#  bind $j <Escape> { }
-
-  ::IrLib::ir_enterpod $team [ expr { $slot - ( $team * 20 ) } ] $mode
-
-  set Message "Press enter when pod is activated"
-
   $j.label configure -text "Waiting for Pod Activation"
   focus -force $j.label
   
@@ -1454,8 +1328,10 @@ proc EnterPod { team slot mode } {
     tkwait variable cont
   }
 
-  ::IrLib::ir_stop
-
+  if { [ catch { ::IrLib::ir_stop } err ] } {
+    set Message "$err"
+  }
+  
   grab release $j
   focus $old
   destroy .enterpod
@@ -1463,7 +1339,6 @@ proc EnterPod { team slot mode } {
     
 
 proc irTestMenu { } {
-
   global irfunc
 
   set irfunc 0
@@ -1473,7 +1348,6 @@ proc irTestMenu { } {
   }
   
   toplevel .irtestmenu
-
 
   bind .irtestmenu <Destroy> { 
     if { $irfunc } { 
@@ -1490,9 +1364,9 @@ proc irTestMenu { } {
   frame $j.red
   frame $j.green
   
-  for { set i 0 } { $i < 20 } { incr i } {
+  for { set i 0 } { $i < $::Photon::PLAYERS_PER_TEAM } { incr i } {
 
-    set irval [ ::Photon::gs_to_ir $i ]
+    set irval [ ::Photon::gs_to_ir [ ::Photon::ts_to_gs $i "red" ] ]
 
     radiobutton $j.red.$i -text $i -relief flat \
         -variable irfunc -value $irval \
@@ -1500,7 +1374,7 @@ proc irTestMenu { } {
 
     grid $j.red.$i -column 0 -row $i
 
-    set irval [ ::Photon::gs_to_ir [ expr $i + 20 ] ]
+    set irval [ ::Photon::gs_to_ir [ ::Photon::ts_to_gs $i "green" ] ]
   
     radiobutton $j.green.$i -text $i -relief flat \
         -variable irfunc -value $irval \
@@ -1519,30 +1393,29 @@ proc irTestMenu { } {
   grid $j.targets -row 2 -column 0 -columnspan 2
 
   radiobutton $j.target -text "Target" -relief flat \
--variable irfunc -value $::Photon::TARGET \
--command { ::IrLib::ir_sendbyte [ expr { int($::Photon::TARGET) } ] }
+    -variable irfunc -value $::Photon::TARGET \
+    -command { ::IrLib::ir_sendbyte [ expr { int($::Photon::TARGET) } ] }
 
   grid $j.target -row 3 -column 0 -columnspan 2
 
   radiobutton $j.rbase -text "Red Base" -relief flat \
--variable irfunc -value $::Photon::RBASE \
--command { ::IrLib::ir_sendbyte [ expr { int($::Photon::RBASE) } ] }
+    -variable irfunc -value $::Photon::RBASE \
+    -command { ::IrLib::ir_sendbyte [ expr { int($::Photon::RBASE) } ] }
   radiobutton $j.rbase2 -text "Red BaseII" -relief flat \
--variable irfunc -value $::Photon::RBASE2 \
--command { ::IrLib::ir_sendbyte [ expr { int($::Photon::RBASE2) } ] }
+    -variable irfunc -value $::Photon::RBASE2 \
+    -command { ::IrLib::ir_sendbyte [ expr { int($::Photon::RBASE2) } ] }
   radiobutton $j.rtower -text "Red Tower" -relief flat \
--variable irfunc -value $::Photon::RTOWER \
--command { ::IrLib::ir_sendbyte [ expr { int($::Photon::RTOWER) } ] }
+    -variable irfunc -value $::Photon::RTOWER \
+    -command { ::IrLib::ir_sendbyte [ expr { int($::Photon::RTOWER) } ] }
   radiobutton $j.gbase -text "Grn Base" -relief flat \
--variable irfunc -value $::Photon::GBASE \
--command { ::IrLib::ir_sendbyte [ expr { int($::Photon::GBASE) } ] }
+    -variable irfunc -value $::Photon::GBASE \
+    -command { ::IrLib::ir_sendbyte [ expr { int($::Photon::GBASE) } ] }
   radiobutton $j.gbase2 -text "Grn BaseII" -relief flat \
--variable irfunc -value $::Photon::GBASE2 \
--command { ::IrLib::ir_sendbyte [ expr { int($::Photon::GBASE2) } ] }
+    -variable irfunc -value $::Photon::GBASE2 \
+    -command { ::IrLib::ir_sendbyte [ expr { int($::Photon::GBASE2) } ] }
   radiobutton $j.gtower -text "Grn Tower" -relief flat \
--variable irfunc -value $::Photon::GTOWER \
--command { ::IrLib::ir_sendbyte [ expr { int($::Photon::GTOWER) } ] }
-
+    -variable irfunc -value $::Photon::GTOWER \
+    -command { ::IrLib::ir_sendbyte [ expr { int($::Photon::GTOWER) } ] }
 
   grid $j.rbase -row 4 -column 0
   grid $j.rbase2 -row 5 -column 0
@@ -1582,6 +1455,7 @@ proc goto_ClearGame { } {
 
   set Message "Game Cleared"
   
+  goto_EditGame
 }
 
 proc goto_GameParameters { } {
@@ -1628,7 +1502,6 @@ proc goto_PreEnter { } {
 
 
 proc goto_FlickSync { } {
-  variable ResetScreen
   FlickSync
 }
 
