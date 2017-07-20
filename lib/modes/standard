@@ -1,35 +1,4 @@
 
-#
-# $Log: public,v $
-# Revision 1.9  2000/11/28 20:01:00  reason
-# Put hit own player count in your own slot
-#
-# Revision 1.8  1999/01/31 17:14:58  banz
-# BETA RELEASE
-#
-# Revision 1.7  1998/12/13 03:24:54  banz
-# Add "counters" for hitplayer matrix
-#
-# Revision 1.6  1998/12/03 19:51:07  banz
-# Change ::Action calls to global action, instead of one in Display namespace
-#
-# Revision 1.5  1998/11/29 21:49:27  banz
-# export paramslist for editing functions
-#
-# Revision 1.4  1998/11/15 23:30:56  banz
-# "Usedlist" wasn't getting cleared out
-#
-# Revision 1.3  1998/11/15 21:43:33  banz
-# Add TEAM SCORE support
-#
-# Revision 1.2  1998/11/08 22:15:14  banz
-# fixed RCS identifiers
-#
-# Revision 1.1  1998/11/08 22:09:25  banz
-# Initial revision
-#
-#
-
 set rcsid  { $Id: public,v 1.8 1999/01/31 17:14:58 banz Exp game $ }
 
 proc HitHandler { gs data } {

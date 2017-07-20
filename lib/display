@@ -66,7 +66,7 @@ proc ServerPregameInit { } {
   foreach x $scalar_watchlist {
     namespace eval ::Game [ list trace vdelete $x w ::Display::ServerTrace ]
   }
-  foreach x $::Photon::cr::radio_watchlist {
+  foreach x $::Photon::cr_state::radio_watchlist {
     namespace eval ::cr \
         [ list trace vdelete $x w ::Display::ServerTrace ]
   }
@@ -80,7 +80,7 @@ proc ServerPregameInit { } {
   foreach x $scalar_watchlist {
     namespace eval ::Game [ list trace variable $x w ::Display::ServerTrace ]
   }
-  foreach x $::Photon::cr::radio_watchlist {
+  foreach x $::Photon::cr_state::radio_watchlist {
     namespace eval ::Photon::cr \
         [ list trace variable $x w ::Display::ServerTrace ]
   }
@@ -109,8 +109,8 @@ proc ServerTrace { name name2 op } {
   } elseif { [ lsearch $::Display::scalar_watchlist $myvar ] != -1 } {
     upvar 0 ::Game::$myvar stuff
     ::Display::ServerStreamWrite GAME "903-$myvar $stuff"
-  } elseif { [ lsearch $::Photon::cr::radio_watchlist $myvar ] != -1 } {
-    upvar 0 ::Photon::cr::$myvar stuff
+  } elseif { [ lsearch $::Photon::cr_state::radio_watchlist $myvar ] != -1 } {
+    upvar 0 ::Photon::cr_state::$myvar stuff
     ::Display::ServerStreamWrite RADIO "902-$myvar $name2 $stuff($name2)"
   } 
   return -code ok
@@ -250,8 +250,8 @@ proc ServerDumpGameInfo { sock } {
     sputs $sock "903-$myvar $stuff"
   }
 
-  foreach myvar $::Photon::cr::radio_watchlist {
-    upvar 0 ::Photon::cr::$myvar stuff
+  foreach myvar $::Photon::cr_state::radio_watchlist {
+    upvar 0 ::Photon::cr_state::$myvar stuff
     foreach index [ array names stuff ] {
       sputs $sock "902-$myvar $index $stuff($index)"
     }

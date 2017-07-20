@@ -1,14 +1,3 @@
-
-#
-# $Log: file,v $
-# Revision 1.2  1998/11/24 00:33:06  banz
-# fixed rcsid quoting
-#
-# Revision 1.1  1998/11/08 22:10:55  banz
-# Initial revision
-#
-#
-
 set rcsid { $Id: file,v 1.2 1998/11/24 00:33:06 banz Exp $ }
 
 set cdplayer "/usr/sbin/cdcontrol"

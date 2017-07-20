@@ -179,7 +179,7 @@ proc init { } {
   }
   
   menu .menubar.photon -tearoff 0
-  ::.menubar add cascade -label Photon -menu .menubar.photon
+  .menubar add cascade -label Photon -menu .menubar.photon
   .menubar.photon add check -label Debug -variable Photon::debug
 
   menu .menubar.photon.sync -tearoff 1
@@ -191,10 +191,14 @@ proc init { } {
   .menubar.photon.sync add radio -label ESYNC -variable Photon::currentsyncbin \
       -value $Photon::ESYNC -command { Photon::setsync $Photon::ESYNC }
 
-  .menubar.photon add command -label test -command {
-    Photon::begingame { 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 } \
-    { 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 }
-  }
+  .menubar.photon add command -label "Start Test Game" \
+      -command [ namespace code {
+          Photon::begingame \
+          { 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 } \
+          { 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 } } ]
+
+  .menubar.photon add command -label "End Test Game" \
+      -command [ namespace code { endgame } ]
 
   .menubar.photon add check -label "Game Internals Debug" \
       -variable Photon::gdebug
@@ -207,7 +211,6 @@ proc init { } {
       -variable Photon::radiomon
   .menubar.photon add check -label "Answerback Mode" \
       -variable Photon::answerback_debug
-
 
   for { set i 0 } { $i <= 0xff } { incr i } {
       set slot_op($i) sp_null
@@ -294,7 +297,7 @@ proc setsync { sync } {
 proc endgame { } {
   setsync $::Photon::ESYNC
 
-  after 3000 [ namespace code { cr::set_cr_handler idle_cr_handler } ]
+  after 3000 [ namespace code { cr::set_cr_handler ::Photon::idle_cr_handler } ]
   after 15000 [ namespace code { setsync $::Photon::PSYNC } ]
 }
 
@@ -596,6 +599,7 @@ proc op_podcode { slot op data } {
     pp::ObservePodCodeRx $slot $data $slot_used($data_gs)
     if { ! $slot_used($data_gs) } {
       gdebuglog "op_podcode: data for unused slot $slot $data"
+      return -code ok
     }
     
     # everything is peachy, we now pass
@@ -614,13 +618,16 @@ proc op_podcode { slot op data } {
   return -code ok
 }
       
-proc op_targetcode { slot op data } {  
+proc op_targetcode { slot op data } { 
+  variable slot_used 
   if { $op == "rx" } {
     set gs [ rs_to_gs $slot ]
     if { $gs >= 0 } {
       if { [pp::ObserveTargetRx $slot $data] } {
         gdebuglog "TargetHandler: $gs $data"
-        namespace eval ::Game TargetHandler $gs $data
+        if { $slot_used($gs) } {
+          namespace eval ::Game TargetHandler $gs $data
+        }
       }
     }
   }

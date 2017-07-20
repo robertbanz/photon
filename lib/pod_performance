@@ -271,7 +271,7 @@ proc ObserveOrDiscoverId { slot data } {
     incr idinrow($slot)
     # Add the 4 previous IDs in a row.
     set valid($slot) [ expr $valid($slot) + 4 ]
-    ::debuglog "ID Discovered $data in slot $slot"
+    ::Photon::gdebuglog "ID Discovered $data in slot $slot"
     # Just another day at the office
   } elseif { $id($slot) == $data } {
     ObserveValidRx $slot

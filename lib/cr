@@ -132,7 +132,7 @@ proc reconnect { } {
   if { $rc != 0 } {
     ::warninglog "Failed to open CR connection... sleeping"
     ::warninglog $s
-    after 1000 cr_reconnect
+    after 1000 [namespace code reconnect]
     return -code ok
   }
 

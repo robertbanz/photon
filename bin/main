@@ -9,7 +9,6 @@ namespace eval Conf {
 }
 
 package require Tclx
-
 package require Pgtcl
 source /usr/local/bin/tkcon
 
@@ -89,7 +88,7 @@ menu .menubar.main -tearoff 0
 
 .menubar.main add command -label "View Scores" -command { viewScores }
 .menubar.main add command -label "Console" -command { openConsole }
-.menubar.main add command -label "Audio Control" -command { audioControl }
+.menubar.main add command -label "End Current Game" -command { End_Game_Early }
 
 update idletasks
 
@@ -101,6 +100,10 @@ Photon_ps::init
 
 # Init Lightmaster
 Lightmaster::init
+
+# Init Audio Mixer
+Mixer::init $Conf::mixer_device \
+    $Conf::field_volume_line $Conf::background_volume_line
 
 # Create sync status thing
 frame .status.sync
@@ -122,10 +125,6 @@ set GT_lastseconds [clock seconds]
 
 ::Photon::setsync $::Photon::PSYNC
 set STATE IDLE
-
-after idle {
-  GT_update
-}
 
 frame .status.time
 label .status.time.label -textvariable GT_description
@@ -162,8 +161,8 @@ namespace eval ::Display {
 set disp_Socket [ socket -server ::Display::Accept $::Conf::disp_listenport ]
 
 # fade field audio to their appropriate values
-Mixer::fade vol $Conf::field_audio 10
-Mixer::fade rec $Conf::max_background_audio 10
+Mixer::fade field $Conf::field_audio 10
+Mixer::fade background $Conf::max_background_audio 10
 
 # Set lighting to idle
 ::Lightmaster::start_idle
@@ -415,11 +414,11 @@ proc EtSocketHandler_START { sock com } {
 }
 
 proc EtSocketHandler_SENDIR { sock com } {
-  cr::putstring $com
+  ::Photon::cr::putstring $com
 }
 
 proc EtSocketHandler_STOPIR { sock com } {
-  cr::putstring $com
+  ::Photon::cr::putstring $com
 }
 
 # system states:
@@ -460,6 +459,8 @@ proc GT_update { } {
   return -code ok
 }
 
+# Start the GT_update task to run periodically.
+GT_update
 
 proc LoadSoundTrack { trackname length } {
 
@@ -556,7 +557,7 @@ proc Idle_To_Pregame { } {
   set GT_direction -1
   set GT_description "Time Until Start:"
 
-  after [ expr { 1 * 1000 } ] { ::Mixer::fade rec 0 12 }
+  after [ expr { 1 * 1000 } ] { ::Mixer::fade background 0 12 }
   after [ expr { 30 * 1000 } ] { Pregame_To_Game }
 
   namespace eval ::Display ServerPregameInit
@@ -573,9 +574,6 @@ proc Pregame_To_Game { } {
   global GT_direction
   global GT_description
   global GT_lastseconds
-  global sched_data
-  global game_start_time
-  global eh_Game_To_Postgame
 
   if { $STATE == "TRANSITION" } {
     return
@@ -591,10 +589,29 @@ proc Pregame_To_Game { } {
   set GT_direction -1
   set GT_description "Time Remaining:"
 
-  after [ expr { $Ginfo::length * 1000} ] { Game_To_Postgame }
   ::Photon_ps::game_on
-
   set STATE GAME
+
+  Game_Periodic
+}
+
+proc Game_Periodic { } {
+  global GT_time
+  if { $GT_time <= 0 } {
+    Game_To_Postgame
+    return -code ok
+  }
+  after 1000 [ namespace code { Game_Periodic } ]
+}
+
+proc End_Game_Early {} {
+  global STATE
+  global GT_time
+  if { $STATE == "GAME" } {
+    if { $GT_time > 0 } {
+      set GT_time 0
+    }
+  }
 }
 
 proc Game_To_Postgame { } {
@@ -619,7 +636,7 @@ proc Game_To_Postgame { } {
   savePods
 
   after [ expr { 10 * 1000 } ] {
-    Mixer::fade rec $Conf::max_background_audio 10 }
+    ::Mixer::fade background $Conf::max_background_audio 10 }
   after [ expr { 18 * 1000 } ] { Postgame_To_Idle }
 
   ::Photon_ps::game_off
@@ -635,7 +652,6 @@ proc Postgame_To_Idle { } {
   }
   set STATE TRANSITION
   ::Photon::setsync $::Photon::PSYNC
-  ::Photon::setcrenable 1
   set STATE IDLE
   
   # Reset lights
@@ -793,21 +809,3 @@ proc savePods { } {
   }
   pg_disconnect $comm
 }
-
-proc audioControl { } {
-  if { [ winfo exists .audio ] } {
-    return -code ok
-  }
-
-  toplevel .audio
-  scale .audio.field -from 0 -to 100 -length 200 -variable ::Mixer::vol \
-      -orient horizontal -label "Field Volume" -showvalue true
-  scale .audio.background -from 0 -to 100 -length 200 -variable \
-      ::Mixer::rec -orient horizontal -label "Background Audio (current)" \
-      -showvalue true
-  scale .audio.backgroundmax -from 0 -to 100 -length 200 \
-      -variable Conf::max_background_audio -orient horizontal \
-      -label "Background Audio (max)" -showvalue true
-  pack .audio.field .audio.background .audio.backgroundmax -side top
-}
-
