@@ -1,0 +1,5 @@
+namespace eval version {
+  set version_id "20170721.0"
+  set version_name "Unfortunate Conflict of Evidence"
+  set version_string "${version_name} (${version_id})"
+}

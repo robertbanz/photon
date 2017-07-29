@@ -1,0 +1,8 @@
+#!/usr/local/bin/tclsh8.6
+
+source /usr/photon/lib/photon_interfaces
+
+for { set id 1 } { $id < 65 } { incr id } {
+  set idsig_val [ ::Photon::id_to_sig $id ]
+  puts [format "%d, 0x%0x" $id $idsig_val]
+}

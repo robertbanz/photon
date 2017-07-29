@@ -1,44 +1,4 @@
 #!/usr/bin/env wish8.6
-#
-# $Log: cgdisplay,v $
-#
-# Revision 1.11 2001/05/03 05:00:00  reason
-# Experimenting with changing winfo to info in places
-#
-# Revision 1.10  1999/02/13 01:36:55  banz
-# *** empty log message ***
-#
-# Revision 1.9  1999/01/31 17:11:22  banz
-# BETA RELEASE
-#
-# Revision 1.8  1998/12/15 05:19:13  banz
-# spiffy-ized new screens
-#
-# Revision 1.7  1998/12/13 04:15:44  banz
-# "displayviews" broken out
-#
-# Revision 1.6  1998/11/29 22:20:38  banz
-# big "ALERT" thing
-#
-# Revision 1.5  1998/11/15 23:51:56  banz
-# Flashing team & player high scores
-# Play by play continues to be active during postgame
-#
-# Revision 1.4  1998/11/15 21:43:10  banz
-# finisned team score support
-#
-# Revision 1.3  1998/11/15 21:14:23  banz
-# single image idle screen
-# countdown for pregame screen
-# colors in hit-by-hit window
-#
-# Revision 1.2  1998/11/08 22:13:16  banz
-# fixed RCS identifier
-#
-# Revision 1.1  1998/11/08 22:02:39  banz
-# Initial revision
-#
-#
 
 set rcsid { $Id: cgdisplay,v 1.10 1999/02/13 01:36:55 banz Exp $ }
 
@@ -92,6 +52,7 @@ if [ file exists $defaults_file ] {
 source $Conf::gamepath/displayviews
 source $Conf::gamepath/flasher
 source $Conf::gamepath/helpers
+source $Conf::gamepath/version
 
 proc debuglog { j } {
   puts "debug: $j"

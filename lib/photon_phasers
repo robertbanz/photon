@@ -9,25 +9,36 @@ variable phaser_send_clink 0
 variable free_clinks 0
 variable fd 0
 
+proc connect {} {
+  variable fd
+  if { $fd != "-1" } {
+    catch {close $fd}
+  }
+  if {[catch {open $::Conf::phasertty "w"} fd]} {
+    ::warninglog "Cound not open phaser station device $::Conf::phasertty $fd"
+    set fd -1
+    return $fd --code ok
+  }
+  ::warninglog "Phaser stations connected on $::Conf::phasertty"
+  fconfigure $fd -buffering none
+  fconfigure $fd -blocking 0
+  fconfigure $fd -encoding binary
+  fconfigure $fd -eofchar {}
+  fconfigure $fd -translation binary
+  fconfigure $fd -mode 1200,n,8,1
+  return $fd  
+}
+
 proc init {} {
   variable phaser_installed
   variable fd
   variable free_clinks
   
   if {[info exists ::Conf::phasertty]} {
-    if {[catch {open $::Conf::phasertty "w"} fd]} {
-      ::warninglog "Could not open phaser station device!"
-      set phaser_installed 0
+    if { [connect] == -1 } {
       return --code ok
     }
-    ::warninglog "Phaser stations installed on $::Conf::phasertty"
     set phaser_installed 1
-    fconfigure $fd -buffering none
-    fconfigure $fd -blocking 0
-    fconfigure $fd -encoding binary
-    fconfigure $fd -eofchar {}
-    fconfigure $fd -translation binary
-    #fconfigure $fd -mode 1200,n,8,1
     
     if {[info exists ::Conf::phaser_free_clinks]} {
       set free_links $::Conf::phaser_free_clinks
@@ -47,21 +58,40 @@ proc init {} {
   }
 }
 
+proc phaser_putc { c } {
+  variable fd
+
+  # Attempt to reopen the serial port if it was lost.
+  if { $fd == "-1" } {
+    connect
+    if { $fd == "-1" } {
+      return --code ok
+    }
+  }
+
+  set code [ scan $c "%c" ]
+  
+  if {[catch {puts -nonewline $fd $code} result]} {
+    ::warninglog "phaser:: could not write to $fd $result"
+    close $fd
+    set fd -1
+  }
+}
+
 # Called every second.
 proc phasersync { } {
   variable phaser_send_clink
   variable PHASER_CLINK_CODE
   variable phaser_enabled
   variable PHASER_GAME_CODE
-  variable fd
   
   if { $phaser_send_clink > 0 } {
     ::debuglog "phaser: send clink"
-    puts -nonewline $fd [ scan $PHASER_CLINK_CODE "%c" ]
+    phaser_putc $PHASER_CLINK_CODE
     incr phaser_send_clink -1
   } elseif { $phaser_enabled > 0 } {
     ::debuglog "phaser:: send game code"
-    puts -nonewline $fd [ scan $PHASER_GAME_CODE "%c" ]
+    phaser_putc $PHASER_CLINK_CODE
     incr phaser_enabled -1
   }
   after 1000 [ namespace code { phasersync } ]

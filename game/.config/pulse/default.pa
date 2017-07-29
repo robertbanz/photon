@@ -1,0 +1,14 @@
+load-module module-oss device=/dev/dsp0
+
+set-sink-volume oss_output.dsp0 0x10000
+set-sink-mute oss_output.dsp0 no
+suspend-sink oss_output.dsp0 no
+
+set-source-volume oss_input.dsp0 0x10000
+set-source-mute oss_input.dsp0 no
+suspend-source oss_input.dsp0 no
+
+set-default-sink oss_output.dsp0
+set-default-source oss_input.dsp0
+
+load-module module-loopback remix=1 latency_msec=1

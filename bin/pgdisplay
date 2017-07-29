@@ -51,6 +51,7 @@ if [ file exists $defaults_file ] {
 
 source $Conf::gamepath/displayviews
 source $Conf::gamepath/flasher
+source $Conf::gamepath/version
 
 namespace eval Display {
     source $::Conf::gamepath/display

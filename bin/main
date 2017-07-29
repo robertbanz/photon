@@ -1,6 +1,5 @@
 #!/usr/bin/env wish8.6
 
-
 set rcsid { $Id: main,v 1.10 1999/02/06 20:24:40 game Exp game $ }
 
 # ::Conf -- Game Computer Configuration Options
@@ -18,6 +17,7 @@ source $Conf::gamepath/photon_interfaces
 source $Conf::gamepath/photon_phasers
 source $Conf::gamepath/lightmaster
 source $Conf::gamepath/mixer.tcl
+source $Conf::gamepath/version
 
 # load the X app defaults file
 if [ file exists $Conf::appdefaults ] {
@@ -30,7 +30,7 @@ if [ file exists $Conf::appdefaults ] {
 set STATE IDLE
 
 # create the monitor window and things
-wm title . $Conf::title
+wm title . "$Conf::title: $::version::version_string"
 wm resizable . 0 0
 wm positionfrom . program
 wm geometry . 640x480+20+20
@@ -609,6 +609,7 @@ proc End_Game_Early {} {
   global GT_time
   if { $STATE == "GAME" } {
     if { $GT_time > 0 } {
+      ::STrack::EmergencyEnd
       set GT_time 0
     }
   }

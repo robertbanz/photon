@@ -10,8 +10,10 @@ proc run { p } {
     $p.advert create image 0 0 -image $advertimage -anchor nw
     
     place $p.advert -relx 0.0 -rely 0.0
-    
-#    bind $p.advert <<Destroy>> "::Idlescreen::end"
+   
+    label $p.version -text $::version::version_string
+        
+    place $p.version -relx 1.0 -rely 1.0 -anchor se
 
     # wait 1 minute
     set nextevent [ after 30000 "::dm_next_IDLE $p" ]

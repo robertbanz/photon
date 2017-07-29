@@ -1,18 +1,4 @@
 
-# $Log: displayviews,v $
-# Revision 1.4  1999/01/31 17:11:44  banz
-# BETA RELEASE
-#
-# Revision 1.3  1998/12/15 05:18:45  banz
-# updated for new current game display code
-#
-# Revision 1.2  1998/12/13 04:28:19  banz
-# little buglets with base chicklets
-#
-# Revision 1.1  1998/12/13 04:15:11  banz
-# Initial revision
-#
-
 set rcsid { $Id: displayviews,v 1.4 1999/01/31 17:11:44 banz Exp $ }
 
 proc game_display_setup { p { static 0 } } {

@@ -1,28 +1,3 @@
-
-#
-# $Log: display,v $
-# Revision 1.6  1999/01/31 17:11:32  banz
-# BETA RELEASE
-#
-# Revision 1.5  1998/12/12 19:43:15  banz
-# isolate socket writes from main script
-#
-# Revision 1.4  1998/11/15 21:15:12  banz
-# hit-by-hit support
-#
-# Revision 1.3  1998/11/08 22:13:16  banz
-# fixed RCS identifier
-#
-# Revision 1.2  1998/11/08 22:04:05  banz
-# *** empty log message ***
-#
-# Revision 1.1  1998/11/08 22:03:43  banz
-# Initial revision
-#
-#
-
-set rcsid { $Id: display,v 1.6 1999/01/31 17:11:32 banz Exp $ }
-
 set streaming_sockets { }
 set valid_subs { GAME STATUS RADIO }
 set array_watchlist { }
@@ -81,7 +56,7 @@ proc ServerPregameInit { } {
     namespace eval ::Game [ list trace variable $x w ::Display::ServerTrace ]
   }
   foreach x $::Photon::cr_state::radio_watchlist {
-    namespace eval ::Photon::cr \
+    namespace eval ::Photon::cr_state \
         [ list trace variable $x w ::Display::ServerTrace ]
   }
 }

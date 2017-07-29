@@ -1,4 +1,5 @@
 #!/bin/sh
+xrandr --output Virtual1 --mode 1280x768
 xset s off
 xset -dpms
 hostname=`hostname`

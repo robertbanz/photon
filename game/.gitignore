@@ -1,4 +1,7 @@
 .config/**
+!.config/pulse
+!.config/pulse/daemon.conf
+!.config/pulse/default.pa
 .dbus/**
 .esd_auth
 .mplayer/**

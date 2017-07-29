@@ -12,6 +12,7 @@ source $Conf::gamepath/helpers
 source $Conf::gamepath/photon_vals
 source $Conf::gamepath/photon_interfaces
 source $Conf::gamepath/irlib
+source $Conf::gamepath/version
 
 if [ file exists $Conf::etdefaults ] {
   if [ catch { option readfile $Conf::etdefaults startup } err ] {
@@ -19,7 +20,7 @@ if [ file exists $Conf::etdefaults ] {
   }
 }
 
-wm title . "Entry Terminal"
+wm title . "Entry Terminal: $::version::version_string"
 wm resizable . 0 0
 wm positionfrom . program
 wm geometry . ${::Conf::et_xres}x${::Conf::et_yres}+0+0
@@ -196,7 +197,7 @@ if { $Conf::enable_et_flicksync == "false" } {
 
 ButtonMenu $std_functionlist $std_functionname
 
-set Message "Select a function from the menu"
+set Message "Select a function from the menu \[$::version::version_string\]"
 
 bind all <Control-g> { Barcode_Scan %W }
 bind all <Control-G> { Barcode_Scan %W }
