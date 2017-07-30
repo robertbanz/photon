@@ -223,7 +223,7 @@ proc Barcode_Scan { widget } {
   set Barcode_OldFocus [ focus ]
     
   focus -force .
- # grab -global .
+  grab .
 
   set Barcode_Scan_Binding [ bind . <KeyPress> [ list Barcode_Get $widget %K ] ]
 }
@@ -1072,7 +1072,7 @@ proc Edit_BarcodeRead { widget code } {
         if { "$code" != "" } {
           set Ginfo::used($x) 1
           set Ginfo::id($x) "$code"
-          catch { AutoLoad_Name $i }
+          catch { AutoLoad_Name $x }
           catch [ list EditEnable $EditToplevel.$color.$i.id \
               $EditToplevel.$color.$i.name $colornum $x ]
           set Edit_BarcodeReadLockout 0
@@ -1193,8 +1193,6 @@ proc Edit_Move { widget direction change_color } {
 
   if { $slot < 0 } {
     set newwidget "${toplevel}.${color}.teamname"
-    grab release $widget
-    grab $newwidget
     focus $newwidget
     return
   }
@@ -1214,8 +1212,6 @@ proc Edit_Move { widget direction change_color } {
   } else {
     set newwidget "$toplevel.$color.$slot.picker"
   }
-  grab release $widget
-  grab $newwidget
   focus $newwidget
   Edit_SetCurrent $slot $color
   return
@@ -1244,15 +1240,14 @@ proc EditEnable { idwidget namewidget color number } {
     $namewidget configure -state normal
   
     bind $idwidget <Return> "EnterPod $color $number \
-        $::Game::Params::etmode\ngrab release $idwidget\nfocus $namewidget\n"
+        $::Game::Params::etmode\nfocus $namewidget\n"
     bind $idwidget <KP_Enter> "EnterPod $color $number \
-        $::Game::Params::etmode\ngrab release $idwidget\nfocus $namewidget\n"
+        $::Game::Params::etmode\nfocus $namewidget\n"
     
-    bind $idwidget <Escape> "grab release $idwidget\nfocus $oldfocus"
+    bind $idwidget <Escape> "focus $oldfocus"
   
-    bind $namewidget <Escape> "grab release $namewidget\nfocus $oldfocus"
+    bind $namewidget <Escape> "focus $oldfocus"
   
-    grab $idwidget
     focus $idwidget
   } else {
     bind $idwidget <Return> { }
@@ -1447,13 +1442,56 @@ proc goto_ViewCurrentGame { } {
 }
 
 proc goto_ClearGame { } {
+  set tl [toplevel .check]
+  
+  wm title $tl ""
+  wm resizable $tl 0 0
+  wm transient $tl .
+  wm geometry $tl +100+100
+  
+  frame ${tl}.content
+  pack ${tl}.content
+  message ${tl}.content.text -text "Really Clear Game?"
+  
+  set yes_command "
+    ReallyClearGame
+    destroy ${tl}
+  "
+  set no_command "destroy ${tl}"
+  
+  button ${tl}.content.yes -text "Yes" -command "${yes_command}"
+  button ${tl}.content.no -text "No" -command "${no_command}"
 
+  pack ${tl}.content.text
+  pack ${tl}.content.no ${tl}.content.yes -side left
+
+  bind ${tl} <Y> "${yes_command}"
+  bind ${tl} <y> "${yes_command}"
+  bind ${tl} <N> "${no_command}"
+  bind ${tl} <n> "${no_command}"
+  
+  focus ${tl}.content
+}
+
+proc ReallyClearGame { } {
   set Message "Clearing Game"
   variable ResetScreen
   set ResetScreen 0
 
   InitGame
 
+  set Message "Game Cleared"
+  
+  goto_EditGame
+}
+
+proc ReallyClearGame { } {
+  set Message "Clearing Game"
+  variable ResetScreen
+  set ResetScreen 0
+  
+  InitGame
+  
   set Message "Game Cleared"
   
   goto_EditGame
