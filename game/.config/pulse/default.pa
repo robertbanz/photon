@@ -11,4 +11,4 @@ suspend-source oss_input.dsp0 no
 set-default-sink oss_output.dsp0
 set-default-source oss_input.dsp0
 
-load-module module-loopback remix=1 latency_msec=1
+load-module module-loopback adjust_time=1 latency_msec=100
