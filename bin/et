@@ -223,7 +223,7 @@ proc Barcode_Scan { widget } {
   set Barcode_OldFocus [ focus ]
     
   focus -force .
-  grab -global .
+ # grab -global .
 
   set Barcode_Scan_Binding [ bind . <KeyPress> [ list Barcode_Get $widget %K ] ]
 }
@@ -1072,6 +1072,7 @@ proc Edit_BarcodeRead { widget code } {
         if { "$code" != "" } {
           set Ginfo::used($x) 1
           set Ginfo::id($x) "$code"
+          catch { AutoLoad_Name $i }
           catch [ list EditEnable $EditToplevel.$color.$i.id \
               $EditToplevel.$color.$i.name $colornum $x ]
           set Edit_BarcodeReadLockout 0
@@ -1302,7 +1303,6 @@ proc EnterPod { team slot mode } {
   tkwait visibility $j
 
   focus -force $j
-  #grab -global $j
   grab $j
 
   set cont 0
