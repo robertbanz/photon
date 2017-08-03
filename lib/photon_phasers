@@ -25,7 +25,7 @@ proc connect {} {
   fconfigure $fd -encoding binary
   fconfigure $fd -eofchar {}
   fconfigure $fd -translation binary
-  fconfigure $fd -mode 1200,n,8,1
+  fconfigure $fd -mode 9600,n,8,1
   return $fd  
 }
 
@@ -41,7 +41,7 @@ proc init {} {
     set phaser_installed 1
     
     if {[info exists ::Conf::phaser_free_clinks]} {
-      set free_links $::Conf::phaser_free_clinks
+      set free_clinks $::Conf::phaser_free_clinks
     }
     
     after 1000 [namespace code {phasersync}]
@@ -69,8 +69,8 @@ proc phaser_putc { c } {
     }
   }
 
-  set code [ scan $c "%c" ]
-  
+  set code [ binary format c $c ]
+
   if {[catch {puts -nonewline $fd $code} result]} {
     ::warninglog "phaser:: could not write to $fd $result"
     close $fd
@@ -91,7 +91,7 @@ proc phasersync { } {
     incr phaser_send_clink -1
   } elseif { $phaser_enabled > 0 } {
     ::debuglog "phaser:: send game code"
-    phaser_putc $PHASER_CLINK_CODE
+    phaser_putc $PHASER_GAME_CODE
     incr phaser_enabled -1
   }
   after 1000 [ namespace code { phasersync } ]
