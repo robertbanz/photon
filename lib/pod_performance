@@ -1,0 +1,446 @@
+namespace eval ::Photon::pp {
+
+variable id           
+variable used
+variable gameused
+
+# interesting stuff
+variable missinrow    
+variable invalidinrow   
+variable invalidvalids  
+
+# counting stuff
+variable idinrow
+variable idcount        
+variable basecount      
+variable syncmissed     
+variable psyncrcvd     
+variable esyncrcvd
+variable wsyncrcvd
+variable serror       
+variable ealarm       
+variable missed       
+variable invalid       
+variable valid
+variable idlu 
+# tx/rx confirmation
+variable hitssent     
+variable hitsackn   
+
+variable curobject
+variable chosenbase
+
+namespace import ::Photon::rs_to_gs
+namespace import ::Photon::ir_to_gs
+namespace import ::Photon::gs_to_rs
+namespace import ::Photon::sig_to_id
+
+proc init {} {
+  variable id           
+  variable used
+  variable gameused
+
+  # interesting stuff
+  variable missinrow    
+  variable invalidinrow   
+  variable invalidvalids  
+
+  # counting stuff
+  variable idinrow
+  variable idcount        
+  variable basecount      
+  variable syncmissed     
+  variable psyncrcvd     
+  variable esyncrcvd
+  variable wsyncrcvd
+  variable serror       
+  variable ealarm       
+  variable missed       
+  variable invalid       
+  variable valid
+  variable idlu 
+  # tx/rx confirmation
+  variable hitssent     
+  variable hitsackn   
+
+  variable curobject
+  variable chosenbase
+
+  for { set i 0 } { $i < 67 } { incr i } {
+    # stateful stuff
+    set id($i) -1            
+    set used($i) 0  
+    if { [ info exists ::Photon::slot_used([rs_to_gs $i]) ] } {
+        set gameused($i) $::Photon::slot_used([::Photon::rs_to_gs $i])
+    } else {
+        set gameused($i) 0
+    }
+
+    # interesting stuff
+    set missinrow($i) 0      
+    set invalidinrow($i) 0     
+    set invalidvalids($i) 0  
+
+    # counting stuff
+    set idinrow($i) 0
+    set idcount($i) 0        
+    set basecount($i) 0      
+    set syncmissed($i) 0     
+    set psyncrcvd($i) 0     
+    set esyncrcvd($i) 0
+    set wsyncrcvd($i) 0
+    set serror($i) 0       
+    set ealarm($i) 0       
+    set missed($i) 0       
+    set invalid($i) 0       
+    set valid($i) 0
+    set idlu($i) -1 
+    # tx/rx confirmation
+    set hitssent($i) 0     
+    set hitsackn($i) 0   
+
+    set curobject($i) 0
+    set chosenbase($i) 0
+  }
+
+  if { [ winfo exists .podperf ] } {
+      destroy .podperf
+      podperf_window 1
+  }
+}
+
+    
+proc podperf_window { i } {
+
+  variable slot_used
+  variable id           
+  variable used
+  variable gameused
+
+  # interesting stuff
+  variable missinrow    
+  variable invalidinrow   
+  variable invalidvalids  
+
+  # counting stuff
+  variable idinrow
+  variable idcount        
+  variable basecount      
+  variable syncmissed     
+  variable psyncrcvd     
+  variable esyncrcvd
+  variable wsyncrcvd
+  variable serror       
+  variable ealarm       
+  variable missed       
+  variable invalid       
+  variable valid
+  variable idlu 
+  # tx/rx confirmation
+  variable hitssent     
+  variable hitsackn   
+
+  variable curobject
+  variable chosenbase
+
+  proc labelit { r var i color } {
+    upvar col col
+    upvar row row
+    label ${r}.${var}${i} -textvariable ::Photon::pp::${var}($i) \
+        -width 3 -fg $color
+    grid ${r}.${var}${i} -row $row -column [incr col] -sticky e   
+  }
+
+  if { [ winfo exists .podperf ] } {
+    if { ! $i } {
+      destroy .podperf
+      return -code ok
+    } else {
+      return -code ok
+    }
+  }
+
+  set r [ frame .podperf ]
+
+  set row 0
+
+  set list { idlu syncmissed wsyncrcvd serror ealarm missinrow invalidinrow \
+      missed invalid valid hitssent hitsackn  }
+
+  set titles { "ID" "RX: smiss" "wsync" "serror" "elrm" "TX: mir" "iir" \
+      "miss" "inval" "val" "HITS: sent" "ackn" }
+
+  label $r.headslot -text "slot"
+  grid $r.headslot -row $row -column 0 -sticky nw
+  
+  set col 0
+
+  foreach x $list {
+    label $r.$x -text [ lindex $titles $col]
+    grid $r.$x -row $row -column [ incr col ] -sticky nw
+  }
+
+  label $r.lastradio -text LRx
+  grid $r.lastradio -row $row -column [ incr col ] -sticky nw
+
+  incr row
+
+  for { set i 0 } { $i < 67 } { incr i } {
+    set col 0
+
+    if { ( $i >= $::Photon::RED_RFSTART ) && \
+         ( $i < ( $::Photon::RED_RFSTART + $::Photon::PLAYERS_PER_TEAM) ) } {
+      set color "#ff9999"
+      set gs [ rs_to_gs $i ]
+    } elseif { ( $i >= $::Photon::GRN_RFSTART ) && \
+          ( $i < ( $::Photon::GRN_RFSTART + $::Photon::PLAYERS_PER_TEAM ) ) } {
+      set color "#99ff99"
+      set gs [ expr [ rs_to_gs $i ] - 20 ]
+    } else {
+      continue
+    }
+
+    if { ! $::Photon::slot_used([rs_to_gs $i]) } {
+      continue
+    }
+
+    label $r.$i -text $gs
+    grid $r.$i -row $row -column 0
+
+    foreach x $list  {
+      labelit $r $x $i $color
+    }
+
+    label $r.radio$i -textvariable ::Photon::cr_state::radiodata_rx_x($i) \
+        -fg $color
+    grid $r.radio$i -row $row -column [ incr col ] -sticky e
+
+    incr row
+    
+    # Don't cause the world to pause.
+    update
+  }                 
+  wm manage .podperf
+}
+
+
+proc RecordMissedRx { slot } {
+  variable missed
+  variable missinrow
+  incr missed($slot)
+  incr missinrow($slot)
+}
+
+proc RecordPoll {} {
+  variable pollcount
+  incr pollcount
+}
+
+proc ObserveDataReceived { slot } {
+  variable missinrow
+  variable used
+  set missinrow($slot) 0
+  set used($slot) 1
+}
+
+# Returns 1 if the ID was correct (for answerback, if enabled)
+proc ObserveOrDiscoverId { slot data } {
+  variable idinrow
+  variable id
+  variable invalidinrow
+  variable idcount
+  variable idlu
+  variable valid
+  
+  ObserveDataReceived $slot
+  
+  # ID discovery phase
+  if { $idinrow($slot) <= 4 } {
+    set invalidinrow($slot) 0
+    if { $id($slot) == $data } {
+      incr idinrow($slot)
+    } else {
+      set id($slot) $data
+      set idinrow($slot) 1        
+    }
+    # ID discovered   
+  } elseif { $idinrow($slot) == 5 } {
+    ObserveValidRx $slot
+    set idcount($slot) $idinrow($slot)
+    set idlu($slot) [ ::Photon::sig_to_id $data ]
+    incr idinrow($slot)
+    # Add the 4 previous IDs in a row.
+    set valid($slot) [ expr $valid($slot) + 4 ]
+    ::Photon::gdebuglog "ID Discovered $data in slot $slot"
+    # Just another day at the office
+  } elseif { $id($slot) == $data } {
+    ObserveValidRx $slot
+    incr idcount($slot)
+    return 1
+  # Not a valid day at the office
+  } else {
+    ObserveInvalidRx $slot
+  }
+  return 0
+}
+
+proc ObserveValidRx { slot } {
+  variable invalidinrow
+  variable valid
+  set invalidinrow($slot) 0
+  incr valid($slot)
+}
+
+proc ObserveInvalidRx { slot } {
+  variable invalidinrow
+  variable invalid
+  incr invalidinrow($slot)
+  incr invalid($slot)
+}
+proc ObservePodCodeRx { slot data data_slot_in_use } {
+  variable invalidvalids
+  variable invalidinrow
+  ObserveDataReceived $slot
+  # see if the code coming is from a "pod"
+  # that is valid (is it used)
+  if { $data_slot_in_use } {
+    incr invalidvalids($slot)
+    incr invalidinrow($slot)
+  } else {
+    ObserveValidRx $slot
+  }
+}
+
+proc ObservePodCodeTx { slot data } {
+  variable hitssent
+  set hit_slot [ gs_to_rs [ ir_to_gs $data ] ]
+  incr hitssent($hit_slot)
+}
+
+# Returns true if the code is a "new hit" on the target
+proc ObserveTargetRx { slot data } {
+  variable basecount
+  variable curobject
+
+  ObserveDataReceived $slot
+  
+  set gs [ rs_to_gs $slot ]
+  
+  # Filter out targets we've seen before.
+  if { $curobject($slot) == $data } {
+    ObserveValidRx $slot
+    incr basecount($slot)
+    return 0
+  }
+ 
+  if { $data == $::Photon::TARGET } {
+    return [ObserveGoodTarget $slot $data]
+  }
+  
+  if { $gs < $::Photon::PLAYERS_PER_TEAM } {
+    return [ObserveBaseOrTower $slot $data $::Photon::GTOWER $::Photon::GBASE \
+        $::Photon::GBASE2]
+  } elseif { $gs >= $::Photon::PLAYERS_PER_TEAM } {
+    return [ObserveBaseOrTower $slot $data $::Photon::RTOWER $::Photon::RBASE \
+        $::Photon::RBASE2]
+  }
+  return -code error "bad data value $data"
+}
+
+proc ObserveGoodTarget { slot data } {
+  variable curobject
+  variable basecount
+  ObserveValidRx $slot
+  set curobject($slot) $data
+  incr basecount($slot)
+  return 1
+}
+
+proc ObserveBaseOrTower { slot data tower base1 base2 } {
+  variable curobject
+  variable basecount
+  variable chosenbase
+  if { $data == $tower } {
+    ObserveValidRx $slot
+    set curobject($slot) $data
+    incr basecount($slot)
+    return 1
+  }
+  if { $data == $base1 } {
+    if { $chosenbase($slot) == $base2 } {
+      ObserveInvalidRx $slot
+      return 0
+    }
+    ObserveValidRx $slot
+    set chosenbase($slot) $data
+    incr basecount($slot)
+    return 1
+  } elseif { $data == $base2 } {
+    if { $chosenbase($slot) == $base1 } {
+      ObserveInvalidRx $slot
+      return 0
+    }
+    ObserveValidRx $slot
+    set chosenbase($slot) $data
+    incr basecount($slot)
+    return 1
+  }
+  # did not match tower, base1, or base2 for our color...
+  ObserveInvalidRx $slot
+  return 0
+}
+
+proc ObserveSyncMissed { slot } {
+  ObserveValidRx $slot
+  incr syncmissed($slot)
+}
+
+proc ObservePsyncReceived { slot expected } {
+  variable psyncrcvd
+  variable wsyncrcvd
+  ObserveDataReceived $slot
+  ObserveValidRx $slot
+  if { $expected } {
+    incr psyncrcvd($slot)
+  } else {
+    incr wsyncrcvd($slot)
+  }
+}
+
+proc ObserveEsyncReceived { slot expected } {
+  variable wsyncrcvd
+  variable esyncrcvd
+  ObserveDataReceived $slot
+  ObserveValidRx $slot
+  if { $expected } {
+    incr wsyncrcvd($slot)
+  } else {
+    incr esyncrcvd($slot)
+  }
+}
+
+proc ObserveSyncError { slot } {
+  variable serror
+  ObserveDataReceived $slot
+  ObserveValidRx $slot
+  incr serror($slot)
+}
+
+proc ObserveEAlarm { slot } {
+  variable ealarm
+  ObserveDataReceived $slot
+  ObserveValidRx $slot
+  incr ealarm($slot)
+}
+
+proc ObserveHitAck { slot data } {
+  variable hitsackn
+  ObserveDataReceived $slot
+  ObserveValidRx $slot
+  set diff [ expr { $data - 0xa0 } ]
+  ::Photon::gdebuglog "ackn $slot $data $diff"
+  set hitsackn($slot) [ expr { $hitsackn($slot) + $diff }]
+}
+
+}
+#namespace pp

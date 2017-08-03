@@ -1,21 +1,7 @@
-
-#
-# $Log: file,v $
-# Revision 1.2  1998/11/24 00:33:06  banz
-# fixed rcsid quoting
-#
-# Revision 1.1  1998/11/08 22:10:55  banz
-# Initial revision
-#
-#
-
-set rcsid { $Id: file,v 1.2 1998/11/24 00:33:06 banz Exp $ }
-
-set cdplayer "/usr/sbin/cdcontrol"
-set mixer "/usr/sbin/mixer"
-set soundplayer "/usr/photon/bin/mplayer_wrapper"
+set soundplayer "mplayer"
 set trackdir "/usr/photon/lib/tracks/"
 set lightshow 1
+set player_pid -1
 
 proc Init { } { }
 
@@ -33,7 +19,18 @@ proc Begin { length } {
 }
 
 proc SFplay { filename } {
-  catch [ list exec $::STrack::soundplayer "$filename" "&" ] result
+  variable player_pid
+  if {[catch [ list exec $::STrack::soundplayer "-vo" "null" "-quiet" "$filename" "</dev/null" ">/dev/null" "&" ] result]} {
+    ::warninglog "Cannot play track: $result"
+    return --code ok
+  }
+  set player_pid $result
+}
+
+proc EmergencyEnd { } {
+  variable player_pid
+  kill $player_pid
+  set player_pid -1
 }
 
 # Play sound is intended to be used by external files,

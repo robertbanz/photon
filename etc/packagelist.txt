@@ -1,3 +1,4 @@
+audio/snack
 devel/autoconf
 devel/automake
 shells/bash

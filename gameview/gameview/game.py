@@ -135,7 +135,8 @@ class GameSearchResult(object):
 class GameSearch(object):
   # TODO: these should be defined somewhere else.
   classiccollections = ['baltimore89']
-  collections = sorted(['laurel', 'pc2015', 'baltimore92', 'chicago92'])
+  collections = sorted(['laurel', 'pc2016',
+                        'pc2015', 'baltimore92', 'chicago92'])
 
   def __init__(self, connection, searchterms={ }):
     self._searchterms = searchterms
@@ -336,6 +337,8 @@ def newgamecollection(collection, connection=None):
   """Builder for a game collection."""
   if collection == 'pc2015':
     return TCLGameCollection(connection, collection, "pc2015_", 3)
+  elif collection == 'pc2016':
+    return TCLGameCollection(connection, collection, "pc2016_", 3)
   elif collection == 'baltimore89':
     return ClassicGameCollection(connection, collection, "bmore89_", 10)
   elif collection == 'baltimore92':
