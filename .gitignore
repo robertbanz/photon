@@ -1,3 +1,5 @@
 remote/**
 .DS_Store
 **/.DS_Store
+**/*.gch
+**/.*.swp

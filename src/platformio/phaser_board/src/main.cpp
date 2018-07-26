@@ -3,12 +3,12 @@
 #include <Arduino.h>
 
 #include <ArduinoLed.h>
-#include <RedGreenLed.h>
+#include <ArduinoSwitch.h>
 #include <Photon.h>
+#include <RedGreenLed.h>
 #include <SoftwareSerial.h>
 #include <StandardCplusplus.h>
-#include <ArduinoSwitch.h>
-#include <utility.h>
+#include <SerialUtils.h>
 #include <vector>
 
 constexpr unsigned int kRXD = 0;
@@ -28,27 +28,12 @@ constexpr HardwareSerial* console = &Serial;
 // ()( 6 * 10 ) / 1200) * 1000
 constexpr unsigned int kTriggerWindow = 50;
 
-// RedGreenLed target_led(kTargetLedRed, kTargetLedGreen);
-// RedGreenLed front_led(kFrontLedRed, kFrontLedGreen);
-
-RedGreenLed targeting_led(new ArduinoLed(kTargetLedRed), new ArduinoLed(kTargetLedGreen));
-RedGreenLed front_led(new ArduinoLed(kFrontLedRed), new ArduinoLed(kFrontLedGreen));
-
+RedGreenLed targeting_led(new ArduinoLed(kTargetLedRed),
+                          new ArduinoLed(kTargetLedGreen));
+RedGreenLed front_led(new ArduinoLed(kFrontLedRed),
+                      new ArduinoLed(kFrontLedGreen));
 ArduinoSwitch trigger(kTrigger);
 SoftwareSerial ir_serial(kIrSerial, kIrSerialTxUnused);
-
-template <typename T>
-std::pair<bool, unsigned char> GetLastByteFromSerial(T* serial) {
-  std::pair<bool, unsigned char> result(false, 0);
-  const auto available = serial->available();
-  if (available > 0) {
-    byte buffer[available];
-    serial->readBytes(buffer, available);
-    result.second = buffer[available - 1];
-    result.first = true;
-  }
-  return result;
-}
 
 class PhaserState {
  public:
