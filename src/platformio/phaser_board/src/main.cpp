@@ -1,5 +1,4 @@
 
-
 #include <Arduino.h>
 
 #include <ArduinoLed.h>
@@ -27,6 +26,7 @@ constexpr HardwareSerial* console = &Serial;
 // row to be considered a hit.
 // ()( 6 * 10 ) / 1200) * 1000
 constexpr unsigned int kTriggerWindow = 50;
+constexpr unsigned int kTriggerConsecutiveCodes = 3;
 
 RedGreenLed targeting_led(new ArduinoLed(kTargetLedRed),
                           new ArduinoLed(kTargetLedGreen));
@@ -45,9 +45,7 @@ class PhaserState {
   bool CheckForMiss(unsigned long now) {
     if (active_) {
       Heartbeat(now);
-      if (!active_) {
-        return true;
-      }
+      return !active_;
     }
     return false;
   }
@@ -62,7 +60,7 @@ class PhaserState {
       same_target_count_ = 0;
       last_byte_ = target;
     }
-    if (same_target_count_ >= 3) {
+    if (same_target_count_ >= kTriggerConsecutiveCodes) {
       Reset();
       return true;
     }

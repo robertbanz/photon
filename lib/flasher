@@ -1,3 +1,4 @@
+# vim: ft=tcl:
 
 namespace eval flasher {
   variable widgetlist
@@ -9,7 +10,7 @@ namespace eval flasher {
   set flash_off_speed 500
 
   set widgetlist { }
-  
+
 proc on { widget } {
 
   variable widgetlist
@@ -46,7 +47,7 @@ proc flash_on { } {
   variable flash_on_speed
   variable widgetlist
   variable foreground_colors
-  
+
   foreach widget $widgetlist {
     if { [ winfo exists "$widget" ] } {
       "$widget" configure -foreground $foreground_colors("$widget")
@@ -64,7 +65,7 @@ proc flash_off { } {
   variable widgetlist
   variable foreground_colors
 
-  foreach widget $widgetlist { 
+  foreach widget $widgetlist {
     if { [ winfo exists "$widget" ] } {
       "$widget" configure -foreground [ "$widget" cget -background ]
     } else {
@@ -76,6 +77,5 @@ proc flash_off { } {
 }
 
 ::flasher::flash_on
-    
+
 }
-    

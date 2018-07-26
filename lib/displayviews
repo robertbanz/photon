@@ -1,8 +1,9 @@
+# vim: ft=tcl:
 
 set rcsid { $Id: displayviews,v 1.4 1999/01/31 17:11:44 banz Exp $ }
 
 proc game_display_setup { p { static 0 } } {
-  
+
   variable viewable_width
   variable viewable_height
   variable count_red
@@ -18,7 +19,7 @@ proc game_display_setup { p { static 0 } } {
   } else {
     frame $p.score.red -width [ expr { [ winfo reqwidth $p ] / 2 } * .95 ]
     frame $p.score.green -width [ expr { [ winfo reqwidth $p ] / 2 } * .95 ]
-  }  
+  }
 
   label $p.score.red.teamname -text $::Ginfo::team_red
   label $p.score.green.teamname -text $::Ginfo::team_green
@@ -27,8 +28,8 @@ proc game_display_setup { p { static 0 } } {
       -height [ winfo reqheight $p.score.red.teamname ] -anchor nw
   place $p.score.green.teamname -relx 0.0 -rely 0.0 -relwidth 1.0 \
       -height [ winfo reqheight $p.score.green.teamname ] -anchor nw
-  
-  
+
+
   set count_green 0
   set count_red 0
 
@@ -51,7 +52,7 @@ proc game_display_setup { p { static 0 } } {
   # slap their information onto the "big board"
 
   set j 0
-  
+
   set maxheight 0
   set oneplayer 0
 
@@ -62,7 +63,7 @@ proc game_display_setup { p { static 0 } } {
     set sizecount [ winfo reqheight $p.score.$x.teamname ]
 
     for { set i 0 } { $i < $count } { incr i } {
-      
+
       frame $p.score.$x.pl$i -width [ winfo reqwidth $p.score.$x ]
 
       label $p.score.$x.pl$i.base \
@@ -91,11 +92,11 @@ proc game_display_setup { p { static 0 } } {
           -relheight 1.0 -anchor ne
 
       set sibling pl$i
-      
+
       set sizecount [ expr { $sizecount + 1.0 * [ winfo reqheight $p.score.$x.pl$i ] } ]
 
-      if { $oneplayer == 0 } {    
-        set oneplayer [ winfo reqheight $p.score.$x.pl$i ]    
+      if { $oneplayer == 0 } {
+        set oneplayer [ winfo reqheight $p.score.$x.pl$i ]
         set maxheight [ expr { $oneplayer * 8 } ]
       }
     }
@@ -109,23 +110,23 @@ proc game_display_setup { p { static 0 } } {
         -textvariable ::Display::Server::teamscore($x) -justify right
     $p.score.$x.teamscore configure \
         -height [ winfo reqheight $p.score.$x.teamscore.score ]
-  
+
     place $p.score.$x.teamscore -in $p.score.$x -relx 1.0 -rely 1.0 \
         -anchor se -bordermode outside \
         -width [ winfo reqwidth $p.score.$x.teamscore ] \
         -height [ winfo reqheight $p.score.$x.teamscore.score ]
-  
+
     place $p.score.$x.teamscore.score -in $p.score.$x.teamscore \
         -relx .975 -rely 0.0 -relheight 1.0 -anchor ne
 
     set sizecount [ expr { $sizecount + \
         ( [ winfo reqheight $p.score.$x.teamscore ] * 2 ) } ]
-  
-    if { $sizecount > $maxheight } { 
+
+    if { $sizecount > $maxheight } {
         set maxheight $sizecount
     }
   }
-  
+
   $p.score configure -height $maxheight
 
   if { $hd_mode } {
@@ -210,12 +211,12 @@ proc SortScores { } {
         if { $stuff($i) != $source($f) } {
           set stuff($i) $source($f)
         }
-      }     
-    } 
+      }
+    }
   }
 }
 
-proc dm_GAME_update { { chain yes } } {    
+proc dm_GAME_update { { chain yes } } {
   variable score_root
   variable count_red
   variable count_green
@@ -244,14 +245,14 @@ proc dm_GAME_update { { chain yes } } {
         if { $Display::Server::basecount($sort($i)) } {
           $score_root.score.$x.pl$i.base configure -foreground $on_color($x)
         } else {
-          $score_root.score.$x.pl$i.base configure -foreground [  
+          $score_root.score.$x.pl$i.base configure -foreground [
             $score_root.score.$x.pl$i.base cget -background ]
         }
       }
     }
   }
 
-  if { ( $count_red >= 1 ) && ( $count_green >= 1 ) } { 
+  if { ( $count_red >= 1 ) && ( $count_green >= 1 ) } {
     if { ( $score_red(0) > $score_green(0) ) } {
       flasher::off $score_root.score.green.pl0.score
       flasher::off $score_root.score.green.pl0.name
@@ -269,8 +270,8 @@ proc dm_GAME_update { { chain yes } } {
       flasher::off $score_root.score.green.pl0.name
     }
   }
-    
-  if { ( $::Display::Server::teamscore(red) > 
+
+  if { ( $::Display::Server::teamscore(red) >
          $::Display::Server::teamscore(green) ) } {
     flasher::off $score_root.score.green.teamscore.score
     flasher::on $score_root.score.red.teamscore.score
@@ -281,7 +282,7 @@ proc dm_GAME_update { { chain yes } } {
   } else {
     flasher::off $score_root.score.green.teamscore.score
     flasher::off $score_root.score.red.teamscore.score
-  }    
+  }
 
   if { ( ( $::Display::Server::STATE == "GAME" ) ||
          ( $::Display::Server::STATE == "POSTGAME" ) ) &&

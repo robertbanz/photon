@@ -1,3 +1,5 @@
+# vim: ft=tcl:
+
 namespace eval version {
   set version_id "20170730.0"
   set version_name "Profit Margin"

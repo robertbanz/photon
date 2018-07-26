@@ -1,4 +1,5 @@
 #!/usr/bin/env wish8.6
+# vim: ft=tcl:
 
 set rcsid { $Id: cgdisplay,v 1.10 1999/02/13 01:36:55 banz Exp $ }
 
@@ -108,17 +109,17 @@ foreach x { alert-blank alert-on background earthlings } {
 }
 
 proc GT_time_formatter { name name2 what } {
-  upvar 0 $name GT_time    
+  upvar 0 $name GT_time
   set ::GT_time_formatted [ format "%d:%02d" [ expr { $GT_time / 60 } ] \
-      [ expr { $GT_time % 60 } ] ]    
+      [ expr { $GT_time % 60 } ] ]
 }
 
 set hold_time 0
 
 proc setGameMode { mode } {
-    
+
   set conn [ db_connect ]
-    
+
   pg_select $conn "select name, descr, code, params from g_modes where \
       storeid = 0 and name = '$mode'" array {
 	  set ::Game::code $array(code)
@@ -126,7 +127,7 @@ proc setGameMode { mode } {
 	  set ::Game::mode_descr $array(descr)
 	  set ::Game::setparams $array(params)
   }
-  
+
   pg_select $conn "select name, descr, code, params from g_modes where \
       storeid = $Conf::storeid and name = '$mode'" array {
 	  set ::Game::code $array(code)
@@ -134,13 +135,13 @@ proc setGameMode { mode } {
 	  set ::Game::mode_descr $array(descr)
 	  set ::Game::setparams $array(params)
   }
-    
+
   namespace eval ::Game "source $Conf::modes/$::Game::code"
   namespace eval ::Game "Init $::Game::code"
   set ::Ginfo::mode $::Game::mode
   set ::Ginfo::length $::Game::Params::length
-    
-  pg_disconnect $conn  
+
+  pg_disconnect $conn
 }
 
 wm geometry . \
@@ -149,9 +150,9 @@ wm geometry . \
 . configure -width $viewable_width
 . configure -height $viewable_height
 . configure -borderwidth 0
-. configure -background black 
+. configure -background black
 
-proc ClientRead { sock } {  
+proc ClientRead { sock } {
   if { [ eof $sock ] } {
     # socket got closed
 	  variable s
@@ -159,11 +160,11 @@ proc ClientRead { sock } {
 	  # begin the open loop again..
 	  OpenSocket_Wrapper
 	  return -code ok
-  }  
-  ::Display::ClientRead $sock 
+  }
+  ::Display::ClientRead $sock
 }
 
-proc DisplayMode { mode } {  
+proc DisplayMode { mode } {
   variable current_mode
   variable current_parent
 
@@ -177,14 +178,14 @@ proc DisplayMode { mode } {
 
   # if the returned parent == current_parent, don't do the
   # destroy and re-grid, it could be bad...
-   
+
   set new_parent [ dm_$mode {} ]
-    
+
   if { $new_parent != $current_parent } {
 	  if { [ winfo exists $current_parent ] && $current_mode != "" } {
 	    destroy $current_parent
 	  }
-	
+
 	  variable viewable_height
 	  variable viewable_width
 
@@ -198,14 +199,14 @@ proc DisplayMode { mode } {
 }
 
 proc dm_IDLE { root } {
-    
-  variable viewable_width 
+
+  variable viewable_width
   variable viewable_height
   variable advert_image
   variable noidle
   variable last_idle
   variable hold_time
-  
+
   trace vdelete ::Display::Server::play_by_play w dm_Game_Play_by_Play
 
   if { [ winfo exists $root.dmGAME ] } {
@@ -236,17 +237,17 @@ proc dm_next_IDLE { p } {
   variable frame_count
   variable screenpath
   variable idle_root
-  
+
   if { $::Display::Server::STATE != "IDLE" } {
     return -code ok
   }
-  
+
   if { ! [ info exists idle_root ] } {
     set idle_root $p
   } else {
     set p $idle_root
   }
-  
+
   if { ! [ info exists frame_count ] } {
 	  set frame_count 0
   } else {
@@ -258,7 +259,7 @@ proc dm_next_IDLE { p } {
   if { ! [ winfo exists $p ] } {
 	  frame $p -width $viewable_width -height $viewable_height
   }
-   
+
   set r [ frame $p.frame$frame_count -width $viewable_width \
       -height $viewable_height ]
 
@@ -279,46 +280,46 @@ proc dm_next_IDLE { p } {
 	      break
       }
     }
-    
+
     set x [ expr { $x % [ llength $screens ] } ]
 
     set script [ lindex $screens $x ]
-  } else {    
-    set script [ lindex $screens 0 ]    
+  } else {
+    set script [ lindex $screens 0 ]
   }
-  
+
   if { [ info exists previous_frame ] } {
     ::Idlescreen::end $p.frame${previous_frame}
   }
-  
+
   set last_idle $script
-  
+
   catch { namespace delete ::Idlescreen }
   namespace eval ::Idlescreen [ list source $script ]
 
   set idle_window $r
   ::Idlescreen::run $r
-  place $r -relx 0.0 -rely 0.0 -width $viewable_width -height $viewable_height  
+  place $r -relx 0.0 -rely 0.0 -width $viewable_width -height $viewable_height
 }
 
 proc dm_PREGAME { root } {
-  
+
   variable hd_mode
-  
+
   variable viewable_width
   variable viewable_height
 
   variable idle_window
-  
-  if { [ info exists idle_window ] } {    
+
+  if { [ info exists idle_window ] } {
     catch Idlescreen::end $idle_window
     unset idle_window
   }
-  
+
   if { $hd_mode } {
     set r ${root}.c
     set p ${root}.c.dmPREGAME
-    canvas ${root}.c -width $viewable_width -height $viewable_height  
+    canvas ${root}.c -width $viewable_width -height $viewable_height
     canvas $p -width 958 -height 720
     ${root}.c create window [ expr ( $viewable_width - 958 ) / 2 ] 0 \
         -window $p -anchor nw
@@ -333,7 +334,7 @@ proc dm_PREGAME { root } {
   image create photo ::alert_image -height [ image height ::alert_alert-on ] \
       -width [ image width ::alert_alert-on ]
   ::alert_image copy ::alert_alert-on
-  
+
   if { $hd_mode } {
     $p create image 247 39 -image ::alert_image -anchor nw
   } else {
@@ -355,8 +356,8 @@ proc dm_PREGAME { root } {
   } else {
     $p create image 0 97 -image ::alert_earthlings -anchor nw
   }
-      
-  trace variable ::Display::Server::GT_time w dm_PREGAME_time_update 
+
+  trace variable ::Display::Server::GT_time w dm_PREGAME_time_update
 
   dm_PREGAME_alert_flash
 
@@ -364,14 +365,14 @@ proc dm_PREGAME { root } {
 }
 
 proc dm_PREGAME_alert_flash { } {
-    
+
   if { $::Display::Server::STATE == "PREGAME" } {
     variable alert_global
-	
+
     if { ! [ info exists alert_global ] } {
 	      set alert_global 1
     }
-	
+
 	  if { $alert_global == 1 } {
 	    ::alert_image copy ::alert_alert-on
 	    set alert_global 0
@@ -385,16 +386,16 @@ proc dm_PREGAME_alert_flash { } {
 
 
 proc dm_PREGAME_time_update { name name2 op } {
-  if { ( $::Display::Server::STATE == "PREGAME" ) && 
+  if { ( $::Display::Server::STATE == "PREGAME" ) &&
 	       $::Display::Server::GT_time >= 0 } {
     ::alert_count copy ::alert_count_$::Display::Server::GT_time
   } else {
-	  trace vdelete ::Display::Server::GT_time w dm_PREGAME_time_update 
+	  trace vdelete ::Display::Server::GT_time w dm_PREGAME_time_update
   }
 }
 
 proc dm_GAME { root } {
-  
+
   set p $root.dmGAME
   variable count_red
   variable count_green
@@ -406,12 +407,12 @@ proc dm_GAME { root } {
   set i 0
 
   variable score_root
-  
+
   set conn [ db_connect ]
-  
+
   vwait ::Display::Server::gameid
   set gameid $::Display::Server::gameid
-  
+
   set res [ my_pg_exec $conn "select * from g_data where id = $gameid \
       and storeid = $Conf::storeid" ]
 
@@ -419,23 +420,23 @@ proc dm_GAME { root } {
     puts "error loading game from database"
     pg_disconnect $conn
     return -code ok
-  } 
-  
+  }
+
   pg_result $res -tupleArray 0 gdata
-  
+
   setGameMode $gdata(mode)
-  
+
   set Ginfo::length $gdata(length)
   set Ginfo::team_red $gdata(red_teamname)
   set Ginfo::team_green $gdata(green_teamname)
-    
+
   namespace eval ::Ginfo "$gdata(params)"
-  
+
   for { set x 0 } { $x < 40 } { incr x } {
 	  set ::Ginfo::used($x) 0
   }
-    
-  # load player information  
+
+  # load player information
   pg_select $conn "select team, slot, name, idnum from g_players \
       where id = $gameid and storeid = $Conf::storeid and used " array {
     set adder [ expr { $array(team) * 20 } ]
@@ -443,8 +444,8 @@ proc dm_GAME { root } {
     set ::Ginfo::used($j) 1
 	  set ::Ginfo::name($j) $array(name)
 	  set ::Ginfo::id($j) $array(idnum)
-  }    
-    
+  }
+
   pg_disconnect $conn
 
   set c [ canvas $p -width $viewable_width -height $viewable_height \
@@ -454,10 +455,10 @@ proc dm_GAME { root } {
   upvar 0 viewable_width vw
 
   # plop game_display in it...
-  
+
   frame $p.score -width $vw -height $vh
   game_display_setup $p
-  
+
   set score_root $p
 
   dm_GAME_update
@@ -474,7 +475,7 @@ proc dm_GAME { root } {
       -width [ winfo reqwidth $p.status.time ] -relheight 1.0 -anchor ne
   place $p.status.timelabel -x 0 -y 0 \
       -width [ winfo reqwidth $p.status.timelabel ] -relheight 1.0
-  
+
   $p.status configure -width \
       [ expr [ winfo reqwidth $p.status.time ] + \
       [ winfo reqwidth $p.status.timelabel ] ]
@@ -485,35 +486,35 @@ proc dm_GAME { root } {
   $c create window $vw [ expr $vh - 4 ] -width $vw -anchor se -window $p.status
 
   # play by play stuff
-  
+
   frame $p.hbh -height \
       [ expr $vh - ( [ winfo reqheight $p.score ] + 20 ) - $stheight ] \
       -width $vw -borderwidth 0 -relief flat
 
-  variable play_by_play_red   
-  variable play_by_play_green 
+  variable play_by_play_red
+  variable play_by_play_green
   set play_by_play_red [ text $p.hbh.red -borderwidth 0 -relief flat -highlightthickness 0 ]
   set play_by_play_green [ text $p.hbh.green -borderwidth 0 -relief flat -highlightthickness 0 ]
-  
+
   if { $hd_mode } {
     dm_Build_Radio [ frame $p.hbh.radio -relief flat ]
   }
-  
+
   trace variable ::Display::Server::play_by_play w dm_Game_Play_by_Play
-  
+
   $play_by_play_red tag configure red -foreground "#ff8888"
   $play_by_play_red tag configure green -foreground "#88ff88"
   $play_by_play_red tag configure justify -justify left
-  
+
   $play_by_play_green tag configure red -foreground "#ff8888"
   $play_by_play_green tag configure green -foreground "#88ff88"
   $play_by_play_green tag configure justify -justify right
-  
+
   if { $hd_mode } {
      place $p.hbh.red -relx 0.05 -y 0 -height [ winfo reqheight $p.hbh ] \
          -relwidth 0.30
      place $p.hbh.radio -relx 0.40 -height [ winfo reqheight $p.hbh ] \
-         -relwidth 0.20     
+         -relwidth 0.20
      place $p.hbh.green -relx 0.65 -y 0 -height [ winfo reqheight $p.hbh ] \
          -relwidth 0.30
    } else {
@@ -522,10 +523,10 @@ proc dm_GAME { root } {
      place $p.hbh.green -relx 0.51 -y 0 -height [ winfo reqheight $p.hbh ] \
          -relwidth 0.48
    }
-   
+
   set pbp_window [ $c create window 0 \
       [ expr 5 + [ winfo reqheight $p.score ] ] -window $p.hbh -anchor nw ]
-  
+
   return $p
 
 }
@@ -533,7 +534,7 @@ proc dm_GAME { root } {
 proc dm_Build_Radio { frame } {
   set row 0
   set col 0
-  
+
   proc rx_col { color slots } {
     upvar row row
     upvar col col
@@ -560,7 +561,7 @@ proc dm_Build_Radio { frame } {
     }
     incr col
   }
-    
+
   tx_col {0}
   rx_col "#ff8888" {5 6 7 8 9 10 11 12 13 14}
   rx_col "#ff8888" {15 16 17 18 19 20 21 22 23 24}
@@ -575,7 +576,7 @@ proc dm_Game_Play_by_Play { name name2 op } {
 
 	variable play_by_play_red
   variable play_by_play_green
-	
+
 	foreach x $::Display::Server::play_by_play {
 	  # tokenize, and for each element in the list, do the
 	  # appropriate replacement
@@ -589,14 +590,14 @@ proc dm_Game_Play_by_Play { name name2 op } {
 		      set color { red justify }
           if { $picked == 0 } {
             upvar 0 play_by_play_red windowvar
-        	  $windowvar insert end "\n" { justify }            
+        	  $windowvar insert end "\n" { justify }
             set picked 1
           }
 	      } else {
           set color { green justify }
           if { $picked == 0 } {
             upvar 0 play_by_play_green windowvar
-        	  $windowvar insert end "\n" { justify }          
+        	  $windowvar insert end "\n" { justify }
             set picked 1
           }
 	      }
@@ -620,10 +621,10 @@ proc dm_POSTGAME { root } {
   # say "game completed" or something...
 
   # we make a new frame, and stick dm_GAME in it...
-  
+
   variable hold_time
   set hold_time [ expr [ clock seconds ] + 30 ]
-  
+
   set p $root.dmGAME
 
   foreach x [ winfo children $p.status ] {
@@ -632,7 +633,7 @@ proc dm_POSTGAME { root } {
 
   label $p.status.terminated
   pack $p.status.terminated
-  
+
   return $p
 }
 
@@ -651,32 +652,32 @@ proc OpenSocket_Wrapper { } {
 proc OpenSocket { } {
   global s
   global go
-  
+
   trace vdelete ::Display::Server::STATE w ChangeState
-  
+
   set s [ socket $::Conf::server_name $::Conf::disp_listenport ]
-  
+
   fconfigure $s -buffering line
   fconfigure $s -blocking 1
-  
+
   fileevent $s readable [ list ClientRead $s ]
 
   # suck up current data, so we have some place to start
   net_write $s "UPDATE"
   net_write $s "STATUS"
-  
+
   vwait ::Display::Server::STATE
-  
+
   net_write $s "MODE STREAM"
   net_write $s "SUB STATUS"
   net_write $s "SUB GAME"
   net_write $s "SUB RADIO"
-  
+
   # initial setups
   DisplayMode $::Display::Server::STATE
-  
+
   trace variable ::Display::Server::STATE w ChangeState
-  
+
   set go 1
 }
 
@@ -684,4 +685,3 @@ set go 0
 set current_mode ""
 
 OpenSocket_Wrapper
-

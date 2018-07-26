@@ -1,3 +1,4 @@
+# vim: ft=tcl:
 
 #
 # $Log: photon_vals,v $
@@ -16,9 +17,9 @@ namespace eval ::Photon {
   set PUBLIC 0xE1
   set LEAGUE 0xE2
   set FFA 0xE3
-  
+
   set REDALPHA 0x40
-  set REDOMEGA 0x41 
+  set REDOMEGA 0x41
   set GRNALPHA 0x80
   set GRNOMEGA 0x81
   set RED 0x40
@@ -51,7 +52,7 @@ namespace eval ::Photon {
   set RF_SLOT_MAX 66
 
   set PLAYERS_PER_TEAM 20
-  
+
   set debug 0
   set gdebug 0
   set polldebug 0

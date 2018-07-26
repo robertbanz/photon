@@ -1,3 +1,5 @@
+# vim: ft=tcl:
+
 namespace eval ::IrLib {
 
 set fd ""
@@ -8,9 +10,9 @@ set kEtBarker 0x9d
 set kEtNotBarker 0x62
 
 proc ir_setup { device } {
-  if { "$device" ne "GAME" } {  
+  if { "$device" ne "GAME" } {
     variable fd
-  
+
     if { "$fd" ne "" } {
       return -code error "Ir Device Already Initialized"
     }
@@ -19,7 +21,7 @@ proc ir_setup { device } {
     if { $rc != 0 } {
       return -code error "Cannot open Ir Device $device"
     }
-  
+
     fconfigure $fd -buffering none
     fconfigure $fd -blocking 0
     fconfigure $fd -encoding binary
@@ -29,7 +31,7 @@ proc ir_setup { device } {
   } else {
     variable fd
     set fd "GAME"
-  }  
+  }
   return -code ok
 }
 
@@ -42,13 +44,13 @@ proc ir_enterpod { team slot mode } {
   variable position
   variable kEtBarker
   variable kEtNotBarker
-  
+
   ir_stop
-  
+
   if { $slot < 0 || $slot > 19 } {
     return -code error "slot out of range"
   }
-  
+
   if { $team == 0 } {
     set rfcode [expr {$Photon::RED_RFSTART + $slot - 1}]
     set ircode [expr {$Photon::REDIR + $slot}]
@@ -61,9 +63,9 @@ proc ir_enterpod { team slot mode } {
   } else {
     return -code error "team out of range"
   }
-  
+
   set modecode [expr {$mode + 0xc0}]
-  
+
   set checksum [\
       expr {$kEtBarker ^ $kEtNotBarker ^ $ircode ^ $rfcode ^ $modecode}]
   ir_out [list [binary format c $kEtBarker] \
@@ -71,7 +73,7 @@ proc ir_enterpod { team slot mode } {
                [binary format c $ircode] \
                [binary format c $rfcode] \
                [binary format c $modecode] \
-               [binary format c $checksum] ] 
+               [binary format c $checksum] ]
 }
 
 proc ir_out { bytes } {
@@ -108,7 +110,7 @@ proc ir_event { } {
   variable schedule
   set rc [catch [puts -nonewline $fd [lindex $outqueue $position]]]
   set position [expr {($position + 1) % [llength $outqueue]}]
-  set schedule [after 16 {::IrLib::ir_event}] 
+  set schedule [after 16 {::IrLib::ir_event}]
 }
 
 proc game_ir_out { bytes } {

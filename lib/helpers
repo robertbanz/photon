@@ -1,3 +1,5 @@
+# vim: ft=tcl:
+
 proc db_connect { } {
   return [pg_connect $Conf::dbname -host $Conf::dbhost]
 }
@@ -23,7 +25,7 @@ proc net_write_nf { sock message } {
     ::warninglog "Error writing to $sock: $rc"
     catch { close $sock }
   }
-  return -code ok  
+  return -code ok
 }
 
 proc net_flush { sock } {
@@ -50,7 +52,7 @@ proc LogTime { } {
 }
 
 proc SockInfo { sock } {
-  if { [catch {fconfigure $sock -peername} result] } {    
+  if { [catch {fconfigure $sock -peername} result] } {
     return -code ok "(unknown) $result"
   } else {
     return [lindex $result 1]

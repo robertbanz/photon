@@ -1,5 +1,7 @@
+# vim: ft=tcl:
+
 namespace eval Photon_ps {
-  
+
 variable PHASER_GAME_CODE $::Photon::GSYNC
 variable PHASER_CLINK_CODE 0xC5
 variable PHASER_GAME_CODE_COUNT 3
@@ -26,26 +28,26 @@ proc connect {} {
   fconfigure $fd -eofchar {}
   fconfigure $fd -translation binary
   fconfigure $fd -mode 9600,n,8,1
-  return $fd  
+  return $fd
 }
 
 proc init {} {
   variable phaser_installed
   variable fd
   variable free_clinks
-  
+
   if {[info exists ::Conf::phasertty]} {
     if { [connect] == -1 } {
       return --code ok
     }
     set phaser_installed 1
-    
+
     if {[info exists ::Conf::phaser_free_clinks]} {
       set free_clinks $::Conf::phaser_free_clinks
     }
-    
+
     after 1000 [namespace code {phasersync}]
-  
+
     set m [menu .menubar.phaser -tearoff 0]
     .menubar add cascade -label "Phaser Stations" -menu ${m}
     ${m} add command -label "Send Clink Code" \
@@ -84,7 +86,7 @@ proc phasersync { } {
   variable PHASER_CLINK_CODE
   variable phaser_enabled
   variable PHASER_GAME_CODE
-  
+
   if { $phaser_send_clink > 0 } {
     ::debuglog "phaser: send clink"
     phaser_putc $PHASER_CLINK_CODE

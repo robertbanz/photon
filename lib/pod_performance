@@ -1,31 +1,33 @@
+# vim: ft=tcl:
+
 namespace eval ::Photon::pp {
 
-variable id           
+variable id
 variable used
 variable gameused
 
 # interesting stuff
-variable missinrow    
-variable invalidinrow   
-variable invalidvalids  
+variable missinrow
+variable invalidinrow
+variable invalidvalids
 
 # counting stuff
 variable idinrow
-variable idcount        
-variable basecount      
-variable syncmissed     
-variable psyncrcvd     
+variable idcount
+variable basecount
+variable syncmissed
+variable psyncrcvd
 variable esyncrcvd
 variable wsyncrcvd
-variable serror       
-variable ealarm       
-variable missed       
-variable invalid       
+variable serror
+variable ealarm
+variable missed
+variable invalid
 variable valid
-variable idlu 
+variable idlu
 # tx/rx confirmation
-variable hitssent     
-variable hitsackn   
+variable hitssent
+variable hitsackn
 
 variable curobject
 variable chosenbase
@@ -36,40 +38,40 @@ namespace import ::Photon::gs_to_rs
 namespace import ::Photon::sig_to_id
 
 proc init {} {
-  variable id           
+  variable id
   variable used
   variable gameused
 
   # interesting stuff
-  variable missinrow    
-  variable invalidinrow   
-  variable invalidvalids  
+  variable missinrow
+  variable invalidinrow
+  variable invalidvalids
 
   # counting stuff
   variable idinrow
-  variable idcount        
-  variable basecount      
-  variable syncmissed     
-  variable psyncrcvd     
+  variable idcount
+  variable basecount
+  variable syncmissed
+  variable psyncrcvd
   variable esyncrcvd
   variable wsyncrcvd
-  variable serror       
-  variable ealarm       
-  variable missed       
-  variable invalid       
+  variable serror
+  variable ealarm
+  variable missed
+  variable invalid
   variable valid
-  variable idlu 
+  variable idlu
   # tx/rx confirmation
-  variable hitssent     
-  variable hitsackn   
+  variable hitssent
+  variable hitsackn
 
   variable curobject
   variable chosenbase
 
   for { set i 0 } { $i < 67 } { incr i } {
     # stateful stuff
-    set id($i) -1            
-    set used($i) 0  
+    set id($i) -1
+    set used($i) 0
     if { [ info exists ::Photon::slot_used([rs_to_gs $i]) ] } {
         set gameused($i) $::Photon::slot_used([::Photon::rs_to_gs $i])
     } else {
@@ -77,27 +79,27 @@ proc init {} {
     }
 
     # interesting stuff
-    set missinrow($i) 0      
-    set invalidinrow($i) 0     
-    set invalidvalids($i) 0  
+    set missinrow($i) 0
+    set invalidinrow($i) 0
+    set invalidvalids($i) 0
 
     # counting stuff
     set idinrow($i) 0
-    set idcount($i) 0        
-    set basecount($i) 0      
-    set syncmissed($i) 0     
-    set psyncrcvd($i) 0     
+    set idcount($i) 0
+    set basecount($i) 0
+    set syncmissed($i) 0
+    set psyncrcvd($i) 0
     set esyncrcvd($i) 0
     set wsyncrcvd($i) 0
-    set serror($i) 0       
-    set ealarm($i) 0       
-    set missed($i) 0       
-    set invalid($i) 0       
+    set serror($i) 0
+    set ealarm($i) 0
+    set missed($i) 0
+    set invalid($i) 0
     set valid($i) 0
-    set idlu($i) -1 
+    set idlu($i) -1
     # tx/rx confirmation
-    set hitssent($i) 0     
-    set hitsackn($i) 0   
+    set hitssent($i) 0
+    set hitsackn($i) 0
 
     set curobject($i) 0
     set chosenbase($i) 0
@@ -109,36 +111,36 @@ proc init {} {
   }
 }
 
-    
+
 proc podperf_window { i } {
 
   variable slot_used
-  variable id           
+  variable id
   variable used
   variable gameused
 
   # interesting stuff
-  variable missinrow    
-  variable invalidinrow   
-  variable invalidvalids  
+  variable missinrow
+  variable invalidinrow
+  variable invalidvalids
 
   # counting stuff
   variable idinrow
-  variable idcount        
-  variable basecount      
-  variable syncmissed     
-  variable psyncrcvd     
+  variable idcount
+  variable basecount
+  variable syncmissed
+  variable psyncrcvd
   variable esyncrcvd
   variable wsyncrcvd
-  variable serror       
-  variable ealarm       
-  variable missed       
-  variable invalid       
+  variable serror
+  variable ealarm
+  variable missed
+  variable invalid
   variable valid
-  variable idlu 
+  variable idlu
   # tx/rx confirmation
-  variable hitssent     
-  variable hitsackn   
+  variable hitssent
+  variable hitsackn
 
   variable curobject
   variable chosenbase
@@ -148,7 +150,7 @@ proc podperf_window { i } {
     upvar row row
     label ${r}.${var}${i} -textvariable ::Photon::pp::${var}($i) \
         -width 3 -fg $color
-    grid ${r}.${var}${i} -row $row -column [incr col] -sticky e   
+    grid ${r}.${var}${i} -row $row -column [incr col] -sticky e
   }
 
   if { [ winfo exists .podperf ] } {
@@ -172,7 +174,7 @@ proc podperf_window { i } {
 
   label $r.headslot -text "slot"
   grid $r.headslot -row $row -column 0 -sticky nw
-  
+
   set col 0
 
   foreach x $list {
@@ -216,10 +218,10 @@ proc podperf_window { i } {
     grid $r.radio$i -row $row -column [ incr col ] -sticky e
 
     incr row
-    
+
     # Don't cause the world to pause.
     update
-  }                 
+  }
   wm manage .podperf
 }
 
@@ -251,9 +253,9 @@ proc ObserveOrDiscoverId { slot data } {
   variable idcount
   variable idlu
   variable valid
-  
+
   ObserveDataReceived $slot
-  
+
   # ID discovery phase
   if { $idinrow($slot) <= 4 } {
     set invalidinrow($slot) 0
@@ -261,9 +263,9 @@ proc ObserveOrDiscoverId { slot data } {
       incr idinrow($slot)
     } else {
       set id($slot) $data
-      set idinrow($slot) 1        
+      set idinrow($slot) 1
     }
-    # ID discovered   
+    # ID discovered
   } elseif { $idinrow($slot) == 5 } {
     ObserveValidRx $slot
     set idcount($slot) $idinrow($slot)
@@ -323,20 +325,20 @@ proc ObserveTargetRx { slot data } {
   variable curobject
 
   ObserveDataReceived $slot
-  
+
   set gs [ rs_to_gs $slot ]
-  
+
   # Filter out targets we've seen before.
   if { $curobject($slot) == $data } {
     ObserveValidRx $slot
     incr basecount($slot)
     return 0
   }
- 
+
   if { $data == $::Photon::TARGET } {
     return [ObserveGoodTarget $slot $data]
   }
-  
+
   if { $gs < $::Photon::PLAYERS_PER_TEAM } {
     return [ObserveBaseOrTower $slot $data $::Photon::GTOWER $::Photon::GBASE \
         $::Photon::GBASE2]

@@ -1,3 +1,4 @@
+# vim: ft=tcl:
 
 namespace eval ::Photon::cr {
 
@@ -71,7 +72,7 @@ proc readdata { sock } {
   variable cr_sock
   variable cr_pending
   variable cr_handler_callback
-  
+
   if { [ eof $cr_sock ] } {
     return -code ok
   }
@@ -90,7 +91,7 @@ proc readdata { sock } {
       ::warninglog "$message"
     }
   }
-  
+
   if { [ catch {$cr_handler_callback} dummy error ] } {
     ::warninglog "cr_handler failed $error"
   }
@@ -104,11 +105,11 @@ proc sputs { sock message } {
   }
 }
 
-proc sflush { sock } {  
+proc sflush { sock } {
   if { [ catch {flush $sock} error ] } {
     ::warninglog "flush error to socket $sock ($error)"
   }
-}   
+}
 
 proc init { read_callback } {
   variable cr_sock
@@ -142,7 +143,7 @@ proc reconnect { } {
   fconfigure $s -translation binary
   fconfigure $s -eofchar {}
 
-  
+
   if { $rc != 0 } {
     ::warninglog "error initializing cr $stuff"
   }

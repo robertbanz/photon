@@ -1,3 +1,5 @@
+# vim: ft=tcl:
+
 set streaming_sockets { }
 set valid_subs { GAME STATUS RADIO }
 set array_watchlist { }
@@ -68,7 +70,7 @@ proc Action { string } {
 
 
 proc ServerTrace { name name2 op } {
-  set status_traces { STATE GT_time }  
+  set status_traces { STATE GT_time }
   if { [ lsearch $status_traces $name ] != -1 } {
     if { $::STATE != "TRANSITION" } {
       ::Display::ServerStreamWrite STATUS \
@@ -87,19 +89,19 @@ proc ServerTrace { name name2 op } {
   } elseif { [ lsearch $::Photon::cr_state::radio_watchlist $myvar ] != -1 } {
     upvar 0 ::Photon::cr_state::$myvar stuff
     ::Display::ServerStreamWrite RADIO "902-$myvar $name2 $stuff($name2)"
-  } 
+  }
   return -code ok
 }
 
 proc ServerStreamWrite { type string } {
   variable streaming_sockets
-  
+
   foreach x $streaming_sockets {
     variable subscriptions_$x
     upvar 0 subscriptions_$x subs
     if { [ info exists subs ] } {
       if { [ lsearch $subs $type ] != -1 } {
-        variable outbuffer_$x     
+        variable outbuffer_$x
         lappend outbuffer_$x $string
       }
     }
@@ -113,7 +115,7 @@ proc ServerStreamWriteBuffer { name element op } {
   variable outbuffer_$sock
   upvar 0 outbuffer_$sock buffer
 
-  # write out contents of buffer  
+  # write out contents of buffer
   foreach x $buffer {
     sputs $sock $x
     set buffer [ lreplace $buffer 0 0 ]
@@ -181,8 +183,8 @@ proc ServerHandler_STATUS { sock line } {
     vwait ::STATE
   }
 
-  if { ( $::STATE == "PREGAME" ) 
-        || ( $::STATE == "GAME" ) 
+  if { ( $::STATE == "PREGAME" )
+        || ( $::STATE == "GAME" )
         || ( $::STATE == "POSTGAME" ) } {
     sputs $sock "100-STATE: $::STATE"
     sputs $sock "100-GAME: $::Ginfo::gameid"
@@ -231,7 +233,7 @@ proc ServerDumpGameInfo { sock } {
       sputs $sock "902-$myvar $index $stuff($index)"
     }
   }
-    
+
   return -code ok
 }
 
@@ -240,7 +242,7 @@ proc ServerHandler_MODE { sock line } {
 
   variable streaming_sockets
 
-  if { $mode == "POLL" } { 
+  if { $mode == "POLL" } {
     if { [ lsearch -exact $streaming_sockets $sock ] != -1 } {
       set streaming_sockets [ lreplace $streaming_sockets \
           [ lsearch -exact $streaming_sockets $sock ] \
@@ -271,7 +273,7 @@ proc ServerHandler_MODE { sock line } {
 proc ServerHandler_SUB { sock line } {
 
   set what [ lindex $line 1 ]
-  variable subscriptions_$sock    
+  variable subscriptions_$sock
   variable valid_subs
 
   set mode [ lindex $line 1 ]
@@ -299,7 +301,7 @@ proc ServerHandler_SUB { sock line } {
 
 proc ServerHandler_UNSUB { sock line } {
   set what [ lindex $line 1 ]
-  variable subscriptions_$sock    
+  variable subscriptions_$sock
   variable valid_subs
 
   set mode [ lindex $line 1 ]
@@ -333,7 +335,7 @@ namespace eval Server {
 }
 
 proc ClientRead { sock } {
-  
+
   if { [ eof $sock ] } {
     return -code ok
   }
@@ -359,39 +361,39 @@ proc ClientRead { sock } {
       }
       return -code ok
     }
-  
+
     if { $code < 900 } {
         return "$code $message"
     }
-  
-    if { $code == 901 } {     
-      set stuff [ split $message " " ]      
+
+    if { $code == 901 } {
+      set stuff [ split $message " " ]
       set ::Display::Server::STATE [ lindex $stuff 0 ]
       set ::Display::Server::GT_time [ lindex $stuff 1 ]
-      set ::Display::Server::gameid [ lindex $stuff 2 ]     
+      set ::Display::Server::gameid [ lindex $stuff 2 ]
     }
 
-    if { $code == 902 } {     
+    if { $code == 902 } {
       set stuff [ split $message " " ]
       set varname [ lindex $stuff 0 ]
       set varindex [ lindex $stuff 1 ]
-      set varvalue [ lindex $stuff 2 ]      
+      set varvalue [ lindex $stuff 2 ]
       upvar 0 ::Display::Server::$varname myvar
-      set myvar($varindex) $varvalue      
-    } 
-  
+      set myvar($varindex) $varvalue
+    }
+
     if { $code == 903 } {
       set stuff [ split $message " " ]
-      set varname [ lindex $stuff 0 ] 
+      set varname [ lindex $stuff 0 ]
       set varindex [ lindex $stuff 1 ]
-      set varvalue [ lindex $stuff 2 ]      
+      set varvalue [ lindex $stuff 2 ]
       upvar 0 ::Display::Server::$varname myvar
-      set myvar $varvalue       
+      set myvar $varvalue
     }
-  
-    if { $code == 904 } { 
-      lappend ::Display::Server::play_by_play $stuff      
-    } 
+
+    if { $code == 904 } {
+      lappend ::Display::Server::play_by_play $stuff
+    }
   }
 }
 
@@ -400,7 +402,7 @@ proc sputs { sock message } {
     ::warninglog "write error to socket $sock ($stuff)"
     CloseSock $sock
     return -code ok
-  } 
+  }
 }
 
 proc sflush { sock } {
@@ -410,4 +412,3 @@ proc sflush { sock } {
     return -code ok
   }
 }
-

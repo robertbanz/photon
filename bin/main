@@ -1,4 +1,5 @@
 #!/usr/bin/env wish8.6
+# vim: ft=tcl:
 
 set rcsid { $Id: main,v 1.10 1999/02/06 20:24:40 game Exp game $ }
 
@@ -38,7 +39,7 @@ wm geometry . 640x480+20+20
 # initialize menu.
 menu .menubar
 . config -menu .menubar
-frame .statusframe 
+frame .statusframe
 frame .log
 frame .status
 
@@ -68,7 +69,7 @@ proc debuglog { j } {
   global logwin
   $logwin configure -state normal
   trimlogwin $logwin
-  $logwin insert end "$logtime $j\n" 
+  $logwin insert end "$logtime $j\n"
   $logwin configure -state disabled
   $logwin see end
 }
@@ -135,11 +136,11 @@ pack .status.sync .status.state .status.time -side left
 
 # load in the null game (needed to continue from here)
 namespace eval ::Game {
-  source $Conf::modes/null    
+  source $Conf::modes/null
 }
 
 # initialize game information
-namespace eval ::Ginfo { 
+namespace eval ::Ginfo {
   for { set i 0 } { $i < 40 } { incr i } {
     set name($i) ""
     set id($i) ""
@@ -173,11 +174,11 @@ proc openConsole { } {
   }
   tkcon::Init
 }
-    
+
 proc setGameMode { mode } {
 
   set conn [ db_connect ]
-    
+
   pg_select $conn "select name, descr, code, params from g_modes where \
       storeid = 0 and name = '$mode'" array {
     set ::Game::code $array(code)
@@ -218,10 +219,10 @@ proc runGame { } {
 
   set Action_l { }
 
-  for { set i 0 } { $i < 20 } { incr i } {  
+  for { set i 0 } { $i < 20 } { incr i } {
     if { $::Ginfo::used($i) } {
         lappend red_used $i
-    } 
+    }
     if { $::Ginfo::used([expr $i + 20]) } {
         lappend grn_used $i
     }
@@ -244,10 +245,10 @@ proc runGame { } {
 }
 
 proc endGame { } {
-  namespace eval ::Game "End"    
+  namespace eval ::Game "End"
   namespace eval Photon { endgame }
 }
-  
+
 proc viewScores { } {
   if { [ winfo exists .viewscores ] } {
     return -code ok
@@ -271,13 +272,13 @@ proc viewScores { } {
         grid $r.$x.name$y -row $row -column 0 -sticky w
         grid $r.$x.score$y -row $row -column 1 -sticky e
         incr row
-      }   
+      }
     }
   }
   pack $r.red $r.green -side left
 
 }
-      
+
 proc EtSocketAccept { newSock addr port } {
   ::debuglog "et connection accepted from [SockInfo $newSock]"
   fileevent $newSock readable [ list EtSocketHandler $newSock ]
@@ -314,14 +315,14 @@ proc EtSocketHandler { sock } {
     set j [ split $line " " ]
     set command [ lindex $j 0 ]
     set commands { STATUS START FLICK SENDIR STOPIR }
-  
+
     foreach x $commands {
       if { $x == $command } {
         EtSocketHandler_$command $sock $j
         break
       }
     }
-  
+
     if { $x != $command } {
       net_write $sock "503 Unknown Command"
     }
@@ -344,7 +345,7 @@ proc EtSocketHandler_FLICK { sock com } {
   if { $::Photon::currentsync == "GSYNC" } {
 
     ::Photon::setsync $::Photon::PSYNC
-  
+
     while { $flickHoldTime < 6 } {
         incr flickHoldTime
         net_write $sock "204-FLICKING P-SYNC $flickHoldTime"
@@ -376,7 +377,7 @@ proc EtSocketHandler_STATUS { sock com } {
     net_write $sock "100 TIME: $GT_time"
   } else {
     net_write $sock "100 STATE: $STATE"
-  }       
+  }
 }
 
 proc EtSocketHandler_START { sock com } {
@@ -428,7 +429,7 @@ proc EtSocketHandler_STOPIR { sock com } {
 #    -> Idle_To_Pregame (responsible for calling the next transition)
 # PREGAME
 #    -> Pregame_To_Game (responsible for calling the next transition)
-# GAME 
+# GAME
 #    -> Game_To_Postgame (rsponsible for calling the next transition)
 # POSTGAME
 #    -> Postgame_To_Idle
@@ -476,11 +477,11 @@ proc LoadSoundTrack { trackname length } {
     set trackname ""
   } else {
     pg_result $res -tupleArray 0 tdata
-    if { ( $tdata(length) != 0 ) && ( $tdata(length) != $length ) } {     
+    if { ( $tdata(length) != 0 ) && ( $tdata(length) != $length ) } {
       warninglog "Track selected isn't the correct length"
       set trackname ""
     }
-  
+
   }
   pg_result $res -clear
 
@@ -564,7 +565,7 @@ proc Idle_To_Pregame { } {
 
   # Sound System
   ::STrack::Begin $Ginfo::length
-    
+
   set STATE PREGAME
 }
 
@@ -577,7 +578,7 @@ proc Pregame_To_Game { } {
 
   if { $STATE == "TRANSITION" } {
     return
-  }  
+  }
 
   set STATE TRANSITION
 
@@ -627,7 +628,7 @@ proc Game_To_Postgame { } {
 
   set STATE TRANSITION
   endGame
-  
+
   set GT_time 0
   set GT_direction 0
   set GT_decription ""
@@ -654,19 +655,19 @@ proc Postgame_To_Idle { } {
   set STATE TRANSITION
   ::Photon::setsync $::Photon::PSYNC
   set STATE IDLE
-  
+
   # Reset lights
   ::Lightmaster::start_idle
 }
 
-    
+
 proc ET_LoadGame { gameid } {
 
   global team_red
   global team_green
 
   set conn [ db_connect ]
-  
+
   set Ginfo::gameid $gameid
 
   set res [ my_pg_exec $conn "select * from g_data where id = $gameid and \
@@ -707,7 +708,7 @@ proc ET_LoadGame { gameid } {
     set ::Ginfo::used($j) 1
     set ::Ginfo::name($j) $array(name)
     set ::Ginfo::id($j) $array(idnum)
-  }    
+  }
 
   pg_disconnect $conn
 
@@ -727,7 +728,7 @@ proc saveGame { } {
 
   set conn [ db_connect ]
 
-  foreach t { 0 1 } { 
+  foreach t { 0 1 } {
     for { set x 0 } { $x < 20 } { incr x } {
       if { $t == 1 } {
         set y [ expr $x + 20 ]
@@ -771,28 +772,28 @@ proc saveGame { } {
       green_teamscore = $Game::teamscore(green) where id = $Ginfo::gameid \
       and storeid = $Conf::storeid"
   set res [ my_pg_exec $conn $statement ]
-  
+
   if {[pg_result $res -status] != "PGRES_COMMAND_OK"} {
     puts "[pg_result $res -error] executing '$statement'"
   }
-  
+
   pg_result $res -clear
 
   pg_disconnect $conn
 }
-    
+
 
 proc savePods { } {
 
   set comm [ db_connect ]
-  
+
   set colorstart(r) $::Photon::RED_RFSTART
   set colorstart(g) $::Photon::GRN_RFSTART
 
   foreach x { r g } {
-    for { set i $colorstart($x) } { $i < ( $colorstart($x) + 20 ) } { incr i } {      
+    for { set i $colorstart($x) } { $i < ( $colorstart($x) + 20 ) } { incr i } {
 
-      if { ( $::Ginfo::used([Photon::rs_to_gs $i]) == 1 ) && 
+      if { ( $::Ginfo::used([Photon::rs_to_gs $i]) == 1 ) &&
            ( $::Photon::pp::id($i) != -1 ) } {
         set res [ my_pg_exec $comm "insert into g_pods ( storeid, color, id, \
             pod, syncmissed, wsyncrcvd, serror, ealarm, missed, invalid, valid, \
@@ -802,7 +803,7 @@ proc savePods { } {
             $::Photon::pp::serror($i), $::Photon::pp::ealarm($i), \
             $::Photon::pp::missed($i), $::Photon::pp::invalid($i), \
             $::Photon::pp::valid($i),$::Photon::pp::hitssent($i), \
-            $::Photon::pp::hitsackn($i), $i, $::Photon::pp::pollcount, 
+            $::Photon::pp::hitsackn($i), $i, $::Photon::pp::pollcount,
             $::Photon::pp::missinrow($i) )" ]
         pg_result $res -clear
       }
