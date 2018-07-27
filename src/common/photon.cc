@@ -20,6 +20,20 @@ const unsigned char kRedTower = 0x32;
 const unsigned char kGreenTower = 0x24;
 const unsigned char kTarget = 0x38;
 
+const unsigned char kPsync = 0xc5;
+const unsigned char kGsync = 0xca;
+const unsigned char kEsync = 0xdd;
+
+const char* kPsyncName = "PSYNC";
+const char* kGsyncName = "GSYNC";
+const char* kEsyncName = "ESYNC";
+const char* kUnknownName = "UNKNOWN";
+
+unsigned int kNumSlots = 67;
+
+unsigned int kRedRfStart = 5;
+unsigned int kGreenRfStart = 31;
+
 bool ValidateEtPacket(const std::vector<unsigned char>& buffer) {
   if (buffer.size() != kEtPacketSize) {
     return false;
@@ -53,6 +67,48 @@ TargetType TargetTypeFromIrCode(unsigned char value) {
     return TargetType::OTHER;
   }
   return TargetType::INVALID;
+}
+
+bool IsTxSlot(unsigned int slot) {
+  if (slot == 0 || (slot > 24 && slot < 30) || (slot > 54 && slot < 60)) {
+    return true;
+  }
+  return false;
+}
+
+bool IsRealRxSlot(unsigned int slot) {
+  if (((slot >= kRedRfStart) && (slot < kRedRfStart + 20)) ||
+      ((slot >= kGreenRfStart) && (slot < kGreenRfStart + 20))) {
+    return true;
+  }
+  return false;
+}
+
+const char* GetSyncNameFromByte(const unsigned char byte) {
+  switch (byte) {
+    case 0xc5:
+      return kPsyncName;
+      break;
+    case 0xca:
+      return kGsyncName;
+      break;
+    case 0xdd:
+      return kEsyncName;
+      break;
+  }
+  return kUnknownName;
+}
+
+unsigned char GetSyncByteFromName(const char* name) {
+  if (!strcmp(kPsyncName, name)) {
+    return 0xc5;
+  } else if (!strcmp(kGsyncName, name)) {
+    return 0xca;
+  } else if (!strcmp(kEsyncName, name)) {
+    return 0xdd;
+  } else {
+    return 0x00;
+  }
 }
 
 }  // namespace photon

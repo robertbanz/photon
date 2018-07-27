@@ -6,7 +6,7 @@
 #include <Photon.h>
 #include <RedGreenLed.h>
 #include <SoftwareSerial.h>
-#include <StandardCplusplus.h>
+#include <ArduinoSTL.h>
 #include <SerialUtils.h>
 #include <vector>
 

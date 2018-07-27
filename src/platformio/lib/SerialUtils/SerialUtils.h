@@ -1,8 +1,8 @@
 #ifndef _SERIALUTILS_SERIALUTILS_H
 #define _SERIALUTILS_SERIALUTILS_H
 
-#include <StandardCplusplus.h>
-#include <utility.h>
+#include <ArduinoSTL.h>
+#include <utility>
 
 template <typename T>
 std::pair<bool, unsigned char> GetLastByteFromSerial(T* serial) {

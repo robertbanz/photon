@@ -1,4 +1,6 @@
 # local machine game configuration file
+# vim: ft=tcl:
+
 set server_name game
 set dbhost game
 set ettty /dev/cuaU0

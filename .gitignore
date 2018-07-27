@@ -3,3 +3,5 @@ remote/**
 **/.DS_Store
 **/*.gch
 **/.*.swp
+.ftpconfig
+**/*.lck

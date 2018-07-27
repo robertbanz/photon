@@ -2,8 +2,7 @@
 #define _ARDUINO_SWITCH_H
 
 #include <Arduino.h>
-#include <StandardCplusplus.h>
-#include <utility.h>
+#include <ArduinoSTL.h>
 
 class ArduinoSwitch {
  public:

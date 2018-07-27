@@ -2,8 +2,7 @@
 #define _COMMON_LED_H
 
 #ifdef ARDUINO
-#include <Arduino.h>
-#include <StandardCplusplus.h>
+#include <ArduinoSTL.h>
 #endif // ARDUINO
 
 #include <vector>
