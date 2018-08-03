@@ -1,5 +1,6 @@
 
 #include "common/led.h"
+#include <digitalWriteFast.h>
 
 class ArduinoLed : public Led {
  public:
@@ -7,7 +8,16 @@ class ArduinoLed : public Led {
 
  private:
   void SetHardwareValue(unsigned char value) override {
-    analogWrite(pin_, value);
+    if (value == 0) {
+      digitalWriteFast(pin_, LOW);
+    } else if (value == 255) {
+      digitalWriteFast(pin_, HIGH);
+    } else {
+      analogWrite(pin_, value);
+    }
+  }
+  unsigned long GetMillis() override {
+    return millis();
   }
   unsigned int pin_;
 };

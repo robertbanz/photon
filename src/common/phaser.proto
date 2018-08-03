@@ -1,0 +1,26 @@
+
+syntax = "proto3";
+
+package photon;
+
+message Hit {
+  fixed32 target = 1;
+};
+
+message Miss {
+  // this message purposefully left blank.
+}
+
+message EtPacket {
+  fixed32 ir_code = 1;
+  fixed32 rf_slot = 2;
+  fixed32 mode = 3;
+}
+
+message PhaserNotification {
+  oneof notification_oneof {
+    Hit hit = 1;
+    Miss miss = 2;
+    EtPacket et_packet= 3;
+  }
+};

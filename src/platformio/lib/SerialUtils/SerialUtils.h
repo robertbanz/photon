@@ -7,8 +7,7 @@
 template <typename T>
 std::pair<bool, unsigned char> GetLastByteFromSerial(T* serial) {
   std::pair<bool, unsigned char> result(false, 0);
-  const auto available = serial->available();
-  if (available > 0) {
+  if (const auto available = serial->available()) {
     byte buffer[available];
     serial->readBytes(buffer, available);
     result.second = buffer[available - 1];

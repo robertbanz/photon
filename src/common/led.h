@@ -5,6 +5,7 @@
 #include <ArduinoSTL.h>
 #endif // ARDUINO
 
+#include <stdlib.h>
 #include <vector>
 
 class Led {
@@ -23,7 +24,7 @@ class Led {
 
   virtual void FadeTo(unsigned char value, unsigned long duration_in_millis) {
     is_flashing_ = false;
-    auto now = millis();
+    auto now = GetMillis();
     last_heartbeat_ = now;
     target_value_ = value;
 
@@ -58,7 +59,7 @@ class Led {
     flash_values_ = values;
     flash_durations_ = durations_in_millis;
     flash_position_ = 0;
-    last_heartbeat_ = millis();
+    last_heartbeat_ = GetMillis();
     InternalSet(flash_values_[0]);
   }
 
@@ -85,7 +86,7 @@ class Led {
       return;
     }
 
-    auto now = millis();
+    auto now = GetMillis();
     auto age = now - last_heartbeat_;
 
     int delta = (age / millis_per_step_) * direction_;
@@ -110,7 +111,7 @@ class Led {
     auto duration = flash_position_ < flash_durations_.size()
         ? flash_durations_[flash_position_]
         : flash_durations_.back();
-    auto now = millis();
+    auto now = GetMillis();
     if (now - last_heartbeat_ < duration) {
       // nothing to do.
       return;
@@ -121,6 +122,8 @@ class Led {
     InternalSet(flash_values_[flash_position_]);
     last_heartbeat_ = now;
   }
+
+  virtual unsigned long GetMillis() = 0;
 
   unsigned char value_ = 0;
   unsigned char target_value_ = 0;
