@@ -42,7 +42,6 @@ x11-fonts/ubuntu-font
 x11-fonts/urwfonts
 ftp/wget
 net/x11vnc
-x11-drivers/xf86-video-fbdev
 x11-wm/xfce4
 x11-wm/xfce4-wm
 x11-fonts/xfontsel

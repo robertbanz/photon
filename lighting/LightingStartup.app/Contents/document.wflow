@@ -59,7 +59,7 @@
 				<key>ActionParameters</key>
 				<dict>
 					<key>COMMAND_STRING</key>
-					<string>/Applications/QLC+.app/Contents/MacOS/qlcplus -o /Users/game/photon/lighting/laurelv1.qxw -p &gt; /dev/null 2&gt;&amp;1 &lt; /dev/null &amp;</string>
+					<string>/Users/game/photon/lighting/start.sh &gt; /dev/null 2&gt;&amp;1 &lt; /dev/null &amp;</string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>
 					<key>inputMethod</key>
