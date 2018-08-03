@@ -24,6 +24,7 @@ ports-mgmt/pkg
 devel/pkgconf
 databases/postgresql93-server
 devel/protobuf
+devel/protobuf25
 devel/py-pip
 devel/py-protobuf
 x11-fonts/roboto-fonts-ttf
@@ -47,3 +48,4 @@ x11-wm/xfce4-wm
 x11-fonts/xfontsel
 x11/xorg
 x11-servers/xorg-vfbserver
+avahi

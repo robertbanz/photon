@@ -1,0 +1,10 @@
+make distclean
+export PATH=/usr/local/protobuf25/bin:$PATH
+export libprotobuf_CFLAGS="-I/usr/local/protobuf25/include -D_THREAD_SAFE"
+export libprotobuf_LIBS="-L/usr/local/protobuf25/lib -lprotobuf -D_THREAD_SAFE -pthread -lpthread"
+export libprotobuf2_CFLAGS="-I/usr/local/protobuf25/include -D_THREAD_SAFE"
+export libprotobuf2_LIBS="-L/usr/local/protobuf25/lib -lprotobuf -D_THREAD_SAFE -pthread -lpthread"
+export CXXFLAGS="-I/usr/local/protobuf25/include -I/usr/local/include -Wno-error=null-dereference"
+export LDFLAGS="-L/usr/local/protobuf25/lib -Wl,-rpath=/usr/local/protobuf25/lib -L/usr/local/lib"
+./configure --enable-rdm-tests --with-protoc=/usr/local/protobuf25/bin/protoc
+make all

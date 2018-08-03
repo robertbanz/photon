@@ -1,0 +1,347 @@
+--
+-- PostgreSQL database dump
+--
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET client_encoding = 'SQL_ASCII';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+
+--
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+SET search_path = public, pg_catalog;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- Name: g_id; Type: TABLE; Schema: public; Owner: pgsql; Tablespace: 
+--
+
+CREATE TABLE g_id (
+    id integer,
+    storeid integer
+);
+
+
+ALTER TABLE public.g_id OWNER TO pgsql;
+
+--
+-- Name: g_data; Type: TABLE; Schema: public; Owner: pgsql; Tablespace: 
+--
+
+CREATE TABLE g_data (
+    modtime timestamp without time zone,
+    rantime timestamp without time zone,
+    state character varying(16),
+    mode character varying(16),
+    length integer,
+    valid boolean,
+    moderev double precision,
+    autostage boolean,
+    params text,
+    red_teamname character varying(16),
+    green_teamname character varying(16),
+    comments text,
+    trackname text,
+    red_teamscore integer,
+    green_teamscore integer,
+    req_runtime timestamp without time zone,
+    exp_runtime timestamp without time zone,
+    sched_priority integer
+)
+INHERITS (g_id);
+
+
+ALTER TABLE public.g_data OWNER TO pgsql;
+
+--
+-- Name: g_events; Type: TABLE; Schema: public; Owner: pgsql; Tablespace: 
+--
+
+CREATE TABLE g_events (
+    "timestamp" integer,
+    event text
+)
+INHERITS (g_id);
+
+
+ALTER TABLE public.g_events OWNER TO pgsql;
+
+--
+-- Name: g_modes; Type: TABLE; Schema: public; Owner: pgsql; Tablespace: 
+--
+
+CREATE TABLE g_modes (
+    storeid integer,
+    id integer,
+    name text,
+    descr text,
+    code character varying(16),
+    params text
+);
+
+
+ALTER TABLE public.g_modes OWNER TO pgsql;
+
+--
+-- Name: g_players; Type: TABLE; Schema: public; Owner: pgsql; Tablespace: 
+--
+
+CREATE TABLE g_players (
+    used boolean,
+    team integer,
+    slot integer,
+    name character varying(16),
+    idnum character varying(16),
+    pod integer,
+    hitplayer integer[],
+    gethitplayer integer[],
+    score integer,
+    hscore integer,
+    modeparams text
+)
+INHERITS (g_id);
+
+
+ALTER TABLE public.g_players OWNER TO pgsql;
+
+--
+-- Name: g_pods; Type: TABLE; Schema: public; Owner: pgsql; Tablespace: 
+--
+
+CREATE TABLE g_pods (
+    pod integer,
+    syncmissed integer,
+    wsyncrcvd integer,
+    serror integer,
+    ealarm integer,
+    missed integer,
+    invalid integer,
+    valid integer,
+    hitsent integer,
+    hitsackn integer,
+    polls integer,
+    color character(1),
+    slot integer,
+    mir integer
+)
+INHERITS (g_id);
+
+
+ALTER TABLE public.g_pods OWNER TO pgsql;
+
+--
+-- Name: g_tracks; Type: TABLE; Schema: public; Owner: pgsql; Tablespace: 
+--
+
+CREATE TABLE g_tracks (
+    type character varying(16),
+    length integer,
+    name text,
+    params text,
+    weight integer
+);
+
+
+ALTER TABLE public.g_tracks OWNER TO pgsql;
+
+--
+-- Name: gameid; Type: SEQUENCE; Schema: public; Owner: pgsql
+--
+
+CREATE SEQUENCE gameid
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.gameid OWNER TO pgsql;
+
+--
+-- Name: member; Type: TABLE; Schema: public; Owner: pgsql; Tablespace: 
+--
+
+CREATE TABLE member (
+    memberid text,
+    alias character varying(16)
+);
+
+
+ALTER TABLE public.member OWNER TO pgsql;
+
+--
+-- Name: g_data_id; Type: INDEX; Schema: public; Owner: pgsql; Tablespace: 
+--
+
+CREATE UNIQUE INDEX g_data_id ON g_data USING btree (id, storeid);
+
+
+--
+-- Name: g_data_time; Type: INDEX; Schema: public; Owner: pgsql; Tablespace: 
+--
+
+CREATE INDEX g_data_time ON g_data USING btree (rantime);
+
+
+--
+-- Name: g_events_id; Type: INDEX; Schema: public; Owner: pgsql; Tablespace: 
+--
+
+CREATE INDEX g_events_id ON g_events USING btree (id, storeid);
+
+
+--
+-- Name: g_players_id; Type: INDEX; Schema: public; Owner: pgsql; Tablespace: 
+--
+
+CREATE UNIQUE INDEX g_players_id ON g_players USING btree (id, storeid, team, slot);
+
+
+--
+-- Name: g_pods_gameid; Type: INDEX; Schema: public; Owner: pgsql; Tablespace: 
+--
+
+CREATE INDEX g_pods_gameid ON g_pods USING btree (id);
+
+
+--
+-- Name: g_pods_id; Type: INDEX; Schema: public; Owner: pgsql; Tablespace: 
+--
+
+CREATE INDEX g_pods_id ON g_pods USING hash (id);
+
+
+--
+-- Name: public; Type: ACL; Schema: -; Owner: pgsql
+--
+
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM pgsql;
+GRANT ALL ON SCHEMA public TO pgsql;
+GRANT ALL ON SCHEMA public TO PUBLIC;
+GRANT ALL ON SCHEMA public TO game;
+
+
+--
+-- Name: g_id; Type: ACL; Schema: public; Owner: pgsql
+--
+
+REVOKE ALL ON TABLE g_id FROM PUBLIC;
+REVOKE ALL ON TABLE g_id FROM pgsql;
+GRANT ALL ON TABLE g_id TO pgsql;
+GRANT ALL ON TABLE g_id TO game;
+GRANT ALL ON TABLE g_id TO et;
+
+
+--
+-- Name: g_data; Type: ACL; Schema: public; Owner: pgsql
+--
+
+REVOKE ALL ON TABLE g_data FROM PUBLIC;
+REVOKE ALL ON TABLE g_data FROM pgsql;
+GRANT ALL ON TABLE g_data TO pgsql;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE g_data TO et;
+GRANT ALL ON TABLE g_data TO game;
+GRANT SELECT ON TABLE g_data TO display;
+
+
+--
+-- Name: g_events; Type: ACL; Schema: public; Owner: pgsql
+--
+
+REVOKE ALL ON TABLE g_events FROM PUBLIC;
+REVOKE ALL ON TABLE g_events FROM pgsql;
+GRANT ALL ON TABLE g_events TO pgsql;
+GRANT ALL ON TABLE g_events TO game;
+
+
+--
+-- Name: g_modes; Type: ACL; Schema: public; Owner: pgsql
+--
+
+REVOKE ALL ON TABLE g_modes FROM PUBLIC;
+REVOKE ALL ON TABLE g_modes FROM pgsql;
+GRANT ALL ON TABLE g_modes TO pgsql;
+GRANT SELECT ON TABLE g_modes TO et;
+GRANT ALL ON TABLE g_modes TO game;
+GRANT SELECT ON TABLE g_modes TO display;
+
+
+--
+-- Name: g_players; Type: ACL; Schema: public; Owner: pgsql
+--
+
+REVOKE ALL ON TABLE g_players FROM PUBLIC;
+REVOKE ALL ON TABLE g_players FROM pgsql;
+GRANT ALL ON TABLE g_players TO pgsql;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE g_players TO et;
+GRANT ALL ON TABLE g_players TO game;
+GRANT SELECT ON TABLE g_players TO display;
+
+
+--
+-- Name: g_pods; Type: ACL; Schema: public; Owner: pgsql
+--
+
+REVOKE ALL ON TABLE g_pods FROM PUBLIC;
+REVOKE ALL ON TABLE g_pods FROM pgsql;
+GRANT ALL ON TABLE g_pods TO pgsql;
+GRANT ALL ON TABLE g_pods TO game;
+
+
+--
+-- Name: g_tracks; Type: ACL; Schema: public; Owner: pgsql
+--
+
+REVOKE ALL ON TABLE g_tracks FROM PUBLIC;
+REVOKE ALL ON TABLE g_tracks FROM pgsql;
+GRANT ALL ON TABLE g_tracks TO pgsql;
+GRANT SELECT ON TABLE g_tracks TO et;
+GRANT ALL ON TABLE g_tracks TO game;
+
+
+--
+-- Name: gameid; Type: ACL; Schema: public; Owner: pgsql
+--
+
+REVOKE ALL ON SEQUENCE gameid FROM PUBLIC;
+REVOKE ALL ON SEQUENCE gameid FROM pgsql;
+GRANT ALL ON SEQUENCE gameid TO pgsql;
+GRANT ALL ON SEQUENCE gameid TO et;
+GRANT ALL ON SEQUENCE gameid TO game;
+
+
+--
+-- Name: member; Type: ACL; Schema: public; Owner: pgsql
+--
+
+REVOKE ALL ON TABLE member FROM PUBLIC;
+REVOKE ALL ON TABLE member FROM pgsql;
+GRANT ALL ON TABLE member TO pgsql;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE member TO et;
+GRANT ALL ON TABLE member TO game;
+GRANT SELECT ON TABLE member TO display;
+
+
+--
+-- PostgreSQL database dump complete
+--
+

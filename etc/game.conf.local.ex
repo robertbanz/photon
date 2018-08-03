@@ -1,10 +1,19 @@
 # local machine game configuration file
 # vim: ft=tcl:
 
-set server_name game
-set dbhost game
-set ettty /dev/cuaU0
+# The ET should set these to the hostname of the game computer.
+set server_name localhost
+set dbhost localhost
+
+# Have the ET use the IR emitter on the central
+# radio interface
+set ettty GAME
+# Have the ET use a serial device
+# set ettty /dev/cuaU0
+
+# Audio mixer hardware interface
 set mixer_device /dev/mixer0
-#set cr_server_name 192.168.3.78
-#set cr_listenport 23
-set cr_tty /dev/cuaU0
+
+set cr_tty /dev/photon_radio_interface
+
+# set phasertty /dev/photon_phaser_interface

@@ -1,0 +1,5 @@
+#!/bin/sh
+createuser game
+createuser display
+createuser et
+createdb photon -O game

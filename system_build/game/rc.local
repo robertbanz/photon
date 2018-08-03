@@ -1,0 +1,2 @@
+#!/bin/sh
+su - game -c /usr/photon/bin/runmain &
