@@ -44,6 +44,10 @@ class RedGreenLed : public Led {
   void SetHardwareValue(unsigned char) override {
     // unneeded.
   }
+  unsigned long GetMillis() override {
+    // unused.
+    return 0;
+  }
 
   Led* red_led_;
   Led* green_led_;

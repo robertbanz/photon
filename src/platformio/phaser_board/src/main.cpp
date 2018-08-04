@@ -2,23 +2,30 @@
 #include <Arduino.h>
 
 #include <ArduinoLed.h>
+#include <ArduinoSTL.h>
 #include <ArduinoSwitch.h>
 #include <Photon.h>
 #include <RedGreenLed.h>
-#include <SoftwareSerial.h>
-#include <ArduinoSTL.h>
 #include <SerialUtils.h>
+#include <SoftwareSerial.h>
+#include <Wire.h>
+#include <algorithm>
+#include <sstream>
 #include <vector>
+#include <memory>
+#include "pb.h"
+#include "pb_encode.h"
 
 constexpr unsigned int kRXD = 0;
 constexpr unsigned int kTXD = 1;
-constexpr unsigned int kIrSerial = 11;  // should be 2.
+constexpr unsigned int kIrSerial = 2;  // should be 2. (11 for mega)
 constexpr unsigned int kTrigger = 3;
 constexpr unsigned int kIrSerialTxUnused = 4;
 constexpr unsigned int kTargetLedRed = 5;
 constexpr unsigned int kTargetLedGreen = 6;
 constexpr unsigned int kFrontLedRed = 9;
 constexpr unsigned int kFrontLedGreen = 10;
+constexpr unsigned int kHeartbeatLed = 13;
 
 constexpr HardwareSerial* console = &Serial;
 
@@ -32,8 +39,23 @@ RedGreenLed targeting_led(new ArduinoLed(kTargetLedRed),
                           new ArduinoLed(kTargetLedGreen));
 RedGreenLed front_led(new ArduinoLed(kFrontLedRed),
                       new ArduinoLed(kFrontLedGreen));
+ArduinoLed hearbeat_led(kHeartbeatLed);
 ArduinoSwitch trigger(kTrigger);
 SoftwareSerial ir_serial(kIrSerial, kIrSerialTxUnused);
+
+photon_PhaserNotification* phaser_notification = nullptr;
+
+void send_pending_notification() {
+  if (phaser_notification == nullptr) {
+    return;
+  }
+  uint8_t outbuf[32];
+  auto ostream = pb_ostream_from_buffer(outbuf, sizeof(outbuf));
+  pb_encode(&ostream, photon_PhaserNotification_fields, phaser_notification);
+  Wire.beginTransmission(8);
+  Wire.write(outbuf, ostream.bytes_written);
+  Wire.endTransmission();
+}
 
 class PhaserState {
  public:
@@ -88,30 +110,64 @@ class PhaserState {
 };
 
 void setup() {
+  hearbeat_led.Flash({0, 255}, {1000});
   console->begin(115200);
   ir_serial.begin(1200);
   ir_serial.listen();
+  Wire.begin(photon::kPhaserI2CAddress);
 }
 
+PhaserState phaser_state;
+std::vector<unsigned char> et_packet;
+
 void loop() {
-  PhaserState phaser_state;
-  std::vector<unsigned char> et_packet;
+  auto now = millis();
 
-  while (1) {
-    auto now = millis();
+  // Call Updaters
+  trigger.Update();
+  targeting_led.Update();
+  front_led.Update();
+  hearbeat_led.Update();
 
-    // Call Updaters
-    trigger.Update();
-    targeting_led.Update();
-    front_led.Update();
+  if (phaser_notification != nullptr) {
+    delete phaser_notification;
+  }
+
+  auto irserial_result = GetLastByteFromSerial(&ir_serial);
+  if (irserial_result.first) {
+    Led* target = nullptr;
+    switch (photon::TargetTypeFromIrCode(irserial_result.second)) {
+      case photon::TargetType::RED_POD:
+        target = &targeting_led.Red();
+        break;
+      case photon::TargetType::GREEN_POD:
+        target = &targeting_led.Green();
+        break;
+      case photon::TargetType::OTHER:
+        target = &targeting_led;
+        break;
+      case photon::TargetType::INVALID:
+        target = nullptr;
+        break;
+    }
+
+    if (target != nullptr && target->Get() == 0) {
+      target->Set(255);
+      target->FadeTo(0, 25);
+    }
+    if (front_led.Get() == 0) {
+      front_led.Set(255);
+      front_led.FadeTo(0, 25);
+    }
 
     if (phaser_state.CheckForMiss(now)) {
-      console->println("PHASER MISS");
+      phaser_notification = photon::NewPhaserNotificationMiss();
+      console->println("MISS");
     }
 
     auto trigger_state = trigger.HasChangedState();
     if (trigger_state.first) {
-      console->print("PHASER TRIGGER ");
+      console->print("TRIGGER ");
       if (trigger_state.second) {
         console->println(" ON");
         phaser_state.SetPull(now);
@@ -120,61 +176,24 @@ void loop() {
       }
     }
 
-    auto irserial_result = GetLastByteFromSerial(&ir_serial);
-    if (irserial_result.first) {
-      // console->print("PHASER IR ");
-      // console->println(irserial_result.second);
+    if (phaser_state.CheckForHit(now, irserial_result.second)) {
+      phaser_notification = photon::NewPhaserNotificationHit(irserial_result.second);
+    } else {
+      if (irserial_result.second == photon::kEtBarker) {
+        et_packet = {irserial_result.second};
 
-      Led* target = nullptr;
-      switch (photon::TargetTypeFromIrCode(irserial_result.second)) {
-        case photon::TargetType::RED_POD:
-          target = &targeting_led.Red();
-          break;
-        case photon::TargetType::GREEN_POD:
-          target = &targeting_led.Green();
-          break;
-        case photon::TargetType::OTHER:
-          target = &targeting_led;
-          break;
-        case photon::TargetType::INVALID:
-          target = nullptr;
-          break;
-      }
-
-      if (target != nullptr && target->Get() == 0) {
-        target->Set(255);
-        target->FadeTo(0, 25);
-      }
-      if (front_led.Get() == 0) {
-        front_led.Set(255);
-        front_led.FadeTo(0, 25);
-      }
-
-      if (phaser_state.CheckForHit(now, irserial_result.second)) {
-        console->print("PHASER HIT ");
-        console->println(irserial_result.second);
-      } else {
-        if (irserial_result.second == photon::kEtBarker) {
-          et_packet = {irserial_result.second};
-
-        } else if (et_packet.size() > 0 &&
-                   et_packet.size() < photon::kEtPacketSize) {
-          et_packet.push_back(irserial_result.second);
-          if (et_packet.size() == photon::kEtPacketSize) {
-            if (photon::ValidateEtPacket(et_packet)) {
-              console->print("PHASER ET ");
-              for (const auto& data : et_packet) {
-                console->print(data);
-                console->print(" ");
-              }
-              console->println();
-              et_packet.clear();
-            }
+      } else if (et_packet.size() > 0 &&
+                 et_packet.size() < photon::kEtPacketSize) {
+        et_packet.push_back(irserial_result.second);
+        if (et_packet.size() == photon::kEtPacketSize) {
+          if (photon::ValidateEtPacket(et_packet)) {
+            phaser_notification = photon::NewPhaserNotificationEtPacket(et_packet);
+            et_packet.clear();
           }
-
-        } else {
-          et_packet.clear();
         }
+
+      } else {
+        et_packet.clear();
       }
     }
   }
