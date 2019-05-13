@@ -1,7 +1,7 @@
 # vim: ft=tcl:
 
 namespace eval version {
-  set version_id "20170730.0"
-  set version_name "Profit Margin"
+  set version_id "20190512.0"
+  set version_name "Very Little Gravitas Indeed"
   set version_string "${version_name} (${version_id})"
 }
