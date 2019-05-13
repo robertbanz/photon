@@ -2,6 +2,6 @@
 PATH=/usr/local/bin:$PATH export PATH
 gamehost=game
 identity=/usr/photon/game/.ssh/identity
-rsync -e "ssh -i $identity" -a -v --exclude ".git" --exclude "game.conf.local" remote@$gamehost:/usr/photon/. /usr/photon/.
+rsync -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $identity" -a -v --exclude ".cache" --exclude ".git" --exclude "game.conf.local" remote@$gamehost:/usr/photon/. /usr/photon/.
 chown -R display /usr/photon/display
 chown -R et /usr/photon/et
