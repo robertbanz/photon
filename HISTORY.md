@@ -43,7 +43,7 @@ And then MarcTron closed, and there was a huge fallout with the incumbent’s pe
 
 # XP LaserSport
 
-Oh wait, this was MarcTron. MarcTron is like herpes -- you think it’s gone, but it’s always there. He had an angle on re-opening, but needed something to run the game. I had the basics of what could work, so I hobbled something together in rather short order.
+Oh wait, this was MarcTron. You think it’s gone, but it'll always come back. He had an angle on re-opening, but needed something to run the game. I had the basics of what could work, so I hobbled something together in rather short order.
 
 The target platform at the time was FreeBSD 2.x which I had written the original kernel driver on. As I consider everything that went around it as “glue with some UX”, the decade-appropriate choice seemed to be to use Tcl/TK. It allowed for a pretty easy interface to bind to raw ‘C’ functions, but also some pretty decent capabilities for both UI and the scoring displays.
 
