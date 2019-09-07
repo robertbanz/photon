@@ -6,6 +6,8 @@ The software is known to run on FreeBSD, though there is nothing that would stop
 
 TL;DR Check this out in /usr/photon, and you're good to go. (will get to the specifics later)
 
+system_build/game contains some instructions that were used to build the "game computer" we have used at PhoCon. This consists of a Mac-based host (that runs the lighting control software natively), and two virtual machines. One that runs pfsense and acts as a router to the private network that runs the Photon bits, and a second VM that runs the game software.
+
 ## Hardware
 
 Previous revisions of this software -- you can check back in the commit history -- were expected to run on PC hardware (a Pentium at the time) on FreeBSD 2.x. It used a kernel module that modified the low-level timer handling to match what the Photon player units (PODs) expect. (see the README in the photon_gamma repository for more of that story)
