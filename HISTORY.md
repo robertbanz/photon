@@ -3,7 +3,7 @@
 
 My first foray into the territory of Photon Game Software ([photon_gamma](https://github.com/robertbanz/photon_gamma)) was also my first major software development project beyond what the folks at school had me doing. As mentioned in the README for that project, when the first incarnation of what would become XP LaserSport launched it wasn’t with the software that I wrote. Someone else made a pretty good effort in making that happen.
 
-However, there was some “professional rivalry” involved, and when I had heard that the software in question was not quite working up to snuff, I had gotten curious if I could do something better on a modern platform. I had become a FreeBSD nerd at the time, and wanted to get my feet we writing kernel device drivers -- so why not write a device driver to interface with a Photon central radio!?
+However, there was some “professional rivalry” involved, and when I had heard that the software in question was not quite working up to snuff, I had gotten curious if I could do something better on a modern platform. I had become a FreeBSD nerd at the time, and wanted to get my feet wet writing kernel device drivers -- so why not write a device driver to interface with a Photon central radio!?
 
 # And So It Begins
 
