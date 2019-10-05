@@ -70,7 +70,13 @@ The second number is the "slot number"
 The third is either "tx" or "rx" -- clearly indicating if this was a byte that was transmitted or received.
 The fourth is the actual byte.
 
+## Connecting to a Photon Central Radio
 
+The pinout on the PhoBoard is that of a standard 9-pin PC RS-232 port -- this should not be connected to the
+Central Radio's 9-pin serial port though, it uses a different pin-out, of course.
+
+You'll need to make a cable to connect through the RX, TX and GND pins to their obvious counterparts on the CR's
+port, and RTS (pin 7) to the "KEY" input on the radio.
 
 
 
